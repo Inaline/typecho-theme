@@ -8,5 +8,5 @@
 <html>
 <head>
 <meta charset="utf-8"> 
-<title><?=e($this->data->title)?></title>
+<title><?=e($this->data->title, '默认标题')?></title>
 </head>

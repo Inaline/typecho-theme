@@ -1,0 +1,26 @@
+<svg width="120" height="120" viewBox="0 0 120 120"
+     xmlns="http://www.w3.org/2000/svg">
+  <!-- 圆环（完全不动） -->
+  <circle cx="60" cy="60" r="45"
+          fill="none" stroke="#000" stroke-width="10"
+          stroke-dasharray="236.3 94.5" stroke-dashoffset="0"
+          stroke-linecap="round"/>
+
+  <!-- 小圆：i 的点（原位不动） -->
+  <circle cx="60 + 45*cos(120°)" cy="60 - 45*sin(120°)" r="6.25" fill="#000"
+          transform="translate(-22.5, -39)"/>
+
+  <!-- 字母 i 竖线（右 1 px，下 5 px） -->
+  <line x1="37.75" y1="40" x2="37.75" y2="80"
+        stroke="#000" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- 小写 n：左侧竖线 + 圆弧拱门 + 右侧竖线 -->
+  <path d="M57.75 40
+           V80
+           M57.75 40
+           Q57.75 40 70 40
+           Q82.25 40 82.25 55
+           V80"
+        fill="none" stroke="#000" stroke-width="10"
+        stroke-linecap="round"/>
+</svg>

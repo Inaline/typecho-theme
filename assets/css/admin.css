@@ -1,0 +1,36 @@
+/* ===== 标签页 ===== */
+.typecho-option-tab {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #e9eaed;
+}
+.typecho-option-tab-btn {
+    background: #f7f8f9;
+    border: 1px solid transparent;
+    padding: 8px 18px;
+    cursor: pointer;
+    position: relative;
+    top: 1px;
+    font-size: 14px;
+    color: #333;
+}
+.typecho-option-tab-btn.active {
+    background: #fff;
+    border-color: #e9eaed;
+    border-bottom-color: #fff;
+}
+
+/* ===== 面板间距 ===== */
+.typecho-option-panel {
+    padding: 20px 0;
+}
+
+.typecho-option-item {
+    margin-bottom: 20px;
+}
+
+/* ===== 描述文字 ===== */
+.typecho-option-item .description {
+    margin: 4px 0 0;
+    color: #999;
+    font-size: 12px;
+}

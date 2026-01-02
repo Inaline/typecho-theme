@@ -8,10 +8,19 @@
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
-// 全局 XSS 防护
+// 全局 XSS 防护，带默认值（第 2 参数）
 if (!function_exists('e')) {
-    function e($str, int $flags=ENT_QUOTES, string $enc='UTF-8'): string {
-        return htmlspecialchars($str ?? '', $flags, $enc);
+    function e(
+        $str,
+        string $default = '',        // 新增，最常用
+        int    $flags    = ENT_QUOTES,
+        string $enc      = 'UTF-8'
+    ): string {
+        $str = $str ?? '';
+        if ($str === '') {           // 空串用默认值
+            $str = $default;
+        }
+        return htmlspecialchars($str, $flags, $enc);
     }
 }
 
@@ -63,7 +72,24 @@ class Get
             ? self::$config->getConfig()      // 返回整个数组
             : self::$config->get($key, $default);
     }
+    
+    /**
+     * 取页面的标题
+     * - 待实现
+     */
+    public static function Title()
+    {
+    }
+    
+    /**
+     * 取 Typecho 主题设置项
+     * - 待实现
+     */
+    public static function ThemeOption()
+    {
+    }
 }
 
+// 启用 HTML 压缩 ( config.php 设置在函数内判断 )
 Inaline::startMinify();
 register_shutdown_function(fn() => Inaline::endMinify());

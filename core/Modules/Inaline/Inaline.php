@@ -135,4 +135,29 @@ class Inaline
         }
         return '';
     }
+    
+    /**
+     * 通过 IPv4/IPv6 地址取归属地
+     * - 传入 IP 返回 array 包含 国家(非中国) 或 省级行政区 和 地级市
+     * - 待实现
+     */
+    public static function getLocationByIP()
+    {
+    }
+    
+    /**
+     * 通过 UA 获取用户的操作系统和版本
+     * - 待实现
+     */
+    public static function getSystemByUA()
+    {
+    }
+    
+    /**
+     * 通过 UA 获取用户的浏览器和版本
+     * - 待实现
+     */
+    public static function getBrowserByUA()
+    {
+    }
 }
