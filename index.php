@@ -8,3 +8,5 @@
  * @link https://gitee.com/inaline/typecho-theme
  *
  */
+
+Get::Component($this, 'Header', ['title' => '测试']);
