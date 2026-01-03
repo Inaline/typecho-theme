@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!form) return;
     form.addEventListener('submit', function (e) {
         sync();                       // 先同步
-        alert(document.querySelector('input[name="data"]').value);
+        // alert(document.querySelector('input[name="data"]').value);
         /* 如果想中断提交，取消下面注释即可 */
         // e.preventDefault();
     });

@@ -44,9 +44,21 @@ class ErrorHandler
 
     private static function render(string $type, string $msg, string $file, int $line, array $trace): void
     {
+        /* ---------- 先写日志 ---------- */
+        $logFile = dirname(__DIR__, 3) . '/error.log';   // 主题根目录 error.log
+        $logLine = sprintf(
+            "[%s] %s: %s in %s on line %d\n",
+            date('Y-m-d H:i:s'),
+            $type,
+            $msg,
+            $file,
+            $line
+        );
+        @error_log($logLine, 3, $logFile);   // @ 抑制权限问题
+    
         /* ---------- 清掉之前所有输出 ---------- */
         while (ob_get_level()) {
-            ob_end_clean();   // 一层层清
+            ob_end_clean();
         }
     
         /* ---------- 再正常发 500 ---------- */
@@ -93,7 +105,7 @@ class ErrorHandler
         self::newPageTemplate($typeHtml, $msgHtml, $fileHtml, $lineHtml, $code, $backtraceHtml);
         exit;
     }
-
+    
     /* ---------- 工具 ---------- */
 
     /* 读取文件并生成带行号的高亮片段 */
