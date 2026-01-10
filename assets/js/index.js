@@ -21,20 +21,30 @@ $(document).ready(function() {
 
         // 移除所有选中状态
         $('.topbar-nav-item').removeClass('active');
-        $('.topbar-dropdown').removeClass('active');
+        $('.topbar-dropdown-item').removeClass('active');
 
         if (currentHash) {
+            // 首先检查是否匹配二级菜单项
+            const $dropdownItem = $(`.topbar-dropdown-item[href="${currentHash}"]`);
+            if ($dropdownItem.length) {
+                // 高亮二级菜单项
+                $dropdownItem.addClass('active');
+                // 高亮对应的一级父菜单
+                const parentHash = $dropdownItem.data('parent');
+                if (parentHash) {
+                    $(`.topbar-nav-dropdown`).filter(function() {
+                        return $(this).find('.topbar-nav-link').text() === '分类';
+                    }).addClass('active');
+                }
+                return;
+            }
+
             // 如果有 hash，匹配 hash
             const $navItem = $(`.topbar-nav-item[href="${currentHash}"]`);
 
             if ($navItem.length) {
-                // 如果匹配到的是下拉菜单内的项，只高亮父级下拉菜单
-                if ($navItem.closest('.topbar-dropdown-menu').length) {
-                    $navItem.closest('.topbar-dropdown').addClass('active');
-                } else {
-                    // 如果是一级导航项，直接高亮
-                    $navItem.addClass('active');
-                }
+                // 如果是一级导航项，直接高亮
+                $navItem.addClass('active');
             }
         } else if (currentPath === '/' || currentPath === '/index.php') {
             // 如果是首页，选中首页标签
@@ -116,5 +126,29 @@ $(document).ready(function() {
     // 窗口大小改变时关闭所有弹出层
     $(window).on('resize', function() {
         closeAll();
+    });
+
+    // 二级菜单点击处理
+    $('.topbar-nav-dropdown').on('click', function(e) {
+        // 点击下拉菜单项时不阻止默认行为
+        if ($(e.target).hasClass('topbar-dropdown-item')) {
+            return;
+        }
+        // 点击一级菜单时不阻止默认行为（如果有链接）
+        e.stopPropagation();
+    });
+
+    // 二级菜单项点击处理
+    $('.topbar-dropdown-item').on('click', function(e) {
+        // 允许默认跳转行为
+        const $this = $(this);
+        const href = $this.attr('href');
+
+        // 更新 active 状态
+        $('.topbar-dropdown-item').removeClass('active');
+        $this.addClass('active');
+
+        // 保持父菜单的 active 状态
+        $this.closest('.topbar-nav-dropdown').addClass('active');
     });
 });

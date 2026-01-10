@@ -21,9 +21,17 @@
         <!-- 桌面端导航标签 -->
         <nav class="topbar-nav">
             <a href="#home" class="topbar-nav-item active">首页</a>
-            <a href="#articles" class="topbar-nav-item">文章</a>
-            <a href="#categories" class="topbar-nav-item">分类</a>
+            <div class="topbar-nav-item topbar-nav-dropdown">
+                <span class="topbar-nav-link">分类</span>
+                <span class="mdi mdi-chevron-down topbar-nav-arrow"></span>
+                <div class="topbar-dropdown-menu">
+                    <a href="#category-tech" class="topbar-dropdown-item" data-parent="categories">技术</a>
+                    <a href="#category-life" class="topbar-dropdown-item" data-parent="categories">生活</a>
+                    <a href="#category-travel" class="topbar-dropdown-item" data-parent="categories">旅行</a>
+                </div>
+            </div>
             <a href="#about" class="topbar-nav-item">关于</a>
+            <a href="#contact" class="topbar-nav-item">联系</a>
         </nav>
 
         <!-- 右侧按钮组 -->

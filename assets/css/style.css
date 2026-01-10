@@ -130,9 +130,84 @@ body {
     border-radius: 2px;
 }
 
-/* 下拉菜单 */
+/* 二级菜单下拉样式 */
+.topbar-nav-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    position: relative;
+    padding: 8px 16px;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed);
+}
 
-.dropdown-item {
+.topbar-nav-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+    transition: all var(--transition-speed);
+}
+
+.topbar-nav-dropdown:hover {
+    color: var(--primary-color);
+}
+
+.topbar-nav-dropdown:hover .topbar-nav-link {
+    color: var(--primary-color);
+}
+
+.topbar-nav-dropdown.active {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.1);
+}
+
+.topbar-nav-dropdown.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+.topbar-nav-arrow {
+    font-size: 16px;
+    transition: transform var(--transition-speed);
+}
+
+.topbar-nav-dropdown:hover .topbar-nav-arrow {
+    transform: rotate(180deg);
+}
+
+/* 下拉菜单 */
+.topbar-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    min-width: 160px;
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-speed);
+    padding: 8px 0;
+}
+
+.topbar-nav-dropdown:hover .topbar-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* 下拉菜单项 */
+.topbar-dropdown-item {
     display: block;
     padding: 10px 16px;
     text-decoration: none;
@@ -141,9 +216,15 @@ body {
     transition: all var(--transition-speed);
 }
 
-.dropdown-item:hover {
+.topbar-dropdown-item:hover {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.08);
+}
+
+.topbar-dropdown-item.active {
     color: var(--primary-color);
     background-color: rgba(255, 121, 0, 0.1);
+    font-weight: 500;
 }
 
 /* 右侧按钮组 */
