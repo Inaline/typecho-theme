@@ -10,27 +10,26 @@
  */
 
 $params_head = [
-    'title' => GetSite::title(),
-    'keywords' => GetSite::keywords(),
+    'title'       => GetSite::title(),
+    'keywords'    => GetSite::keywords(),
     'description' => GetSite::description(),
-    'favicon' => Get::resolveUri(Get::themeOption('favicon')),
-    'copyright' => GetSite::authorName(),
-    'author' => GetSite::authorName(),
-    'links' => [
+    'favicon'     => Get::resolveUri(Get::themeOption('favicon')),
+    'copyright'   => GetSite::authorName(),
+    'author'      => GetSite::authorName(),
+    'links'       => [
         [
-            'rel' => 'stylesheet',
+            'rel'  => 'stylesheet',
             'type' => 'text/css',
             'href' => Get::Assets('assets/css/style.css')
-        ]
-    ],
-    'scripts' => [
+        ],
         [
-            'type' => 'text/javascript',
-            'src' => GetSite::adminPath() . 'js/jquery.js',
+            'rel'  => 'stylesheet',
+            'href' => 'https://cdn.bootcdn.net/ajax/libs/MaterialDesign-Webfont/7.4.47/css/materialdesignicons.min.css'
         ]
     ],
-    'custom' => Get::themeOption('custom_head'),
-    'body_id' => 'home'
+    'scripts'     => [],
+    'custom'      => Get::themeOption('custom_head'),
+    'body_id'     => 'home'
 ];
 
 $params_top_bar = [];
@@ -39,9 +38,13 @@ $params_foot = [
         [
             'type' => 'text/javascript',
             'src' => GetSite::adminPath() . 'js/jquery.js',
+        ],
+        [
+            'type' => 'text/javascript',
+            'src' => Get::Assets('assets/js/index.js')
         ]
     ],
-    'custom' => '<script> /* 自定义的 Footer 内容 */ </script>'
+    'custom' => Get::themeOption('custom_foot')
 ];
 
 Get::Component($this, 'Header', $params_head);

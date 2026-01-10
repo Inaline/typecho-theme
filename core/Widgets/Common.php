@@ -168,6 +168,19 @@ class Get
     }
 }
 
-// 启用 HTML 压缩 ( config.php 设置在函数内判断 )
-Inaline::startMinify();
-register_shutdown_function(fn() => Inaline::endMinify());
+// 根据配置决定是否启用 HTML 压缩
+try {
+    // 检查 AppConfig 类是否已经定义，避免重复引入
+    if (!class_exists('AppConfig')) {
+        require_once(__DIR__ . '/../Modules/Inaline/AppConfig.php');
+    }
+    $config = new AppConfig();
+    $compressHtml = $config->get('app.compress_html', false);
+    if ($compressHtml) {
+        Inaline::startMinify();
+        register_shutdown_function(fn() => Inaline::endMinify());
+    }
+} catch (RuntimeException $e) {
+    // 配置加载失败时，默认不启用压缩
+    error_log("Inaline Theme: 配置加载失败 - " . $e->getMessage());
+}

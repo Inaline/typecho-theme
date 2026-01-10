@@ -2,3 +2,329 @@
  * Inaline 主题前台全局 CSS
  * @author Inaline Studio
  */
+
+/* CSS 变量定义 */
+:root {
+    --primary-color: #FF7900;
+    --primary-color-light: #FF9A40;
+    --primary-color-dark: #E66A00;
+    --bg-color: #FFFFFF;
+    --text-color: #333333;
+    --text-color-light: #666666;
+    --border-color: #E0E0E0;
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+    --topbar-height: 52px;
+    --sidebar-width: 75%;
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+/* TopBar 样式 */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--topbar-height);
+    background-color: var(--bg-color);
+    box-shadow: var(--shadow-sm);
+    z-index: 1000;
+}
+
+.topbar-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 16px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* TopBar 按钮 */
+.topbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 20px;
+    border-radius: 50%;
+    transition: all var(--transition-speed);
+}
+
+.topbar-btn:hover {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.1);
+}
+
+/* Logo */
+.topbar-logo {
+    display: flex;
+    align-items: center;
+    margin-right: 25px;
+    margin-left: 10px;
+}
+
+.topbar-logo img {
+    height: 28px;
+    width: auto;
+}
+
+/* 桌面端导航 */
+.topbar-nav {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+.topbar-nav-item {
+    padding: 8px 16px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed);
+    position: relative;
+}
+
+.topbar-nav-item:hover {
+    color: var(--primary-color);
+}
+
+.topbar-nav-item.active {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.1);
+}
+
+.topbar-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 2px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* 下拉菜单 */
+
+.dropdown-item {
+    display: block;
+    padding: 10px 16px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 14px;
+    transition: all var(--transition-speed);
+}
+
+.dropdown-item:hover {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.1);
+}
+
+/* 右侧按钮组 */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+/* 搜索框 */
+.topbar-search {
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+    background-color: var(--bg-color);
+    z-index: 1002;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed);
+}
+
+.topbar-search.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.topbar-search-content {
+    position: relative;
+    padding: 16px;
+    min-height: 100px;
+}
+
+/* 搜索卡片 */
+.search-card {
+    width: 100%;
+    height: 60px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+}
+
+/* 左侧边栏 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    max-width: 300px;
+    background-color: var(--bg-color);
+    box-shadow: var(--shadow-lg);
+    z-index: 1004;
+    transform: translateX(-100%);
+    transition: transform var(--transition-speed);
+}
+
+.sidebar.show {
+    transform: translateX(0);
+}
+
+.sidebar-content {
+    padding: 20px;
+    min-height: 100%;
+}
+
+/* 侧边栏遮罩 */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--overlay-bg);
+    backdrop-filter: blur(4px);
+    z-index: 1003;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed);
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 搜索/菜单遮罩 */
+.search-overlay {
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--overlay-bg);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed);
+}
+
+.search-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 更多选项菜单 */
+.more-menu {
+    position: fixed;
+    top: calc(var(--topbar-height) + 8px);
+    right: 16px;
+    min-width: 150px;
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    z-index: 1002;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all var(--transition-speed);
+}
+
+.more-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.more-menu-item {
+    padding: 12px 16px;
+    font-size: 14px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.more-menu-item:hover {
+    background-color: rgba(255, 121, 0, 0.1);
+    color: var(--primary-color);
+}
+
+.more-menu-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 4px 0;
+}
+
+/* 响应式设计 - 桌面端 */
+@media (min-width: 768px) {
+    #menuBtn {
+        display: none;
+    }
+
+    .topbar-nav {
+        display: flex;
+    }
+
+    .topbar-search {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 8px;
+        left: auto;
+        width: 300px;
+        background-color: var(--bg-color);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-md);
+        padding: 12px;
+    }
+
+    .topbar-search-content {
+        padding: 0;
+        min-height: auto;
+    }
+
+    .search-card {
+        height: 44px;
+        background-color: #f5f5f5;
+    }
+}
+
+/* 响应式设计 - 移动端 */
+@media (max-width: 767px) {
+
+}

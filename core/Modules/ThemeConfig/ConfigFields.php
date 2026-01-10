@@ -6,7 +6,9 @@
 return [
     [
         'title'   => '欢迎使用',
-        'content' => '<h1>Inaline - 功能强大、美观、简洁的 Typecho 主题</h1>'
+        'content' => '<h1>Inaline - 功能强大、美观、简洁的 Typecho 主题</h1>
+        <a href="https://gitee.com/inaline/typecho-theme">Gitee</a> <a href="https://github.com/inaline">Github</a> <a href="https://m.bilibili.com/space/3493111149890117">Bilibili</a>
+        <p>关于URI的约定: <br> 1. 以 http/https 开头为外部 URI 如 https://example.com/a.png <br> 2. 以 / 开头为本地绝对路径 如 /index.php <br> 3. 以 @ 开头为相对于主题的路径 如 @assets/images/Inaline.png <br> 4. 以 data: 开头为 dataUrl</p>'
     ],
     [
         'title'  => '常用组件示例',
@@ -65,11 +67,44 @@ return [
                 'description' => '网站的 Favicon, 显示在浏览器标签页左边'
             ],
             [
+                'name' => 'font',
+                'label' => '全局字体',
+                'type' => 'text',
+                'default' => '@assets/fonts/HYTangMeiRen55W.woff2',
+                'description' => '网站的全局字体, <br>格式: 如:Microsoft YaHei, 或 @相对链接 来使用自定义字体'
+            ],
+            [
                 'name' => 'custom_head',
                 'label' => '自定义头部',
                 'type' => 'textarea',
                 'default' => '',
                 'description' => '网站的自定义头部信息, 可以直接写HTML, 会输出到<head>部分'
+            ],
+            [
+                'name' => 'custom_foot',
+                'label' => '自定义尾部',
+                'type' => 'textarea',
+                'default' => '',
+                'description' => '网站的自定义头部信息, 可以直接写HTML, 会输出到<body>部分尾部'
+            ]
+        ]
+    ],
+    [
+        'title' => '标题栏设置',
+        'fields' => [
+            [
+                'name'    => 'top_bar_mode',
+                'label'   => '标题栏模式',
+                'type'    => 'radio',
+                'default' => 'transparent',
+                'options' => ['transparent' => '跟随背景透明', 'display' => '保持不透明']
+            ],
+            [
+                'name'    => 'top_bar_pages',
+                'label'   => '标题栏显示的页面(JSON)',
+                'type'    => 'textarea',
+                'default' => '[{"name":"home","label":"首页","icon":"mdi-home","url":"/"},{"name":"more","label":"更多","icon":"mdi-more","children":[{"name":"test","label":"测试","url":"/test.html"}]}]',
+                'description' => '显示在页面顶部标题栏的标签, JSON格式<br>事例:[{"name":"home","label":"首页","icon":"mdi-home","url":"/"},{"name":"more","label":"更多","icon":"mdi-more","children":[{"name":"test","label":"测试","url":"/test.html"}]}]'
             ]
         ]
     ]

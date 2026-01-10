@@ -114,6 +114,7 @@ class ConfigBuilder
                 }
                 $out .= '</select>';
                 break;
+        
         }
 
         if ($desc) {

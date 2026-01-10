@@ -16,7 +16,7 @@
         <meta name="description" content="<?=e($this->data->description) ?>">
     <?php endif; ?>
     <?php if (isset($this->data->favicon)): ?>
-        <link rel="shortcut icon" href="<?=e($this->data->favicon) ?>">
+        <link rel="icon" href="<?=e($this->data->favicon) ?>">
     <?php endif; ?>
     <?php if (!empty($this->data->links) && is_array($this->data->links)): ?>
         <?php foreach ($this->data->links as $link): ?>
