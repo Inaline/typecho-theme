@@ -22,6 +22,8 @@ $(document).ready(function() {
         // 移除所有选中状态
         $('.topbar-nav-item').removeClass('active');
         $('.topbar-dropdown-item').removeClass('active');
+        $('.sidebar-link').removeClass('active');
+        $('.sidebar-tree-header').removeClass('active');
 
         if (currentHash) {
             // 首先检查是否匹配二级菜单项
@@ -45,6 +47,14 @@ $(document).ready(function() {
             if ($navItem.length) {
                 // 如果是一级导航项，直接高亮
                 $navItem.addClass('active');
+            }
+
+            // 检查侧边栏链接
+            const $sidebarLink = $(`.sidebar-link[href="${currentHash}"]`);
+            if ($sidebarLink.length) {
+                $sidebarLink.addClass('active');
+                // 自动展开父级树形节点
+                $sidebarLink.parents('.sidebar-tree-item').addClass('expanded');
             }
         } else if (currentPath === '/' || currentPath === '/index.php') {
             // 如果是首页，选中首页标签
@@ -157,20 +167,80 @@ $(document).ready(function() {
         // 保持父菜单的 active 状态
         $this.closest('.topbar-nav-dropdown').addClass('active');
     });
+
+    // 侧边栏选项卡切换
+    $('.sidebar-tab').on('click', function() {
+        const $this = $(this);
+        const tabId = $this.data('tab');
+
+        // 切换选项卡样式
+        $('.sidebar-tab').removeClass('active');
+        $this.addClass('active');
+
+        // 切换内容显示
+        $('.sidebar-tab-pane').removeClass('active');
+        $(`#${tabId}`).addClass('active');
+    });
+
+    // 侧边栏链接点击处理（不包含树形节点头部）
+    $('.sidebar-link').on('click', function(e) {
+        // 如果是树形节点内部的子链接，正常跳转
+        const $this = $(this);
+        const href = $this.attr('href');
+
+        // 移除所有选中状态（包括树形节点头部）
+        $('.sidebar-link').removeClass('active');
+        $('.sidebar-tree-header').removeClass('active');
+
+        // 给当前链接添加选中状态
+        $this.addClass('active');
+
+        // 允许默认跳转行为
+        // updateActiveNav 会在 hashchange 时被调用
+    });
+
+    // 树形节点头部点击处理
+    $('.sidebar-tree-header').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const $this = $(this);
+        const $treeItem = $this.closest('.sidebar-tree-item');
+        const $children = $treeItem.find('.sidebar-tree-children').first();
+        const isExpanded = $treeItem.hasClass('expanded');
+
+        // 切换展开状态
+        $treeItem.toggleClass('expanded');
+
+        // 切换选中状态：展开时选中，收起时取消选中
+        if (!isExpanded) {
+            // 展开时，移除所有链接和树形头部的选中状态，只给当前树形头部添加选中状态
+            $('.sidebar-link').removeClass('active');
+            $('.sidebar-tree-header').removeClass('active');
+            $this.addClass('active');
+        } else {
+            // 收起时，移除当前树形头部的选中状态
+            $this.removeClass('active');
+        }
+
+        // 平滑展开/收起动画
+        $children.slideToggle(300);
+    });
 });
 
 // 动态注入 @font-face, 放到最后别阻塞功能
-const style = document.createElement('style');
-style.textContent = `
-  @font-face {
-    font-family: 'CustomFont';
-    src: url('${fontPath}') format('${fontFormat}');
-    font-display: swap;
-  }
+if (typeof fontPath !== 'undefined' && typeof fontFormat !== 'undefined') {
+    const style = document.createElement('style');
+    style.textContent = `
+      @font-face {
+        font-family: 'CustomFont';
+        src: url('${fontPath}') format('${fontFormat}');
+        font-display: swap;
+      }
 
-  body {
-    font-family: 'CustomFont', 'Microsoft YaHei', sans-serif;
-  }
-`;
-document.head.appendChild(style);
-console.log(style);
+      body {
+        font-family: 'CustomFont', 'Microsoft YaHei', sans-serif;
+      }
+    `;
+    document.head.appendChild(style);
+    console.log(style);
+}
