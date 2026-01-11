@@ -45,6 +45,23 @@
             <button class="topbar-btn" id="moreIcon">
                 <span class="mdi mdi-dots-vertical"></span>
             </button>
+
+            <!-- 更多选项菜单 -->
+            <div class="more-menu" id="moreMenu">
+                <div class="more-menu-item">
+                    <span class="mdi mdi-cog more-menu-icon"></span>
+                    <span>设置</span>
+                </div>
+                <div class="more-menu-item">
+                    <span class="mdi mdi-brightness-6 more-menu-icon"></span>
+                    <span>暗色模式</span>
+                </div>
+                <div class="more-menu-divider"></div>
+                <div class="more-menu-item">
+                    <span class="mdi mdi-login more-menu-icon"></span>
+                    <span>登录</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -67,11 +84,3 @@
 
 <!-- 侧边栏遮罩 -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<!-- 更多选项菜单 -->
-<div class="more-menu" id="moreMenu">
-    <div class="more-menu-item">设置</div>
-    <div class="more-menu-item">暗色模式</div>
-    <div class="more-menu-divider"></div>
-    <div class="more-menu-item">登录</div>
-</div>

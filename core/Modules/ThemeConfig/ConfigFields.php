@@ -67,13 +67,6 @@ return [
                 'description' => '网站的 Favicon, 显示在浏览器标签页左边'
             ],
             [
-                'name' => 'font',
-                'label' => '全局字体',
-                'type' => 'text',
-                'default' => '@assets/fonts/HYTangMeiRen55W.woff2',
-                'description' => '网站的全局字体, <br>格式: 如:Microsoft YaHei, 或 @相对链接 来使用自定义字体'
-            ],
-            [
                 'name' => 'custom_head',
                 'label' => '自定义头部',
                 'type' => 'textarea',
@@ -86,7 +79,21 @@ return [
                 'type' => 'textarea',
                 'default' => '',
                 'description' => '网站的自定义头部信息, 可以直接写HTML, 会输出到<body>部分尾部'
-            ]
+            ],
+            [
+                'name' => 'font',
+                'label' => '全局字体',
+                'type' => 'text',
+                'default' => '@assets/fonts/HYTangMeiRen55W.woff2',
+                'description' => '网站的全局字体, 留空默认使用 汉仪唐美人, 加载失败回退 微软雅黑'
+            ],
+            [
+                'name'    => 'font_type',
+                'label'   => '全局字体类型',
+                'type'    => 'radio',
+                'default' => 'woff2',
+                'options' => ['woff2' => 'woff2', 'ttf' => 'ttf', 'otf' => 'otf']
+            ],
         ]
     ],
     [

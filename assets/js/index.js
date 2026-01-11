@@ -62,6 +62,7 @@ $(document).ready(function() {
     $menuBtn.on('click', function() {
         $sidebar.addClass('show');
         $sidebarOverlay.addClass('show');
+        $('body').addClass('overflow-hidden');
     });
 
     // 关闭侧边栏和遮罩
@@ -71,6 +72,7 @@ $(document).ready(function() {
         $searchOverlay.removeClass('show');
         $searchBox.removeClass('show');
         $moreMenu.removeClass('show');
+        $('body').removeClass('overflow-hidden');
     }
 
     // 点击遮罩关闭所有
@@ -86,8 +88,10 @@ $(document).ready(function() {
         // 显示遮罩
         if ($searchBox.hasClass('show')) {
             $searchOverlay.addClass('show');
+            $('body').addClass('overflow-hidden');
         } else {
             $searchOverlay.removeClass('show');
+            $('body').removeClass('overflow-hidden');
         }
     });
 
@@ -100,8 +104,10 @@ $(document).ready(function() {
         // 显示遮罩
         if ($moreMenu.hasClass('show')) {
             $searchOverlay.addClass('show');
+            $('body').addClass('overflow-hidden');
         } else {
             $searchOverlay.removeClass('show');
+            $('body').removeClass('overflow-hidden');
         }
     });
 
@@ -152,3 +158,19 @@ $(document).ready(function() {
         $this.closest('.topbar-nav-dropdown').addClass('active');
     });
 });
+
+// 动态注入 @font-face, 放到最后别阻塞功能
+const style = document.createElement('style');
+style.textContent = `
+  @font-face {
+    font-family: 'CustomFont';
+    src: url('${fontPath}') format('${fontFormat}');
+    font-display: swap;
+  }
+
+  body {
+    font-family: 'CustomFont', 'Microsoft YaHei', sans-serif;
+  }
+`;
+document.head.appendChild(style);
+console.log(style);
