@@ -344,15 +344,47 @@ main {
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 20px;
+    position: relative;
+}
+
+/* 用户状态卡片 */
+.sidebar-user-status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+    animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.05);
+    }
 }
 
 .sidebar-avatar {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     margin: 0 auto 12px;
     border-radius: 50%;
     overflow: hidden;
-    border: 3px solid var(--primary-color);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-speed);
+}
+
+.sidebar-avatar:hover {
+    transform: scale(1.05);
 }
 
 .sidebar-avatar img {
@@ -403,6 +435,18 @@ main {
     border-radius: var(--border-radius);
     padding: 4px;
     margin-bottom: 16px;
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .sidebar-tab {
@@ -414,6 +458,23 @@ main {
     border-radius: 6px;
     cursor: pointer;
     transition: all var(--transition-speed);
+    position: relative;
+}
+
+.sidebar-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 30px;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: transform var(--transition-speed);
+}
+
+.sidebar-tab.active::after {
+    transform: translateX(-50%) scaleX(1);
 }
 
 .sidebar-tab.active {
@@ -427,10 +488,33 @@ main {
 .sidebar-tab-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .sidebar-tab-content .sidebar-tab-pane {
     display: none;
+    animation: tabContentSlide 0.3s ease-out;
+}
+
+@keyframes tabContentSlide {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .sidebar-tab-content .sidebar-tab-pane.active {

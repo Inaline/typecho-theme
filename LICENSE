@@ -1,0 +1,49 @@
+MIT License
+
+Copyright (c) 2025 Inaline Studio
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+1. The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+2. Any visible footer, credit section, or similar attribution area in the user
+   interface (including but not limited to website footer, admin panel footer,
+   about page, or any other prominent location) must retain a hyperlink pointing
+   to the official open source repository of this project:
+   https://gitee.com/inaline/typecho-theme
+
+   The hyperlink should be clearly visible and not hidden, obscured, or made
+   difficult to access by users. This requirement applies to both original and
+   modified versions of the Software when distributed or made publicly accessible.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+MULTIMEDIA RESOURCES DISCLAIMER
+
+This license applies only to the source code files and documentation of this
+project. All multimedia resources (including but not limited to images, fonts,
+audio, video, icons, and other media files) are NOT covered by this license.
+
+These multimedia resources may be obtained from various sources on the internet
+and may be subject to their own respective licenses and copyright restrictions.
+Users are responsible for ensuring compliance with the applicable licenses for
+any multimedia resources they use. The authors and copyright holders of this
+project assume no responsibility or liability for the use of multimedia resources
+included in or distributed with this project.
+
+For specific licensing information about multimedia resources, please refer to
+the individual asset documentation or contact the original creators.

@@ -82,12 +82,13 @@
     <div class="sidebar-content">
         <!-- 用户信息 -->
         <div class="sidebar-user">
+            <div class="sidebar-user-status">EMOing</div>
             <div class="sidebar-avatar">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="用户头像">
+                <img src="http://q1.qlogo.cn/g?b=qq&nk=2291374026&s=640" alt="用户头像">
             </div>
             <div class="sidebar-user-info">
                 <div class="sidebar-user-name">Inaline</div>
-                <div class="sidebar-user-bio">热爱技术，分享生活</div>
+                <div class="sidebar-user-bio">昔人已乘黄鹤去，此地空余黄鹤楼</div>
             </div>
             <div class="sidebar-stats">
                 <div class="sidebar-stat-item">
