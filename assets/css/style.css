@@ -359,18 +359,6 @@ main {
     font-size: 11px;
     font-weight: 600;
     box-shadow: var(--shadow-sm);
-    animation: statusPulse 2s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 0.85;
-        transform: scale(1.05);
-    }
 }
 
 .sidebar-avatar {
