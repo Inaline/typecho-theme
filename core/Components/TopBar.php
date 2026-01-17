@@ -204,21 +204,21 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
     <div class="sidebar-content">
         <!-- 用户信息 -->
         <div class="sidebar-user">
-            <div class="sidebar-user-status">EMOing</div>
+            <div class="sidebar-user-status"><?= e($this->data->sidebar_user_status, 'EMOing') ?></div>
             <div class="sidebar-avatar">
-                <img src="http://q1.qlogo.cn/g?b=qq&nk=2291374026&s=640" alt="用户头像">
+                <img src="<?= e($this->data->sidebar_user_avatar, 'http://q1.qlogo.cn/g?b=qq&nk=2291374026&s=640') ?>" alt="用户头像">
             </div>
             <div class="sidebar-user-info">
-                <div class="sidebar-user-name">Inaline</div>
-                <div class="sidebar-user-bio">昔人已乘黄鹤去，此地空余黄鹤楼</div>
+                <div class="sidebar-user-name"><?= e($this->data->sidebar_user_name, 'Inaline') ?></div>
+                <div class="sidebar-user-bio"><?= e($this->data->sidebar_user_bio, '昔人已乘黄鹤去，此地空余黄鹤楼') ?></div>
             </div>
             <div class="sidebar-stats">
                 <div class="sidebar-stat-item">
-                    <div class="sidebar-stat-value">128</div>
+                    <div class="sidebar-stat-value"><?= $this->data->article_count ?></div>
                     <div class="sidebar-stat-label">文章</div>
                 </div>
                 <div class="sidebar-stat-item">
-                    <div class="sidebar-stat-value">256</div>
+                    <div class="sidebar-stat-value"><?= $this->data->comment_count ?></div>
                     <div class="sidebar-stat-label">评论</div>
                 </div>
             </div>

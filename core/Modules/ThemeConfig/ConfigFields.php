@@ -114,6 +114,39 @@ return [
                 'description' => '显示在页面顶部标题栏的标签, JSON格式<br>事例:[{"name":"home","label":"首页","icon":"mdi-home","url":"/"},{"name":"more","label":"更多","icon":"mdi-more","children":[{"name":"test","label":"测试","url":"/test.html"}]}]'
             ]
         ]
+    ],
+    [
+        'title' => '侧边栏用户信息',
+        'fields' => [
+            [
+                'name'        => 'sidebar_user_status',
+                'label'       => '用户状态',
+                'type'        => 'text',
+                'default'     => 'EMOing',
+                'description' => '显示在头像上方的状态文字'
+            ],
+            [
+                'name'        => 'sidebar_user_avatar',
+                'label'       => '用户头像',
+                'type'        => 'text',
+                'default'     => 'http://q1.qlogo.cn/g?b=qq&nk=2291374026&s=640',
+                'description' => '用户头像的 URI，支持外部链接、本地路径、相对路径'
+            ],
+            [
+                'name'        => 'sidebar_user_name',
+                'label'       => '用户名',
+                'type'        => 'text',
+                'default'     => 'Inaline',
+                'description' => '显示在头像下方的用户名'
+            ],
+            [
+                'name'        => 'sidebar_user_bio',
+                'label'       => '用户简介',
+                'type'        => 'textarea',
+                'default'     => '昔人已乘黄鹤去，此地空余黄鹤楼',
+                'description' => '显示在用户名下方的简介文字'
+            ]
+        ]
     ]
 ];
 

@@ -18,12 +18,15 @@
     <?php if (isset($this->data->favicon)): ?>
         <link rel="icon" href="<?=e($this->data->favicon) ?>">
     <?php endif; ?>
-    <?php if (!empty($this->data->font)): ?>
     <script>
+    <?php if (!empty($this->data->font)): ?>
         const fontPath   = "<?= e($this->data->font) ?>";
         const fontFormat = "<?= e($this->data->font_type ?? 'woff2') ?>";
-    </script>
     <?php endif; ?>
+    <?php if (isset($this->data->performance) && is_array($this->data->performance)): ?>
+    const performance = <?= json_encode($this->data->performance, JSON_UNESCAPED_UNICODE) ?>;
+    <?php endif; ?>
+</script>
     <?php if (!empty($this->data->links) && is_array($this->data->links)): ?>
         <?php foreach ($this->data->links as $link): ?>
             <?php if (isset($link['href'])): ?>

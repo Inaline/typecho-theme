@@ -9,50 +9,9 @@
  *
  */
 
-$params_head = [
-    'title'       => GetSite::title(),
-    'keywords'    => GetSite::keywords(),
-    'description' => GetSite::description(),
-    'favicon'     => Get::resolveUri(Get::themeOption('favicon')),
-    'copyright'   => GetSite::authorName(),
-    'author'      => GetSite::authorName(),
-    'links'       => [
-        [
-            'rel'  => 'stylesheet',
-            'href' => 'https://cdn.bootcdn.net/ajax/libs/MaterialDesign-Webfont/7.4.47/css/materialdesignicons.min.css'
-        ],
-        [
-            'rel'  => 'stylesheet',
-            'type' => 'text/css',
-            'href' => Get::Assets('assets/css/style.css')
-        ]
-    ],
-    'scripts'     => [],
-    'custom'      => Get::themeOption('custom_head'),
-    'body_id'     => 'home',
-    'font'        => Get::resolveUri(Get::themeOption('font')),
-    'font_type'   => Get::themeOption('font_type')
-];
-
-$params_top_bar = [
-    'logo' => Get::themeOption(Get::resolveUri('logo')),
-    'pages' => Get::themeOption('top_bar_pages', '[{"name":"home","label":"首页","icon":"mdi-home","url":"/"}]'),
-    'categories' => GetCategory::buildNavJson(),
-    'current_page' => 'home'
-];
-$params_foot = [
-    'scripts' => [
-        [
-            'type' => 'text/javascript',
-            'src' => GetSite::adminPath() . 'js/jquery.js',
-        ],
-        [
-            'type' => 'text/javascript',
-            'src' => Get::Assets('assets/js/index.js')
-        ]
-    ],
-    'custom' => Get::themeOption('custom_foot')
-];
+$params_head = ComponentData::GetHeader('home');
+$params_top_bar = ComponentData::GetTopBar('home');
+$params_foot = ComponentData::GetFooter();
 
 Get::Component($this, 'Header', $params_head);
 Get::Component($this, 'TopBar', $params_top_bar);
