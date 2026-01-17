@@ -34,7 +34,12 @@ $params_head = [
     'font_type'   => Get::themeOption('font_type')
 ];
 
-$params_top_bar = [];
+$params_top_bar = [
+    'logo' => Get::themeOption(Get::resolveUri('logo')),
+    'pages' => Get::themeOption('top_bar_pages', '[{"name":"home","label":"首页","icon":"mdi-home","url":"/"}]'),
+    'categories' => GetCategory::buildNavJson(),
+    'current_page' => 'home'
+];
 $params_foot = [
     'scripts' => [
         [

@@ -14,60 +14,6 @@ $(document).ready(function() {
     const $searchBox = $('#searchBox');
     const $moreMenu = $('#moreMenu');
 
-    // 根据当前页面 URL 自动切换选中标签页
-    function updateActiveNav() {
-        const currentPath = window.location.pathname;
-        const currentHash = window.location.hash;
-
-        // 移除所有选中状态
-        $('.topbar-nav-item').removeClass('active');
-        $('.topbar-dropdown-item').removeClass('active');
-        $('.sidebar-link').removeClass('active');
-        $('.sidebar-tree-header').removeClass('active');
-
-        if (currentHash) {
-            // 首先检查是否匹配二级菜单项
-            const $dropdownItem = $(`.topbar-dropdown-item[href="${currentHash}"]`);
-            if ($dropdownItem.length) {
-                // 高亮二级菜单项
-                $dropdownItem.addClass('active');
-                // 高亮对应的一级父菜单
-                const parentHash = $dropdownItem.data('parent');
-                if (parentHash) {
-                    $(`.topbar-nav-dropdown`).filter(function() {
-                        return $(this).find('.topbar-nav-link').text() === '分类';
-                    }).addClass('active');
-                }
-                return;
-            }
-
-            // 如果有 hash，匹配 hash
-            const $navItem = $(`.topbar-nav-item[href="${currentHash}"]`);
-
-            if ($navItem.length) {
-                // 如果是一级导航项，直接高亮
-                $navItem.addClass('active');
-            }
-
-            // 检查侧边栏链接
-            const $sidebarLink = $(`.sidebar-link[href="${currentHash}"]`);
-            if ($sidebarLink.length) {
-                $sidebarLink.addClass('active');
-                // 自动展开父级树形节点
-                $sidebarLink.parents('.sidebar-tree-item').addClass('expanded');
-            }
-        } else if (currentPath === '/' || currentPath === '/index.php') {
-            // 如果是首页，选中首页标签
-            $('.topbar-nav-item[href="#home"]').addClass('active');
-        }
-    }
-
-    // 初始化时更新选中状态
-    updateActiveNav();
-
-    // 监听 hash 变化
-    $(window).on('hashchange', updateActiveNav);
-
     // 打开左侧边栏
     $menuBtn.on('click', function() {
         $sidebar.addClass('show');
@@ -154,20 +100,6 @@ $(document).ready(function() {
         e.stopPropagation();
     });
 
-    // 二级菜单项点击处理
-    $('.topbar-dropdown-item').on('click', function(e) {
-        // 允许默认跳转行为
-        const $this = $(this);
-        const href = $this.attr('href');
-
-        // 更新 active 状态
-        $('.topbar-dropdown-item').removeClass('active');
-        $this.addClass('active');
-
-        // 保持父菜单的 active 状态
-        $this.closest('.topbar-nav-dropdown').addClass('active');
-    });
-
     // 侧边栏选项卡切换
     $('.sidebar-tab').on('click', function() {
         const $this = $(this);
@@ -182,23 +114,6 @@ $(document).ready(function() {
         $(`#${tabId}`).addClass('active');
     });
 
-    // 侧边栏链接点击处理（不包含树形节点头部）
-    $('.sidebar-link').on('click', function(e) {
-        // 如果是树形节点内部的子链接，正常跳转
-        const $this = $(this);
-        const href = $this.attr('href');
-
-        // 移除所有选中状态（包括树形节点头部）
-        $('.sidebar-link').removeClass('active');
-        $('.sidebar-tree-header').removeClass('active');
-
-        // 给当前链接添加选中状态
-        $this.addClass('active');
-
-        // 允许默认跳转行为
-        // updateActiveNav 会在 hashchange 时被调用
-    });
-
     // 树形节点头部点击处理
     $('.sidebar-tree-header').on('click', function(e) {
         e.preventDefault();
@@ -206,21 +121,9 @@ $(document).ready(function() {
         const $this = $(this);
         const $treeItem = $this.closest('.sidebar-tree-item');
         const $children = $treeItem.find('.sidebar-tree-children').first();
-        const isExpanded = $treeItem.hasClass('expanded');
 
         // 切换展开状态
         $treeItem.toggleClass('expanded');
-
-        // 切换选中状态：展开时选中，收起时取消选中
-        if (!isExpanded) {
-            // 展开时，移除所有链接和树形头部的选中状态，只给当前树形头部添加选中状态
-            $('.sidebar-link').removeClass('active');
-            $('.sidebar-tree-header').removeClass('active');
-            $this.addClass('active');
-        } else {
-            // 收起时，移除当前树形头部的选中状态
-            $this.removeClass('active');
-        }
 
         // 平滑展开/收起动画
         $children.slideToggle(300);

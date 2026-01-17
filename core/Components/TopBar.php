@@ -3,6 +3,135 @@
  * Inaline 主题 TopBar 的 component
  * @author Inaline Studio
  */
+// 解析页面配置 JSON
+$pages = isset($this->data->pages) ? json_decode($this->data->pages, true) : [];
+if (!is_array($pages)) {
+    $pages = [];
+}
+
+// 解析分类配置 JSON
+$categories = isset($this->data->categories) ? json_decode($this->data->categories, true) : [];
+if (!is_array($categories)) {
+    $categories = [];
+}
+
+// 获取当前页面
+$currentPage = isset($this->data->current_page) ? $this->data->current_page : '';
+
+// 递归渲染导航项的辅助函数
+function renderNavItem($item, $depth = 0, $currentPage = '') {
+    $hasChildren = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
+    $icon = isset($item['icon']) ? $item['icon'] : '';
+    $label = isset($item['label']) ? $item['label'] : '';
+    $url = isset($item['url']) ? $item['url'] : '#';
+    $itemName = isset($item['name']) ? $item['name'] : '';
+    
+    // 检查是否为当前页面或其子页面
+    $isActive = false;
+    if ($itemName === $currentPage) {
+        $isActive = true;
+    } elseif ($hasChildren) {
+        // 检查子页面是否包含当前页面
+        foreach ($item['children'] as $child) {
+            if (isset($child['name']) && $child['name'] === $currentPage) {
+                $isActive = true;
+                break;
+            }
+        }
+    }
+    
+    if ($hasChildren) {
+        // 下拉菜单
+        echo '<div class="topbar-nav-item topbar-nav-dropdown';
+        if ($isActive) echo ' active';
+        echo '">';
+        echo '<span class="topbar-nav-link">';
+        if ($icon && $depth === 0) {
+            echo '<span class="mdi ' . htmlspecialchars($icon) . ' topbar-nav-icon"></span>';
+        }
+        echo htmlspecialchars($label) . '</span>';
+        echo '<span class="mdi mdi-chevron-down topbar-nav-arrow"></span>';
+        echo '<div class="topbar-dropdown-menu">';
+        foreach ($item['children'] as $child) {
+            $childLabel = isset($child['label']) ? $child['label'] : '';
+            $childUrl = isset($child['url']) ? $child['url'] : '#';
+            $childName = isset($child['name']) ? $child['name'] : '';
+            $childActive = ($childName === $currentPage) ? ' active' : '';
+            echo '<a href="' . htmlspecialchars($childUrl) . '" class="topbar-dropdown-item' . $childActive . '"';
+            echo '>' . htmlspecialchars($childLabel) . '</a>';
+        }
+        echo '</div></div>';
+    } else {
+        // 普通链接
+        echo '<a href="' . htmlspecialchars($url) . '" class="topbar-nav-item';
+        if ($isActive) echo ' active';
+        if ($icon && $depth === 0) {
+            echo ' data-icon="' . htmlspecialchars($icon) . '"';
+        }
+        echo '>';
+        if ($icon && $depth === 0) {
+            echo '<span class="mdi ' . htmlspecialchars($icon) . ' topbar-nav-icon"></span>';
+        }
+        echo htmlspecialchars($label) . '</a>';
+    }
+}
+
+// 递归渲染侧边栏链接的辅助函数
+function renderSidebarItem($item, $depth = 0, $currentPage = '') {
+    $hasChildren = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
+    $icon = isset($item['icon']) ? $item['icon'] : 'mdi-file';
+    $label = isset($item['label']) ? $item['label'] : '';
+    $url = isset($item['url']) ? $item['url'] : '#';
+    $itemName = isset($item['name']) ? $item['name'] : '';
+    
+    // 检查是否为当前页面或其子页面
+    $isActive = false;
+    if ($itemName === $currentPage) {
+        $isActive = true;
+    } elseif ($hasChildren) {
+        // 检查子页面是否包含当前页面
+        foreach ($item['children'] as $child) {
+            if (isset($child['name']) && $child['name'] === $currentPage) {
+                $isActive = true;
+                break;
+            }
+        }
+    }
+    
+    if ($hasChildren) {
+        // 树形结构
+        echo '<div class="sidebar-tree';
+        if ($isActive) echo ' active';
+        echo '">';
+        echo '<div class="sidebar-tree-item">';
+        echo '<div class="sidebar-tree-header';
+        if ($isActive) echo ' active';
+        echo '">';
+        if ($depth === 0) {
+            echo '<span class="sidebar-tree-item-icon mdi ' . htmlspecialchars($icon) . '"></span>';
+        }
+        echo '<span class="sidebar-tree-label">' . htmlspecialchars($label) . '</span>';
+        echo '<span class="sidebar-tree-icon mdi mdi-chevron-right"></span>';
+        echo '</div>';
+        echo '<div class="sidebar-tree-children';
+        if ($isActive) echo ' active';
+        echo '">';
+        foreach ($item['children'] as $child) {
+            renderSidebarItem($child, $depth + 1, $currentPage);
+        }
+        echo '</div></div></div>';
+    } else {
+        // 普通链接
+        echo '<a href="' . htmlspecialchars($url) . '" class="sidebar-link';
+        if ($isActive) echo ' active';
+        echo '">';
+        if ($depth === 0) {
+            echo '<span class="mdi ' . htmlspecialchars($icon) . '"></span>';
+        }
+        echo htmlspecialchars($label);
+        echo '</a>';
+    }
+}
 ?>
 
 <!-- TopBar -->
@@ -20,18 +149,11 @@
 
         <!-- 桌面端导航标签 -->
         <nav class="topbar-nav">
-            <a href="#home" class="topbar-nav-item active">首页</a>
-            <div class="topbar-nav-item topbar-nav-dropdown">
-                <span class="topbar-nav-link">分类</span>
-                <span class="mdi mdi-chevron-down topbar-nav-arrow"></span>
-                <div class="topbar-dropdown-menu">
-                    <a href="#category-tech" class="topbar-dropdown-item" data-parent="categories">技术</a>
-                    <a href="#category-life" class="topbar-dropdown-item" data-parent="categories">生活</a>
-                    <a href="#category-travel" class="topbar-dropdown-item" data-parent="categories">旅行</a>
-                </div>
-            </div>
-            <a href="#about" class="topbar-nav-item">关于</a>
-            <a href="#contact" class="topbar-nav-item">联系</a>
+            <?php
+            foreach ($pages as $page) {
+                renderNavItem($page, 0, $currentPage);
+            }
+            ?>
         </nav>
 
         <!-- 右侧按钮组 -->
@@ -112,55 +234,20 @@
         <div class="sidebar-tab-content">
             <!-- 页面列表 -->
             <div class="sidebar-tab-pane active" id="pages">
-                <a href="#about" class="sidebar-link"><span class="mdi mdi-information"></span>关于</a>
-                <a href="#contact" class="sidebar-link"><span class="mdi mdi-email"></span>联系</a>
-                <div class="sidebar-tree">
-                    <div class="sidebar-tree-item">
-                        <div class="sidebar-tree-header">
-                            <span class="sidebar-tree-item-icon mdi mdi-folder"></span>
-                            <span class="sidebar-tree-label">项目文档</span>
-                            <span class="sidebar-tree-icon mdi mdi-chevron-right"></span>
-                        </div>
-                        <div class="sidebar-tree-children">
-                            <a href="#docs-intro" class="sidebar-link sidebar-tree-link">项目介绍</a>
-                            <a href="#docs-api" class="sidebar-link sidebar-tree-link">API 文档</a>
-                            <div class="sidebar-tree">
-                                <div class="sidebar-tree-item">
-                                    <div class="sidebar-tree-header">
-                                        <span class="sidebar-tree-item-icon mdi mdi-folder"></span>
-                                        <span class="sidebar-tree-label">开发指南</span>
-                                        <span class="sidebar-tree-icon mdi mdi-chevron-right"></span>
-                                    </div>
-                                    <div class="sidebar-tree-children">
-                                        <a href="#docs-dev-install" class="sidebar-link sidebar-tree-link">安装部署</a>
-                                        <a href="#docs-dev-config" class="sidebar-link sidebar-tree-link">配置说明</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <a href="#links" class="sidebar-link"><span class="mdi mdi-link-variant"></span>友链</a>
+                <?php
+                foreach ($pages as $page) {
+                    renderSidebarItem($page, 0, $currentPage);
+                }
+                ?>
             </div>
 
             <!-- 分类列表 -->
             <div class="sidebar-tab-pane" id="categories">
-                <div class="sidebar-tree">
-                    <div class="sidebar-tree-item">
-                        <div class="sidebar-tree-header">
-                            <span class="sidebar-tree-item-icon mdi mdi-folder"></span>
-                            <span class="sidebar-tree-label">技术</span>
-                            <span class="sidebar-tree-icon mdi mdi-chevron-right"></span>
-                        </div>
-                        <div class="sidebar-tree-children">
-                            <a href="#category-tech-frontend" class="sidebar-link sidebar-tree-link">前端开发</a>
-                            <a href="#category-tech-backend" class="sidebar-link sidebar-tree-link">后端开发</a>
-                            <a href="#category-tech-devops" class="sidebar-link sidebar-tree-link">运维部署</a>
-                        </div>
-                    </div>
-                </div>
-                <a href="#category-life" class="sidebar-link"><span class="mdi mdi-heart"></span>生活</a>
-                <a href="#category-travel" class="sidebar-link"><span class="mdi mdi-airplane"></span>旅行</a>
+                <?php
+                foreach ($categories as $category) {
+                    renderSidebarItem($category, 0, $currentPage);
+                }
+                ?>
             </div>
         </div>
     </div>
