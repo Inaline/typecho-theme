@@ -22,6 +22,18 @@
     --transition-speed: 0.3s;
 }
 
+/* 深色模式变量 */
+body.dark-mode {
+    --bg-color: #1a1a1a;
+    --text-color: #e0e0e0;
+    --text-color-light: #b0b0b0;
+    --border-color: #333333;
+    --overlay-bg: rgba(0, 0, 0, 0.7);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.5);
+}
+
 /* 全局样式重置 */
 * {
     margin: 0;

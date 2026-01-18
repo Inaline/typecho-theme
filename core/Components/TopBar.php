@@ -174,7 +174,7 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
                     <span class="mdi mdi-cog more-menu-icon"></span>
                     <span>设置</span>
                 </div>
-                <div class="more-menu-item">
+                <div class="more-menu-item dark-mode-toggle">
                     <span class="mdi mdi-brightness-6 more-menu-icon"></span>
                     <span>暗色模式</span>
                 </div>

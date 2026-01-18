@@ -128,6 +128,53 @@ $(document).ready(function() {
         // 平滑展开/收起动画
         $children.slideToggle(300);
     });
+
+    // 深色模式初始化
+    const savedTheme = localStorage.getItem('theme');
+    console.log('[深色模式] 初始化，保存的主题:', savedTheme);
+
+    if (savedTheme === 'dark') {
+        $('body').addClass('dark-mode');
+        console.log('[深色模式] 已应用深色主题');
+    }
+
+    // 切换深色模式
+    window.toggleDarkMode = function() {
+        $('body').toggleClass('dark-mode');
+
+        const isDarkMode = $('body').hasClass('dark-mode');
+        console.log('[深色模式] 切换到:', isDarkMode ? '深色' : '浅色');
+
+        // 保存到 localStorage
+        if (isDarkMode) {
+            localStorage.setItem('theme', 'dark');
+        } else {
+            localStorage.setItem('theme', 'light');
+        }
+        console.log('[深色模式] 已保存到 localStorage');
+    };
+
+    // 绑定暗色模式菜单项点击事件
+    $(document).on('click', '.dark-mode-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('[深色模式] 点击了暗色模式切换按钮');
+        window.toggleDarkMode();
+        closeAll();
+    });
+
+    // 调试：检查元素是否存在
+    console.log('[深色模式] 检查元素:', $('.dark-mode-toggle').length, '个');
+    console.log('[深色模式] 元素 HTML:', $('.dark-mode-toggle').html());
+
+    // 尝试直接绑定（如果元素已存在）
+    $('.dark-mode-toggle').on('click', function(e) {
+        console.log('[深色模式] 直接绑定触发');
+        e.preventDefault();
+        e.stopPropagation();
+        window.toggleDarkMode();
+        closeAll();
+    });
 });
 
 // 动态注入 @font-face, 放到最后别阻塞功能
@@ -145,5 +192,4 @@ if (typeof fontPath !== 'undefined' && typeof fontFormat !== 'undefined') {
       }
     `;
     document.head.appendChild(style);
-    console.log(style);
 }
