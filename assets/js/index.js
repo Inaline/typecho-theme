@@ -131,11 +131,18 @@ $(document).ready(function() {
 
     // 深色模式初始化
     const savedTheme = localStorage.getItem('theme');
-    console.log('[深色模式] 初始化，保存的主题:', savedTheme);
 
     if (savedTheme === 'dark') {
         $('body').addClass('dark-mode');
-        console.log('[深色模式] 已应用深色主题');
+
+        // 切换 Logo 到深色模式
+        const $logo = $('.topbar-logo img');
+        if ($logo.length > 0) {
+            const darkLogo = $logo.data('dark-logo');
+            if (darkLogo) {
+                $logo.attr('src', darkLogo);
+            }
+        }
     }
 
     // 切换深色模式
@@ -143,7 +150,17 @@ $(document).ready(function() {
         $('body').toggleClass('dark-mode');
 
         const isDarkMode = $('body').hasClass('dark-mode');
-        console.log('[深色模式] 切换到:', isDarkMode ? '深色' : '浅色');
+
+        // 切换 Logo
+        const $logo = $('.topbar-logo img');
+        if ($logo.length > 0) {
+            const newSrc = isDarkMode
+                ? $logo.data('dark-logo')
+                : $logo.data('light-logo');
+            if (newSrc) {
+                $logo.attr('src', newSrc);
+            }
+        }
 
         // 保存到 localStorage
         if (isDarkMode) {
@@ -151,29 +168,95 @@ $(document).ready(function() {
         } else {
             localStorage.setItem('theme', 'light');
         }
-        console.log('[深色模式] 已保存到 localStorage');
     };
 
     // 绑定暗色模式菜单项点击事件
     $(document).on('click', '.dark-mode-toggle', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('[深色模式] 点击了暗色模式切换按钮');
         window.toggleDarkMode();
         closeAll();
     });
 
-    // 调试：检查元素是否存在
-    console.log('[深色模式] 检查元素:', $('.dark-mode-toggle').length, '个');
-    console.log('[深色模式] 元素 HTML:', $('.dark-mode-toggle').html());
-
     // 尝试直接绑定（如果元素已存在）
     $('.dark-mode-toggle').on('click', function(e) {
-        console.log('[深色模式] 直接绑定触发');
         e.preventDefault();
         e.stopPropagation();
         window.toggleDarkMode();
         closeAll();
+    });
+
+    // 搜索框相关变量
+    const $searchInput = $('#searchInput');
+    const $clearSearch = $('#clearSearch');
+    const $searchSubmit = $('#searchSubmit');
+    const $clearAllHistory = $('#clearAllHistory');
+
+    // 搜索框输入事件
+    $searchInput.on('input', function() {
+        const value = $(this).val();
+        $clearSearch.toggle(value.length > 0);
+    });
+
+    // 清空搜索框
+    $clearSearch.on('click', function() {
+        $searchInput.val('').focus();
+        $clearSearch.hide();
+    });
+
+    // 搜索按钮点击事件
+    $searchSubmit.on('click', function() {
+        const keyword = $searchInput.val().trim();
+        if (keyword) {
+            SearchHistory.saveHistory(keyword);
+            SearchHistory.renderHistory();
+            // TODO: 执行实际搜索
+        }
+    });
+
+    // 搜索框回车事件
+    $searchInput.on('keypress', function(e) {
+        if (e.which === 13) {
+            const keyword = $(this).val().trim();
+            if (keyword) {
+                SearchHistory.saveHistory(keyword);
+                SearchHistory.renderHistory();
+                // TODO: 执行实际搜索
+            }
+        }
+    });
+
+    // 点击搜索历史项
+    $(document).on('click', '.search-history-item', function(e) {
+        const keyword = $(this).find('.search-history-text').text();
+        $searchInput.val(keyword);
+        SearchHistory.saveHistory(keyword);
+        SearchHistory.renderHistory();
+        // TODO: 执行实际搜索
+    });
+
+    // 清空所有搜索历史
+    $clearAllHistory.on('click', function() {
+        if (confirm('确定要清空所有搜索历史吗？')) {
+            SearchHistory.clearAllHistory();
+        }
+    });
+
+    // 点击热搜项
+    $(document).on('click', '.search-hot-item', function() {
+        const keyword = $(this).find('.search-hot-text').text();
+        $searchInput.val(keyword);
+        SearchHistory.saveHistory(keyword);
+        SearchHistory.renderHistory();
+        // TODO: 执行实际搜索
+    });
+
+    // 打开搜索框时渲染搜索历史
+    $searchBtn.on('click', function() {
+        setTimeout(() => {
+            SearchHistory.renderHistory();
+            $searchInput.focus();
+        }, 100);
     });
 });
 
@@ -193,3 +276,87 @@ if (typeof fontPath !== 'undefined' && typeof fontFormat !== 'undefined') {
     `;
     document.head.appendChild(style);
 }
+
+/* ========================
+ * 搜索功能
+ * ======================== */
+
+// 搜索历史管理
+const SearchHistory = {
+    STORAGE_KEY: 'search_history',
+    MAX_HISTORY: 10,
+
+    // 获取搜索历史
+    getHistory() {
+        try {
+            const history = localStorage.getItem(this.STORAGE_KEY);
+            return history ? JSON.parse(history) : [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    // 保存搜索历史
+    saveHistory(keyword) {
+        if (!keyword || keyword.trim() === '') return;
+
+        let history = this.getHistory();
+
+        // 移除已存在的相同关键词（如果有的话）
+        history = history.filter(item => item !== keyword);
+
+        // 将新关键词添加到开头
+        history.unshift(keyword);
+
+        // 限制历史记录数量
+        if (history.length > this.MAX_HISTORY) {
+            history = history.slice(0, this.MAX_HISTORY);
+        }
+
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+        } catch (e) {
+            // 静默失败
+        }
+    },
+
+    // 清空所有历史记录
+    clearAllHistory() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+            this.renderHistory();
+        } catch (e) {
+            // 静默失败
+        }
+    },
+
+    // 渲染搜索历史
+    renderHistory() {
+        const history = this.getHistory();
+        const $historyList = $('#historyList');
+        const $searchHistory = $('#searchHistory');
+
+        if (history.length === 0) {
+            $searchHistory.hide();
+            return;
+        }
+
+        $searchHistory.show();
+        $historyList.empty();
+
+        history.forEach(keyword => {
+            const $item = $('<div class="search-history-item"></div>');
+            $item.html(`
+                <span class="search-history-text">${this.escapeHtml(keyword)}</span>
+            `);
+            $historyList.append($item);
+        });
+    },
+
+    // HTML 转义
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+};

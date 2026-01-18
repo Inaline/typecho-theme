@@ -312,16 +312,238 @@ main {
 
 .topbar-search-content {
     position: relative;
-    padding: 16px;
-    min-height: 100px;
+    padding: 12px;
+    min-height: auto;
 }
 
 /* 搜索卡片 */
 .search-card {
-    width: 100%;
-    height: 60px;
-    background-color: #f5f5f5;
-    border-radius: 8px;
+    width: 320px;
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    margin-left: auto;
+}
+
+/* 搜索输入框容器 */
+.search-input-wrapper {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.search-icon {
+    font-size: 18px;
+    color: var(--text-color-light);
+    margin-right: 8px;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: var(--text-color);
+    background: transparent;
+}
+
+.search-input::placeholder {
+    color: var(--text-color-light);
+}
+
+.search-clear {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: var(--text-color-light);
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.search-clear:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+.search-submit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    margin-left: 8px;
+}
+
+.search-submit:hover {
+    background: var(--primary-color-dark);
+}
+
+/* 搜索部分容器 */
+.search-history,
+.search-hot {
+    padding: 10px 12px;
+}
+
+.search-history {
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* 搜索部分标题 */
+.search-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.search-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-color-light);
+}
+
+.search-clear-all {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 6px;
+    border: none;
+    background: none;
+    color: var(--text-color-light);
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.search-clear-all:hover {
+    background-color: var(--border-color);
+    color: var(--text-color);
+}
+
+/* 搜索历史列表 */
+.search-history-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.search-history-item {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    background-color: var(--border-color);
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-history-item:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.search-history-text {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 热搜列表 */
+.search-hot-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.search-hot-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.search-hot-item:hover {
+    background-color: var(--border-color);
+}
+
+.search-hot-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-color-light);
+    background-color: var(--border-color);
+    border-radius: 3px;
+}
+
+.hot-rank-1 {
+    background-color: #ff4757;
+    color: white;
+}
+
+.hot-rank-2 {
+    background-color: #ffa502;
+    color: white;
+}
+
+.hot-rank-3 {
+    background-color: #2ed573;
+    color: white;
+}
+
+.search-hot-text {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-color);
+}
+
+/* 深色模式适配 */
+body.dark-mode .search-card {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .search-input-wrapper {
+    border-bottom-color: #333333;
+}
+
+body.dark-mode .search-history-item {
+    background-color: #333333;
+}
+
+body.dark-mode .search-history-item:hover {
+    background-color: var(--primary-color);
+}
+
+body.dark-mode .search-hot-item:hover {
+    background-color: #333333;
+}
+
+body.dark-mode .search-clear-all:hover,
+body.dark-mode .search-clear:hover {
+    background-color: #333333;
 }
 
 /* 左侧边栏 */
@@ -717,14 +939,15 @@ main {
     .topbar-search {
         position: absolute;
         top: calc(100% + 8px);
-        right: 0;
-        left: 0;
+        right: 16px;
+        left: auto;
         background-color: transparent;
         box-shadow: none;
         padding: 0;
         opacity: 0;
         visibility: hidden;
         transition: all var(--transition-speed);
+        width: auto;
     }
 
     .topbar-search.show {
@@ -734,23 +957,47 @@ main {
 
     .topbar-search-content {
         position: relative;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 16px;
+        padding: 0;
         min-height: auto;
-    }
-
-    .search-card {
-        width: 300px;
-        height: 44px;
-        background-color: var(--bg-color);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-md);
-        margin-left: auto;
     }
 }
 
 /* 响应式设计 - 移动端 */
 @media (max-width: 767px) {
+    .topbar-search {
+        position: fixed;
+        top: var(--topbar-height);
+        left: 0;
+        right: 0;
+        background-color: var(--bg-color);
+    }
 
+    .topbar-search-content {
+        padding: 12px;
+    }
+
+    .search-card {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        background-color: transparent;
+        border-radius: 0;
+        box-shadow: none;
+        overflow: visible;
+    }
+
+    .search-input-wrapper {
+        background-color: transparent;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .search-history,
+    .search-hot {
+        background-color: transparent;
+        border-bottom: none;
+    }
+
+    .search-history-text {
+        max-width: 100px;
+    }
 }

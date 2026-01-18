@@ -78,7 +78,8 @@ class ComponentData
     public static function GetTopBar($current_page = 'home')
     {
         return [
-            'logo' => Get::themeOption(Get::resolveUri('logo')),
+            'logo' => Get::resolveUri(Get::themeOption('logo')),
+            'logo_dark' => Get::resolveUri(Get::themeOption('logo_dark')),
             'pages' => Get::themeOption('top_bar_pages', '[{"name":"home","label":"首页","icon":"mdi-home","url":"/"}]'),
             'categories' => GetCategory::buildNavJson(),
             'current_page' => $current_page,

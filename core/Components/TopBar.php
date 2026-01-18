@@ -144,7 +144,10 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
 
         <!-- Logo -->
         <div class="topbar-logo">
-            <img src="<?=e($this->data->logo, Get::Assets('assets/images/logo/Inaline.png')) ?>" alt="Logo">
+            <img src="<?=e($this->data->logo, Get::Assets('assets/images/logo/Inaline.png')) ?>" 
+                 alt="Logo"
+                 data-light-logo="<?=e($this->data->logo, Get::Assets('assets/images/logo/Inaline.png')) ?>"
+                 data-dark-logo="<?=e($this->data->logo_dark, Get::Assets('assets/images/logo/Inaline-dark.png')) ?>">
         </div>
 
         <!-- 桌面端导航标签 -->
@@ -191,7 +194,60 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
     <div class="topbar-search" id="searchBox">
         <div class="topbar-search-content">
             <!-- 搜索卡片 -->
-            <div class="search-card"></div>
+            <div class="search-card">
+                <!-- 搜索输入框 -->
+                <div class="search-input-wrapper">
+                    <span class="mdi mdi-magnify search-icon"></span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="搜索文章、标签..." autocomplete="off">
+                    <button id="clearSearch" class="search-clear" style="display: none;">
+                        <span class="mdi mdi-close"></span>
+                    </button>
+                    <button id="searchSubmit" class="search-submit">搜索</button>
+                </div>
+
+                <!-- 搜索历史 -->
+                <div class="search-history" id="searchHistory">
+                    <div class="search-section-header">
+                        <span class="search-section-title">搜索历史</span>
+                        <button class="search-clear-all" id="clearAllHistory">
+                            <span class="mdi mdi-trash-can-outline"></span>
+                            清空
+                        </button>
+                    </div>
+                    <div class="search-history-list" id="historyList">
+                        <!-- 搜索历史项将通过 JS 动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 热搜 -->
+                <div class="search-hot">
+                    <div class="search-section-header">
+                        <span class="search-section-title">热搜</span>
+                    </div>
+                    <div class="search-hot-list">
+                        <div class="search-hot-item">
+                            <span class="search-hot-rank hot-rank-1">1</span>
+                            <span class="search-hot-text">Typecho主题开发</span>
+                        </div>
+                        <div class="search-hot-item">
+                            <span class="search-hot-rank hot-rank-2">2</span>
+                            <span class="search-hot-text">PHP编程技巧</span>
+                        </div>
+                        <div class="search-hot-item">
+                            <span class="search-hot-rank hot-rank-3">3</span>
+                            <span class="search-hot-text">前端框架</span>
+                        </div>
+                        <div class="search-hot-item">
+                            <span class="search-hot-rank">4</span>
+                            <span class="search-hot-text">响应式设计</span>
+                        </div>
+                        <div class="search-hot-item">
+                            <span class="search-hot-rank">5</span>
+                            <span class="search-hot-text">性能优化</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

@@ -60,6 +60,13 @@ return [
                 'description' => '网站的 logo, 显示在网站的各个地方'
             ],
             [
+                'name' => 'logo_dark',
+                'label' => '深色模式 Logo',
+                'type' => 'text',
+                'default' => '@assets/images/logo/Inaline-dark.png',
+                'description' => '深色模式下显示的 logo, 留空则使用普通 Logo'
+            ],
+            [
                 'name' => 'favicon',
                 'label' => 'Favicon',
                 'type' => 'text',

@@ -219,7 +219,30 @@ HTML;
     /** 判断是否后台 */
     private static function isAdmin(): bool
     {
-        return defined('__TYPECHO_ADMIN__') ||
-               strpos($_SERVER['REQUEST_URI'] ?? '', '/admin/') !== false;
+        // 方法1: 检查 Typecho 后台常量
+        if (defined('__TYPECHO_ADMIN__')) {
+            return true;
+        }
+
+        // 方法2: 检查脚本路径是否指向 admin 目录
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        if (strpos($scriptName, '/admin/') !== false) {
+            return true;
+        }
+
+        // 方法3: 检查请求路径是否以 /admin/ 开头（更严格的匹配）
+        $requestUri = $_SERVER['REQUEST_URI'] ?? '';
+        $parsedUrl = parse_url($requestUri);
+        $path = $parsedUrl['path'] ?? '';
+        if (preg_match('#^/admin/#', $path)) {
+            return true;
+        }
+
+        // 方法4: 检查 Typecho 后台特有的参数
+        if (isset($_GET['panel']) || isset($_GET['activate']) || isset($_GET['config'])) {
+            return true;
+        }
+
+        return false;
     }
 }
