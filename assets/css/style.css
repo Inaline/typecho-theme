@@ -17,6 +17,7 @@
     --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
     --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
     --topbar-height: 52px;
+    --categories-height: 36px;
     --sidebar-width: 75%;
     --border-radius: 8px;
     --transition-speed: 0.3s;
@@ -66,7 +67,7 @@ main {
     max-width: 1200px;
     margin: 0 auto;
     padding: 16px;
-    padding-top: calc(var(--topbar-height) + 16px);
+    padding-top: calc(var(--topbar-height) + var(--categories-height) + 16px);
 }
 
 /* TopBar 样式 */
@@ -75,7 +76,7 @@ main {
     top: 0;
     left: 0;
     right: 0;
-    height: var(--topbar-height);
+    height: calc(var(--topbar-height) + var(--categories-height));
     background-color: var(--bg-color);
     box-shadow: var(--shadow-sm);
     z-index: 1000;
@@ -84,10 +85,21 @@ main {
 .topbar-container {
     display: flex;
     align-items: center;
-    height: 100%;
+    height: var(--topbar-height);
     padding: 0 16px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* TopBar 分割线 */
+.topbar-divider {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.05);
+    width: 100%;
+}
+
+body.dark-mode .topbar-divider {
+    background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* TopBar 按钮 */
@@ -161,6 +173,155 @@ main {
     height: 2px;
     background-color: var(--primary-color);
     border-radius: 2px;
+}
+
+/* 桌面端分类容器 */
+.categories-container {
+    display: none;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 4px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 16px;
+    height: var(--categories-height);
+}
+
+.category-item {
+    padding: 6px 10px;
+    text-decoration: none;
+    color: var(--text-color-light);
+    font-size: 12px;
+    font-weight: 400;
+    border-radius: 4px;
+    transition: color var(--transition-speed);
+    position: relative;
+}
+
+.category-item:hover {
+    color: var(--primary-color);
+}
+
+.category-item.active {
+    color: var(--primary-color);
+}
+
+.category-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    cursor: pointer;
+    position: relative;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: color var(--transition-speed);
+}
+
+.category-icon {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+.category-link {
+    color: var(--text-color-light);
+    font-size: 12px;
+    font-weight: 400;
+    text-decoration: none;
+    transition: color var(--transition-speed);
+    display: flex;
+    align-items: center;
+}
+
+.category-dropdown:hover .category-link {
+    color: var(--primary-color);
+}
+
+.category-dropdown.active .category-link {
+    color: var(--primary-color);
+}
+
+.category-arrow {
+    font-size: 12px;
+    transition: transform var(--transition-speed);
+}
+
+.category-dropdown:hover .category-arrow {
+    transform: rotate(180deg);
+}
+
+/* 分类下拉菜单 */
+.category-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%) perspective(600px) rotateX(-45deg);
+    min-width: 100px;
+    background-color: var(--bg-color);
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+    border-top: 2px solid var(--primary-color);
+    z-index: 1001;
+    opacity: 0;
+    visibility: hidden;
+    transform-origin: top;
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s;
+    padding: 6px 0;
+}
+
+/* 顶部三角形指示器 */
+.category-dropdown-menu::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid var(--primary-color);
+}
+
+.category-dropdown:hover .category-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) perspective(600px) rotateX(0);
+}
+
+/* 分类下拉菜单项 - 递归样式 */
+.category-dropdown-menu .category-item {
+    padding: 4px 12px;
+    font-size: 12px;
+}
+
+.category-dropdown-menu .category-item:hover {
+    color: var(--primary-color);
+}
+
+.category-dropdown-menu .category-item.active {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* 嵌套下拉菜单（支持无限嵌套） */
+.category-dropdown-menu .category-dropdown .category-dropdown-menu {
+    top: 0;
+    left: 100%;
+    transform: translateY(0) perspective(600px) rotateX(-45deg);
+}
+
+.category-dropdown-menu .category-dropdown:hover .category-dropdown-menu {
+    transform: translateY(0) perspective(600px) rotateX(0);
+}
+
+.category-dropdown-menu .category-dropdown-menu::before {
+    top: 50%;
+    left: -7px;
+    transform: translateY(-50%);
+    border-left: none;
+    border-right: 5px solid var(--primary-color);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
 }
 
 /* 二级菜单下拉样式 */
@@ -295,7 +456,7 @@ main {
 /* 搜索框 */
 .topbar-search {
     position: fixed;
-    top: var(--topbar-height);
+    top: calc(var(--topbar-height) + var(--categories-height));
     left: 0;
     right: 0;
     background-color: var(--bg-color);
@@ -855,7 +1016,7 @@ body.dark-mode .search-clear:hover {
 /* 搜索/菜单遮罩 */
 .search-overlay {
     position: fixed;
-    top: var(--topbar-height);
+    top: calc(var(--topbar-height) + var(--categories-height));
     left: 0;
     right: 0;
     bottom: 0;
@@ -936,6 +1097,10 @@ body.dark-mode .search-clear:hover {
         display: flex;
     }
 
+    .categories-container {
+        display: flex;
+    }
+
     .topbar-search {
         position: absolute;
         top: calc(100% + 8px);
@@ -964,12 +1129,37 @@ body.dark-mode .search-clear:hover {
 
 /* 响应式设计 - 移动端 */
 @media (max-width: 767px) {
+    :root {
+        --categories-height: 0;
+    }
+
+    .topbar {
+        height: var(--topbar-height);
+    }
+
+    .categories-container,
+    .topbar-divider {
+        display: none;
+    }
+
+    .search-overlay {
+        top: var(--topbar-height);
+    }
+
     .topbar-search {
         position: fixed;
         top: var(--topbar-height);
         left: 0;
         right: 0;
         background-color: var(--bg-color);
+        opacity: 0;
+        visibility: hidden;
+        transition: all var(--transition-speed);
+    }
+
+    .topbar-search.show {
+        opacity: 1;
+        visibility: visible;
     }
 
     .topbar-search-content {

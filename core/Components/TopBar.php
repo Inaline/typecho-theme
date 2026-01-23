@@ -76,6 +76,58 @@ function renderNavItem($item, $depth = 0, $currentPage = '') {
     }
 }
 
+// 递归渲染分类项的辅助函数
+function renderCategoryItem($item, $depth = 0, $currentPage = '') {
+    $hasChildren = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
+    $icon = isset($item['icon']) ? $item['icon'] : '';
+    $label = isset($item['label']) ? $item['label'] : '';
+    $url = isset($item['url']) ? $item['url'] : '#';
+    $itemName = isset($item['name']) ? $item['name'] : '';
+
+    // 检查是否为当前分类或其子分类
+    $isActive = false;
+    if ($itemName === $currentPage) {
+        $isActive = true;
+    } elseif ($hasChildren) {
+        // 检查子分类是否包含当前分类
+        foreach ($item['children'] as $child) {
+            if (isset($child['name']) && $child['name'] === $currentPage) {
+                $isActive = true;
+                break;
+            }
+        }
+    }
+
+    if ($hasChildren) {
+        // 下拉菜单（鼠标移入展开）
+        echo '<div class="category-item category-dropdown';
+        if ($isActive) echo ' active';
+        echo '">';
+        echo '<a href="' . htmlspecialchars($url) . '" class="category-link';
+        if ($isActive) echo ' active';
+        echo '">';
+        if ($icon && $depth === 0) {
+            echo '<span class="mdi ' . htmlspecialchars($icon) . ' category-icon"></span>';
+        }
+        echo htmlspecialchars($label) . '</a>';
+        echo '<span class="mdi mdi-chevron-down category-arrow"></span>';
+        echo '<div class="category-dropdown-menu">';
+        foreach ($item['children'] as $child) {
+            renderCategoryItem($child, $depth + 1, $currentPage);
+        }
+        echo '</div></div>';
+    } else {
+        // 普通链接
+        echo '<a href="' . htmlspecialchars($url) . '" class="category-item';
+        if ($isActive) echo ' active';
+        echo '">';
+        if ($icon && $depth === 0) {
+            echo '<span class="mdi ' . htmlspecialchars($icon) . ' category-icon"></span>';
+        }
+        echo htmlspecialchars($label) . '</a>';
+    }
+}
+
 // 递归渲染侧边栏链接的辅助函数
 function renderSidebarItem($item, $depth = 0, $currentPage = '') {
     $hasChildren = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
@@ -144,7 +196,7 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
 
         <!-- Logo -->
         <div class="topbar-logo">
-            <img src="<?=e($this->data->logo, Get::Assets('assets/images/logo/Inaline.png')) ?>" 
+            <img src="<?=e($this->data->logo, Get::Assets('assets/images/logo/Inaline.png')) ?>"
                  alt="Logo"
                  data-light-logo="<?=e($this->data->logo, Get::Assets('assets/images/logo/Inaline.png')) ?>"
                  data-dark-logo="<?=e($this->data->logo_dark, Get::Assets('assets/images/logo/Inaline-dark.png')) ?>">
@@ -189,6 +241,18 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
             </div>
         </div>
     </div>
+
+    <!-- 分割线 -->
+    <div class="topbar-divider"></div>
+
+    <!-- 桌面端分类标签 -->
+    <nav class="categories-container">
+        <?php
+        foreach ($categories as $category) {
+            renderCategoryItem($category, 0, $currentPage);
+        }
+        ?>
+    </nav>
 
     <!-- 搜索框 -->
     <div class="topbar-search" id="searchBox">

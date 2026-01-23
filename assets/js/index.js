@@ -100,6 +100,33 @@ $(document).ready(function() {
         e.stopPropagation();
     });
 
+    // 分类下拉菜单点击处理（移动端支持）
+    $('.category-dropdown').on('click', function(e) {
+        // 如果是桌面端，不阻止默认行为（点击链接跳转）
+        if ($(window).width() >= 768) {
+            // 点击下拉菜单项时不阻止默认行为
+            if ($(e.target).hasClass('category-item')) {
+                return;
+            }
+            // 点击链接时允许跳转
+            if ($(e.target).hasClass('category-link')) {
+                return;
+            }
+            // 点击一级菜单时不阻止默认行为
+            e.stopPropagation();
+        } else {
+            // 移动端：点击展开/收起子菜单
+            e.preventDefault();
+            e.stopPropagation();
+            const $this = $(this);
+            const $dropdownMenu = $this.find('.category-dropdown-menu');
+            
+            // 切换展开状态
+            $this.toggleClass('expanded');
+            $dropdownMenu.slideToggle(200);
+        }
+    });
+
     // 侧边栏选项卡切换
     $('.sidebar-tab').on('click', function() {
         const $this = $(this);
