@@ -82,6 +82,17 @@ class Get
     }
     
     /**
+     * 获取 URI 参数
+     * @param string $key 参数名
+     * @param string $default 默认值
+     * @return string 参数值
+     */
+    public static function queryParam(string $key, string $default = ''): string
+    {
+        return $_GET[$key] ?? $default;
+    }
+    
+    /**
      * 取 Typecho 主题设置项（只读取 data 字段中的 JSON，支持点语法）
      *
      * @param string $key     支持点语法，如 demo_textarea

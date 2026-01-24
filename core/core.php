@@ -15,3 +15,4 @@ require_once(__DIR__ . '/Widgets/Comment.php');
 require_once(__DIR__ . '/Widgets/ComponentData.php');
 
 require_once(__DIR__ . '/Modules/ThemeConfig/Config.php');
+require_once(__DIR__ . '/Modules/customFields/customFields.php');

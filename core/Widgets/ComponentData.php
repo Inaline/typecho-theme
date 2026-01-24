@@ -153,4 +153,118 @@ class ComponentData
             'interval' => $carousel_interval
         ];
     }
+
+    /* ==========================
+     * ArticleList 组件数据
+     * ========================== */
+
+    /**
+     * 获取文章列表组件数据
+     * @return array
+     */
+    public static function GetArticleListData()
+    {
+        $sort = Get::queryParam('sort', 'date');
+        $layout = Get::queryParam('layout', 'list');
+        $currentPage = max(1, intval(Get::queryParam('p', '1')));
+        $perPage = 10;
+
+        // 排序映射
+        $orderMap = [
+            'date' => 'created',
+            'views' => 'views',
+            'comments' => 'commentsNum',
+            'likes' => 'likes'
+        ];
+
+        $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'created';
+
+        // 获取文章总数
+        $total = GetArticle::total();
+        $totalPages = ceil($total / $perPage);
+
+        // 计算偏移量
+        $offset = ($currentPage - 1) * $perPage;
+
+        // 获取文章列表
+        $articles = GetArticle::all(
+            ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order', 'url'],
+            $order,
+            'desc',
+            $perPage,
+            $offset
+        );
+
+        // 格式化文章数据
+        $formattedArticles = [];
+        foreach ($articles as $article) {
+            // 获取自定义字段
+            $thumbnail = '';
+            $excerpt = '';
+            $articleViews = 0;
+            $articleLikes = 0;
+
+            // 尝试从自定义字段获取数据
+            try {
+                $db = Typecho_Db::get();
+                $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $article['cid']));
+                if ($row) {
+                    $fields = unserialize($row['fields']);
+                    if (is_array($fields)) {
+                        $thumbnail = $fields['article_thumbnail'] ?? '';
+                        $excerpt = $fields['article_excerpt'] ?? '';
+                        $articleViews = intval($fields['article_views'] ?? 0);
+                        $articleLikes = intval($fields['article_likes'] ?? 0);
+                    }
+                }
+            } catch (Exception $e) {
+                // 忽略错误
+            }
+
+            // 如果没有自定义缩略图，尝试从文章内容中提取
+            if (empty($thumbnail)) {
+                $thumbnail = GetArticle::firstImage($article['cid']);
+            }
+
+            // 如果没有缩略图，使用默认缩略图
+            if (empty($thumbnail)) {
+                $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
+            } else {
+                $thumbnail = Get::resolveUri($thumbnail);
+            }
+
+            // 如果没有自定义摘要，使用文章前200字作为摘要
+            if (empty($excerpt)) {
+                $text = strip_tags($article['text']);
+                $excerpt = mb_substr($text, 0, 200, 'UTF-8');
+                if (mb_strlen($text, 'UTF-8') > 200) {
+                    $excerpt .= '...';
+                }
+            }
+
+            // 格式化日期
+            $date = date('Y-m-d', $article['created']);
+
+            $formattedArticles[] = [
+                'title' => $article['title'],
+                'excerpt' => $excerpt,
+                'thumbnail' => $thumbnail ? Get::resolveUri($thumbnail) : '',
+                'views' => $articleViews > 0 ? $articleViews : ($article['views'] ?? 0),
+                'comments' => $article['commentsNum'] ?? 0,
+                'likes' => $articleLikes,
+                'date' => $date,
+                'url' => $article['url']
+            ];
+        }
+
+        return [
+            'sort' => $sort,
+            'layout' => $layout,
+            'p' => $currentPage,
+            'total' => $total,
+            'per_page' => $perPage,
+            'total_pages' => $totalPages,
+            'articles' => $formattedArticles
+        ];
+    }
 }

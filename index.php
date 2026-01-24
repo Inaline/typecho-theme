@@ -27,12 +27,10 @@ if ($params_carousel['enabled'] && !empty($params_carousel['items'])) {
     Get::Component($this, 'Widgets/CarouselWidget', $params_carousel);
 }
 
-echo '<div class="card">
-    <div class="card-title">文章列表</div>
-    <div class="card-content">
-        这里是文章列表区域
-    </div>
-</div>';
+// 获取文章列表组件参数
+$params_article_list = ComponentData::GetArticleListData();
+
+Get::Component($this, 'ArticleList', $params_article_list);
 Get::Component($this, 'Common', ['type' => 'content-column-end']);
 Get::Component($this, 'Common', ['type' => 'sidebar-column-start']);
 echo '<div class="card">
