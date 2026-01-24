@@ -84,25 +84,14 @@ function renderCategoryItem($item, $depth = 0, $currentPage = '') {
     $url = isset($item['url']) ? $item['url'] : '#';
     $itemName = isset($item['name']) ? $item['name'] : '';
 
-    // 检查是否为当前分类或其子分类
-    $isActive = false;
-    if ($itemName === $currentPage) {
-        $isActive = true;
-    } elseif ($hasChildren) {
-        // 检查子分类是否包含当前分类
-        foreach ($item['children'] as $child) {
-            if (isset($child['name']) && $child['name'] === $currentPage) {
-                $isActive = true;
-                break;
-            }
-        }
-    }
+    // 检查是否为当前分类
+    $isActive = ($itemName === $currentPage);
 
     if ($hasChildren) {
         // 下拉菜单（鼠标移入展开）
         echo '<div class="category-item category-dropdown';
         if ($isActive) echo ' active';
-        echo '">';
+        echo '" data-has-children="true">';
         echo '<a href="' . htmlspecialchars($url) . '" class="category-link';
         if ($isActive) echo ' active';
         echo '">';
@@ -110,8 +99,10 @@ function renderCategoryItem($item, $depth = 0, $currentPage = '') {
             echo '<span class="mdi ' . htmlspecialchars($icon) . ' category-icon"></span>';
         }
         echo htmlspecialchars($label) . '</a>';
-        echo '<span class="mdi mdi-chevron-down category-arrow"></span>';
-        echo '<div class="category-dropdown-menu">';
+        // 根据层级决定箭头方向：第一级向下，子级向右
+        $arrowClass = ($depth === 0) ? 'mdi-chevron-down' : 'mdi-chevron-right';
+        echo '<span class="mdi ' . $arrowClass . ' category-arrow"></span>';
+        echo '<div class="category-dropdown-menu" data-depth="' . $depth . '">';
         foreach ($item['children'] as $child) {
             renderCategoryItem($child, $depth + 1, $currentPage);
         }

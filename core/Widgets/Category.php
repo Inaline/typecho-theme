@@ -397,28 +397,39 @@ class GetCategory
         $navItems = [];
 
         foreach ($tree as $category) {
-            $item = [
-                'name' => $category['slug'],
-                'label' => $category['name'],
-                'icon' => self::icon($category['mid']),
-                'url' => $category['url']
-            ];
-
-            // 如果有子分类，添加 children
-            if (isset($category['children']) && !empty($category['children'])) {
-                $item['children'] = [];
-                foreach ($category['children'] as $child) {
-                    $item['children'][] = [
-                        'name' => $child['slug'],
-                        'label' => $child['name'],
-                        'url' => $child['url']
-                    ];
-                }
-            }
-
-            $navItems[] = $item;
+            $navItems[] = self::buildNavItem($category, 0);
         }
 
         return json_encode($navItems, JSON_UNESCAPED_UNICODE);
+    }
+
+    /**
+     * 递归构建导航项（辅助方法）
+     * @param array $category 分类数据
+     * @param int $depth 深度
+     * @return array 导航项
+     */
+    private static function buildNavItem($category, $depth = 0)
+    {
+        $item = [
+            'name' => $category['slug'],
+            'label' => $category['name'],
+            'url' => $category['url']
+        ];
+
+        // 只有顶级分类才有图标
+        if ($depth === 0) {
+            $item['icon'] = self::icon($category['mid']);
+        }
+
+        // 如果有子分类，递归添加
+        if (isset($category['children']) && !empty($category['children'])) {
+            $item['children'] = [];
+            foreach ($category['children'] as $child) {
+                $item['children'][] = self::buildNavItem($child, $depth + 1);
+            }
+        }
+
+        return $item;
     }
 }

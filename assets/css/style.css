@@ -282,7 +282,8 @@ body.dark-mode .topbar-divider {
     border-bottom: 5px solid var(--primary-color);
 }
 
-.category-dropdown:hover .category-dropdown-menu {
+.category-dropdown:hover > .category-dropdown-menu,
+.category-dropdown.expanded > .category-dropdown-menu {
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) perspective(600px) rotateX(0);
@@ -292,6 +293,10 @@ body.dark-mode .topbar-divider {
 .category-dropdown-menu .category-item {
     padding: 4px 12px;
     font-size: 12px;
+    display: block;
+    text-decoration: none;
+    color: var(--text-color-light);
+    transition: color 0.3s;
 }
 
 .category-dropdown-menu .category-item:hover {
@@ -303,14 +308,57 @@ body.dark-mode .topbar-divider {
     font-weight: 500;
 }
 
+/* 子级下拉菜单项样式 */
+.category-dropdown-menu .category-dropdown {
+    padding: 4px 12px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    position: relative;
+    width: 100%;
+}
+
+.category-dropdown-menu .category-dropdown .category-link {
+    flex: 1;
+    padding: 0;
+    text-decoration: none;
+    color: var(--text-color-light);
+    transition: color 0.3s;
+}
+
+.category-dropdown-menu .category-dropdown .category-link:hover {
+    color: var(--primary-color);
+}
+
+.category-dropdown-menu .category-dropdown .category-link.active {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.category-dropdown-menu .category-dropdown .category-arrow {
+    font-size: 12px;
+    flex-shrink: 0;
+    transition: transform 0.3s;
+    color: var(--text-color-light);
+}
+
 /* 嵌套下拉菜单（支持无限嵌套） */
 .category-dropdown-menu .category-dropdown .category-dropdown-menu {
     top: 0;
     left: 100%;
+    margin-left: 4px;
     transform: translateY(0) perspective(600px) rotateX(-45deg);
+    min-width: 100px;
+    opacity: 0;
+    visibility: hidden;
 }
 
-.category-dropdown-menu .category-dropdown:hover .category-dropdown-menu {
+.category-dropdown-menu .category-dropdown:hover > .category-dropdown-menu,
+.category-dropdown-menu .category-dropdown.expanded > .category-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
     transform: translateY(0) perspective(600px) rotateX(0);
 }
 
@@ -322,6 +370,39 @@ body.dark-mode .topbar-divider {
     border-right: 5px solid var(--primary-color);
     border-top: 5px solid transparent;
     border-bottom: 5px solid transparent;
+}
+
+/* 深层级嵌套的箭头方向 */
+.category-dropdown-menu .category-dropdown .category-arrow {
+    transform: rotate(0deg);
+}
+
+.category-dropdown-menu .category-dropdown:hover > .category-arrow,
+.category-dropdown-menu .category-dropdown.expanded > .category-arrow {
+    transform: rotate(90deg);
+}
+
+/* 确保所有层级的下拉菜单都能正确显示 */
+.category-dropdown-menu .category-dropdown-menu .category-dropdown-menu {
+    top: 0;
+    left: 100%;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 点击展开状态 */
+.category-dropdown.expanded > .category-dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) perspective(600px) rotateX(0);
+}
+
+.category-dropdown.expanded > .category-arrow {
+    transform: rotate(180deg);
+}
+
+.category-dropdown-menu .category-dropdown.expanded > .category-arrow {
+    transform: rotate(90deg);
 }
 
 /* 二级菜单下拉样式 */
