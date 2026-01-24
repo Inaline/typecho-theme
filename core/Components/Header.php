@@ -24,9 +24,16 @@
         const fontFormat = "<?= e($this->data->font_type ?? 'woff2') ?>";
     <?php endif; ?>
     <?php if (isset($this->data->performance) && is_array($this->data->performance)): ?>
-    const performance = <?= json_encode($this->data->performance, JSON_UNESCAPED_UNICODE) ?>;
+        const performanceData = <?= json_encode($this->data->performance, JSON_UNESCAPED_UNICODE) ?>;
+        
+        const perfText = performanceData.execution_time + ' | ' + performanceData.memory_used;
+
+        console.log(
+            '%c主题: Inaline | 官网: inaline.net | 页面加载: ' + perfText,
+            'background: linear-gradient(to right, #ff6b6b, #4ecdc4); color: white; padding: 10px; border-radius: 10px; font-size: 13px;'
+        );
     <?php endif; ?>
-</script>
+    </script>
     <?php if (!empty($this->data->links) && is_array($this->data->links)): ?>
         <?php foreach ($this->data->links as $link): ?>
             <?php if (isset($link['href'])): ?>

@@ -217,6 +217,15 @@ main {
     justify-content: center;
     transition: all var(--transition-speed);
     z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    touch-action: manipulation;
+    pointer-events: auto;
+}
+
+.carousel:hover .carousel-control {
+    opacity: 1;
+    visibility: visible;
 }
 
 .carousel-control:hover {
@@ -240,6 +249,7 @@ main {
     display: flex;
     gap: 8px;
     z-index: 10;
+    pointer-events: auto;
 }
 
 .carousel-indicator {
@@ -251,6 +261,8 @@ main {
     cursor: pointer;
     transition: all var(--transition-speed);
     padding: 0;
+    touch-action: manipulation;
+    pointer-events: auto;
 }
 
 .carousel-indicator:hover {
@@ -1483,13 +1495,15 @@ body.dark-mode .search-clear:hover {
 
     /* 移动端轮播图适配 */
     .carousel-inner {
-        padding-bottom: 56.25%; /* 16:9 宽高比 */
+        padding-bottom: 40%; /* 2.5:1 宽高比 */
     }
 
     .carousel-control {
         width: 36px;
         height: 36px;
         font-size: 24px;
+        opacity: 1;
+        visibility: visible;
     }
 
     .carousel-control-prev {

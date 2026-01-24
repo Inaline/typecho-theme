@@ -403,6 +403,7 @@ const Carousel = {
         // 绑定切换按钮事件
         $carousel.find('.carousel-control').on('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             const direction = $(e.currentTarget).data('direction');
             if (direction === 'prev') {
                 this.prev();
@@ -414,6 +415,7 @@ const Carousel = {
         // 绑定指示器事件
         $carousel.find('.carousel-indicator').on('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             const index = $(e.currentTarget).data('index');
             this.goTo(index);
         });
@@ -477,20 +479,42 @@ const Carousel = {
 
     initTouchSwipe($carousel) {
         let startX = 0;
+        let startY = 0;
         let endX = 0;
+        let hasMoved = false;
         const threshold = 50; // 滑动阈值
 
         $carousel.on('touchstart', (e) => {
+            // 如果触摸的是控制按钮或指示器，不处理滑动
+            if ($(e.target).closest('.carousel-control, .carousel-indicator').length > 0) {
+                return;
+            }
             startX = e.originalEvent.touches[0].clientX;
+            startY = e.originalEvent.touches[0].clientY;
+            endX = startX;
+            hasMoved = false;
         });
 
         $carousel.on('touchmove', (e) => {
             endX = e.originalEvent.touches[0].clientX;
+            const endY = e.originalEvent.touches[0].clientY;
+            const moveX = Math.abs(endX - startX);
+            const moveY = Math.abs(endY - startY);
+
+            // 只有水平移动距离大于垂直移动距离时才认为是滑动
+            if (moveX > 10 && moveX > moveY) {
+                hasMoved = true;
+            }
         });
 
-        $carousel.on('touchend', () => {
+        $carousel.on('touchend', (e) => {
+            // 如果触摸的是控制按钮或指示器，不处理滑动
+            if ($(e.target).closest('.carousel-control, .carousel-indicator').length > 0) {
+                return;
+            }
+
             const diff = startX - endX;
-            if (Math.abs(diff) > threshold) {
+            if (hasMoved && Math.abs(diff) > threshold) {
                 if (diff > 0) {
                     this.next(); // 左滑，下一张
                 } else {
