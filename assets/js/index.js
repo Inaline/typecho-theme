@@ -382,3 +382,124 @@ const SearchHistory = {
         return div.innerHTML;
     }
 };
+
+// 轮播图功能
+const Carousel = {
+    currentIndex: 0,
+    interval: null,
+    intervalTime: 5000,
+
+    init() {
+        const $carousel = $('.carousel');
+        if ($carousel.length === 0) return;
+
+        // 获取自动切换间隔
+        const intervalStr = $carousel.data('interval');
+        if (intervalStr && parseInt(intervalStr) > 0) {
+            this.intervalTime = parseInt(intervalStr) * 1000;
+            this.startAutoPlay();
+        }
+
+        // 绑定切换按钮事件
+        $carousel.find('.carousel-control').on('click', (e) => {
+            e.preventDefault();
+            const direction = $(e.currentTarget).data('direction');
+            if (direction === 'prev') {
+                this.prev();
+            } else {
+                this.next();
+            }
+        });
+
+        // 绑定指示器事件
+        $carousel.find('.carousel-indicator').on('click', (e) => {
+            e.preventDefault();
+            const index = $(e.currentTarget).data('index');
+            this.goTo(index);
+        });
+
+        // 鼠标悬停暂停自动播放
+        $carousel.on('mouseenter', () => {
+            this.stopAutoPlay();
+        });
+
+        $carousel.on('mouseleave', () => {
+            if (this.intervalTime > 0) {
+                this.startAutoPlay();
+            }
+        });
+
+        // 触摸滑动支持
+        this.initTouchSwipe($carousel);
+    },
+
+    goTo(index) {
+        const $carousel = $('.carousel');
+        const $items = $carousel.find('.carousel-item');
+        const $indicators = $carousel.find('.carousel-indicator');
+
+        if (index < 0) {
+            index = $items.length - 1;
+        } else if (index >= $items.length) {
+            index = 0;
+        }
+
+        $items.removeClass('active');
+        $indicators.removeClass('active');
+
+        $items.eq(index).addClass('active');
+        $indicators.eq(index).addClass('active');
+
+        this.currentIndex = index;
+    },
+
+    next() {
+        this.goTo(this.currentIndex + 1);
+    },
+
+    prev() {
+        this.goTo(this.currentIndex - 1);
+    },
+
+    startAutoPlay() {
+        this.stopAutoPlay();
+        this.interval = setInterval(() => {
+            this.next();
+        }, this.intervalTime);
+    },
+
+    stopAutoPlay() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    },
+
+    initTouchSwipe($carousel) {
+        let startX = 0;
+        let endX = 0;
+        const threshold = 50; // 滑动阈值
+
+        $carousel.on('touchstart', (e) => {
+            startX = e.originalEvent.touches[0].clientX;
+        });
+
+        $carousel.on('touchmove', (e) => {
+            endX = e.originalEvent.touches[0].clientX;
+        });
+
+        $carousel.on('touchend', () => {
+            const diff = startX - endX;
+            if (Math.abs(diff) > threshold) {
+                if (diff > 0) {
+                    this.next(); // 左滑，下一张
+                } else {
+                    this.prev(); // 右滑，上一张
+                }
+            }
+        });
+    }
+};
+
+// 初始化轮播图
+Carousel.init();

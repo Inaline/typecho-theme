@@ -154,6 +154,32 @@ return [
                 'description' => '显示在用户名下方的简介文字'
             ]
         ]
+    ],
+    [
+        'title' => '轮播图设置',
+        'fields' => [
+            [
+                'name'        => 'carousel_enabled',
+                'label'       => '启用轮播图',
+                'type'        => 'checkbox',
+                'default'     => true,
+                'description' => '是否在首页显示轮播图'
+            ],
+            [
+                'name'        => 'carousel_items',
+                'label'       => '轮播图内容(JSON)',
+                'type'        => 'textarea',
+                'default'     => '[{"image":"@assets/images/logo/Inaline.png","title":"欢迎使用 Inaline","description":"功能强大、美观、简洁的 Typecho 主题","url":"/"},{"image":"@assets/images/logo/wenzi.png","title":"Inaline Studio","description":"专注于 Typecho 主题开发","url":"/"}]',
+                'description' => '轮播图内容，JSON格式<br>示例:[{"image":"背景图URI","title":"标题","description":"简介","url":"跳转URI"}]'
+            ],
+            [
+                'name'        => 'carousel_interval',
+                'label'       => '自动切换间隔(秒)',
+                'type'        => 'text',
+                'default'     => '5',
+                'description' => '轮播图自动切换的时间间隔，单位为秒，设为0则不自动切换'
+            ]
+        ]
     ]
 ];
 

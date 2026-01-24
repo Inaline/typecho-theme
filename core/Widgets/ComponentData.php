@@ -116,4 +116,41 @@ class ComponentData
             'custom' => Get::themeOption('custom_foot')
         ];
     }
+
+    /* ==========================
+     * Carousel 组件数据
+     * ========================== */
+
+    /**
+     * 获取轮播图组件数据
+     * @return array
+     */
+    public static function GetCarouselData()
+    {
+        $carousel_enabled = Get::themeOption('carousel_enabled', true);
+        $carousel_items = Get::themeOption('carousel_items');
+        $carousel_interval = Get::themeOption('carousel_interval', '5');
+
+        // 解析 JSON 数据
+        $items = [];
+        if (!empty($carousel_items)) {
+            $items = json_decode($carousel_items, true);
+            if (!is_array($items)) {
+                $items = [];
+            }
+
+            // 解析图片 URI
+            foreach ($items as &$item) {
+                if (isset($item['image'])) {
+                    $item['image'] = Get::resolveUri($item['image']);
+                }
+            }
+        }
+
+        return [
+            'enabled' => $carousel_enabled,
+            'items' => $items,
+            'interval' => $carousel_interval
+        ];
+    }
 }

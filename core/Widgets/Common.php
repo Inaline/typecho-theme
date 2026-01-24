@@ -184,3 +184,35 @@ try {
     // 配置加载失败时，默认不启用压缩
     error_log("Inaline Theme: 配置加载失败 - " . $e->getMessage());
 }
+
+// 通用标签输出函数
+if (!function_exists('CommonTag')) {
+    function CommonTag($type) {
+        switch ($type) {
+            case 'main-start':
+                echo '<main class="main-container">';
+                break;
+            case 'main-end':
+                echo '</main>';
+                break;
+            case 'wrapper-start':
+                echo '<div class="content-wrapper">';
+                break;
+            case 'wrapper-end':
+                echo '</div>';
+                break;
+            case 'content-column-start':
+                echo '<div class="content-column">';
+                break;
+            case 'content-column-end':
+                echo '</div>';
+                break;
+            case 'sidebar-column-start':
+                echo '<div class="sidebar-column">';
+                break;
+            case 'sidebar-column-end':
+                echo '</div>';
+                break;
+        }
+    }
+}
