@@ -222,7 +222,7 @@ $(document).ready(function() {
 
     // 清空搜索框
     $clearSearch.on('click', function() {
-        $searchInput.val('').focus();
+        $searchInput.val('');
         $clearSearch.hide();
     });
 
@@ -277,7 +277,6 @@ $(document).ready(function() {
     $searchBtn.on('click', function() {
         setTimeout(() => {
             SearchHistory.renderHistory();
-            $searchInput.focus();
         }, 100);
     });
 });

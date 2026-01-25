@@ -188,7 +188,7 @@ class ComponentData
 
         // 获取文章列表
         $articles = GetArticle::all(
-            ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order', 'url'],
+            ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order', 'url'],
             $order,
             'desc',
             $perPage,
@@ -202,7 +202,6 @@ class ComponentData
             $thumbnail = '';
             $excerpt = '';
             $articleViews = 0;
-            $articleLikes = 0;
 
             // 尝试从自定义字段获取数据
             try {
@@ -214,7 +213,6 @@ class ComponentData
                         $thumbnail = $fields['article_thumbnail'] ?? '';
                         $excerpt = $fields['article_excerpt'] ?? '';
                         $articleViews = intval($fields['article_views'] ?? 0);
-                        $articleLikes = intval($fields['article_likes'] ?? 0);
                     }
                 }
             } catch (Exception $e) {
@@ -248,10 +246,10 @@ class ComponentData
             $formattedArticles[] = [
                 'title' => $article['title'],
                 'excerpt' => $excerpt,
-                'thumbnail' => $thumbnail ? Get::resolveUri($thumbnail) : '',
+                'thumbnail' => $thumbnail,
                 'views' => $articleViews > 0 ? $articleViews : ($article['views'] ?? 0),
                 'comments' => $article['commentsNum'] ?? 0,
-                'likes' => $articleLikes,
+                'likes' => $article['likes'] ?? 0,
                 'date' => $date,
                 'url' => $article['url']
             ];

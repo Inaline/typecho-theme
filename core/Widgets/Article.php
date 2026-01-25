@@ -16,13 +16,13 @@ class GetArticle
     /**
      * 获取所有文章
      * @param array $fields 指定返回字段
-     * @param string $order 排序字段 'created', 'modified', 'views', 'commentsNum', 'mid'
+     * @param string $order 排序字段 'created', 'modified', 'views', 'commentsNum', 'likes', 'mid'
      * @param string $sort 排序方向 'asc', 'desc'
      * @param int $limit 返回数量限制，0 表示不限制
      * @param int $offset 偏移量
      * @return array
      */
-    public static function all($fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order'], $order = 'created', $sort = 'desc', $limit = 0, $offset = 0)
+    public static function all($fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order'], $order = 'created', $sort = 'desc', $limit = 0, $offset = 0)
     {
         $result = [];
         
@@ -52,6 +52,23 @@ class GetArticle
                 // 添加摘要
                 if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
                 
+                // 添加点赞数（从自定义字段获取）
+                if (in_array('likes', $fields)) {
+                    $item['likes'] = 0;
+                    try {
+                        $db = Typecho_Db::get();
+                        $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $widget->cid));
+                        if ($row) {
+                            $fields_data = unserialize($row['fields']);
+                            if (is_array($fields_data) && isset($fields_data['article_likes'])) {
+                                $item['likes'] = intval($fields_data['article_likes']);
+                            }
+                        }
+                    } catch (Exception $e) {
+                        // 忽略错误
+                    }
+                }
+                
                 $result[] = $item;
             }
         } catch (Exception $e) {
@@ -64,6 +81,7 @@ class GetArticle
             'modified' => 'modified',
             'views' => 'views',
             'commentsNum' => 'commentsNum',
+            'likes' => 'likes',
             'mid' => 'cid',
             'order' => 'order'
         ];
