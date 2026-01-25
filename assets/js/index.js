@@ -85,11 +85,6 @@ $(document).ready(function() {
         e.stopPropagation();
     });
 
-    // 窗口大小改变时关闭所有弹出层
-    $(window).on('resize', function() {
-        closeAll();
-    });
-
     // 二级菜单点击处理
     $('.topbar-nav-dropdown').on('click', function(e) {
         // 点击下拉菜单项时不阻止默认行为
@@ -222,7 +217,7 @@ $(document).ready(function() {
 
     // 清空搜索框
     $clearSearch.on('click', function() {
-        $searchInput.val('');
+        $searchInput.val('').focus();
         $clearSearch.hide();
     });
 
@@ -277,6 +272,7 @@ $(document).ready(function() {
     $searchBtn.on('click', function() {
         setTimeout(() => {
             SearchHistory.renderHistory();
+            $searchInput.focus();
         }, 100);
     });
 });
