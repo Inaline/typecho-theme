@@ -522,3 +522,50 @@ const Carousel = {
 
 // 初始化轮播图
 Carousel.init();
+
+/* ========================
+ * 页脚运行时间动态更新
+ * ======================== */
+
+const RunTime = {
+    init() {
+        const $footer = $('.footer');
+        if ($footer.length === 0) return;
+
+        const startDateStr = $footer.data('start-date');
+        if (!startDateStr) return;
+
+        const startDate = new Date(startDateStr);
+        const $runTimeElement = $('#runTime');
+
+        if ($runTimeElement.length === 0) return;
+
+        // 更新运行时间
+        this.updateRunTime(startDate, $runTimeElement);
+
+        // 每秒更新一次
+        setInterval(() => {
+            this.updateRunTime(startDate, $runTimeElement);
+        }, 1000);
+    },
+
+    updateRunTime(startDate, $element) {
+        const now = new Date();
+        const diff = now - startDate;
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        let timeText = '';
+        if (days > 0) timeText += days + '天';
+        if (hours > 0) timeText += hours + '小时';
+        if (minutes > 0) timeText += minutes + '分';
+        timeText += seconds + '秒';
+
+        $element.text(timeText);
+    }
+};
+
+// 初始化运行时间
+RunTime.init();

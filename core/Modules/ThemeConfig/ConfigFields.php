@@ -7,7 +7,7 @@ return [
     [
         'title'   => '欢迎使用',
         'content' => '<h1>Inaline - 功能强大、美观、简洁的 Typecho 主题</h1>
-        <a href="https://gitee.com/inaline/typecho-theme">Gitee</a> <a href="https://github.com/inaline">Github</a> <a href="https://m.bilibili.com/space/3493111149890117">Bilibili</a>
+        <a href="https://gitee.com/inaline/typecho-theme">Gitee</a> <a href="https://github.com/inaline">Github</a> <a href="https://bilibili.com/space/3493111149890117">Bilibili</a>
         <p>关于URI的约定: <br> 1. 以 http/https 开头为外部 URI 如 https://example.com/a.png <br> 2. 以 / 开头为本地绝对路径 如 /index.php <br> 3. 以 @ 开头为相对于主题的路径 如 @assets/images/Inaline.png <br> 4. 以 data: 开头为 dataUrl</p>'
     ],
     [
@@ -152,6 +152,100 @@ return [
                 'type'        => 'textarea',
                 'default'     => '昔人已乘黄鹤去，此地空余黄鹤楼',
                 'description' => '显示在用户名下方的简介文字'
+            ],
+            [
+                'name'        => 'sidebar_user_qq',
+                'label'       => 'QQ',
+                'type'        => 'text',
+                'default'     => '',
+                'description' => 'QQ号或QQ主页链接，留空则不显示'
+            ],
+            [
+                'name'        => 'sidebar_user_email',
+                'label'       => '邮箱',
+                'type'        => 'text',
+                'default'     => '',
+                'description' => '邮箱地址，留空则不显示'
+            ],
+            [
+                'name'        => 'sidebar_user_bilibili',
+                'label'       => 'Bilibili',
+                'type'        => 'text',
+                'default'     => '',
+                'description' => 'Bilibili UID，留空则不显示'
+            ]
+        ]
+    ],
+    [
+        'title' => '侧边栏卡片设置',
+        'fields' => [
+            [
+                'name'    => 'sidebar_widget_user',
+                'label'   => '用户信息卡片',
+                'type'    => 'checkbox',
+                'default' => true,
+                'description' => '显示用户信息卡片（状态、头像、用户名、简介）'
+            ],
+            [
+                'name'    => 'sidebar_widget_test1',
+                'label'   => '测试卡片 1',
+                'type'    => 'checkbox',
+                'default' => true,
+                'description' => '显示第一个测试卡片'
+            ],
+            [
+                'name'    => 'sidebar_widget_test1_content',
+                'label'   => '测试卡片 1 内容',
+                'type'    => 'text',
+                'default' => '这是一行测试文字',
+                'description' => '测试卡片 1 显示的文字内容'
+            ],
+            [
+                'name'    => 'sidebar_widget_test2',
+                'label'   => '测试卡片 2',
+                'type'    => 'checkbox',
+                'default' => true,
+                'description' => '显示第二个测试卡片'
+            ],
+            [
+                'name'    => 'sidebar_widget_test2_content',
+                'label'   => '测试卡片 2 内容',
+                'type'    => 'text',
+                'default' => '这是另一行测试文字',
+                'description' => '测试卡片 2 显示的文字内容'
+            ]
+        ]
+    ],
+    [
+        'title' => '页脚设置',
+        'fields' => [
+            [
+                'name'        => 'footer_start_date',
+                'label'       => '建站日期',
+                'type'        => 'text',
+                'default'     => '2024-01-01',
+                'description' => '网站建站日期，格式：YYYY-MM-DD'
+            ],
+            [
+                'name'        => 'footer_copyright',
+                'label'       => '版权信息',
+                'type'        => 'text',
+                'default'     => '© {year} Inaline. All rights reserved.',
+                'description' => '版权信息，支持HTML和{year}占位符，留空则不显示'
+            ],
+            [
+                'name'        => 'footer_icp',
+                'label'       => '备案信息',
+                'type'        => 'text',
+                'default'     => '',
+                'description' => 'ICP备案号，支持{year}占位符，留空则不显示'
+            ],
+            [
+                'name'        => 'footer_custom',
+                'label'       => '自定义内容',
+                'type'        => 'textarea',
+                'default'     => '',
+                'description' => '页脚自定义内容，支持HTML'
             ]
         ]
     ],

@@ -15,6 +15,7 @@ $params_head = ComponentData::GetHeader('home');
 $params_top_bar = ComponentData::GetTopBar('home');
 $params_foot = ComponentData::GetFooter();
 $params_carousel = ComponentData::GetCarouselData();
+$params_sidebar = ComponentData::GetSidebarData();
 
 Get::Component($this, 'Header', $params_head);
 Get::Component($this, 'TopBar', $params_top_bar);
@@ -33,18 +34,12 @@ $params_article_list = ComponentData::GetArticleListData();
 Get::Component($this, 'ArticleList', $params_article_list);
 Get::Component($this, 'Common', ['type' => 'content-column-end']);
 Get::Component($this, 'Common', ['type' => 'sidebar-column-start']);
-echo '<div class="card">
-    <div class="card-title">最新文章</div>
-    <div class="card-content">
-        这里是最新文章列表
-    </div>
-</div>
-<div class="card">
-    <div class="card-title">标签云</div>
-    <div class="card-content">
-        这里是标签云
-    </div>
-</div>';
+
+// 循环渲染侧边栏卡片
+foreach ($params_sidebar as $widget) {
+    Get::Component($this, 'Sidebar', $widget);
+}
+
 Get::Component($this, 'Common', ['type' => 'sidebar-column-end']);
 Get::Component($this, 'Common', ['type' => 'wrapper-end']);
 Get::Component($this, 'Common', ['type' => 'main-end']);

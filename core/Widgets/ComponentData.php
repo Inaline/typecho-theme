@@ -102,6 +102,49 @@ class ComponentData
      */
     public static function GetFooter()
     {
+        // 计算网站运行时间（精确到秒）
+        $start_date = Get::themeOption('footer_start_date', '2024-01-01');
+        $start_timestamp = strtotime($start_date);
+        $current_timestamp = time();
+        $diff_seconds = $current_timestamp - $start_timestamp;
+
+        $days = floor($diff_seconds / 86400);
+        $hours = floor(($diff_seconds % 86400) / 3600);
+        $minutes = floor(($diff_seconds % 3600) / 60);
+        $seconds = $diff_seconds % 60;
+
+        $run_time_parts = [];
+        if ($days > 0) $run_time_parts[] = $days . '天';
+        if ($hours > 0) $run_time_parts[] = $hours . '小时';
+        if ($minutes > 0) $run_time_parts[] = $minutes . '分';
+        $run_time_parts[] = $seconds . '秒';
+        $run_time = implode('', $run_time_parts);
+
+        // 处理{year}占位符
+        $start_year = date('Y', $start_timestamp);
+        $current_year = date('Y', $current_timestamp);
+        if ($start_year == $current_year) {
+            $year_text = $current_year;
+        } else {
+            $year_text = $start_year . '-' . $current_year;
+        }
+
+        // 替换版权信息和备案信息中的{year}占位符
+        $copyright = Get::themeOption('footer_copyright', '');
+        $icp = Get::themeOption('footer_icp', '');
+
+        if (!empty($copyright)) {
+            $copyright = str_replace('{year}', $year_text, $copyright);
+        }
+
+        if (!empty($icp)) {
+            $icp = str_replace('{year}', $year_text, $icp);
+        }
+
+        // 获取 RSS 和 Sitemap 链接
+        $rss_url = GetSite::rssUrl();
+        $sitemap_url = Get::Assets('library/sitemap.php');
+
         return [
             'scripts' => [
                 [
@@ -113,7 +156,14 @@ class ComponentData
                     'src' => Get::Assets('assets/js/index.js')
                 ]
             ],
-            'custom' => Get::themeOption('custom_foot')
+            'custom' => Get::themeOption('custom_foot'),
+            'run_time' => $run_time,
+            'start_date' => $start_date,
+            'copyright' => $copyright,
+            'icp' => $icp,
+            'custom_content' => Get::themeOption('footer_custom', ''),
+            'rss_url' => $rss_url,
+            'sitemap_url' => $sitemap_url
         ];
     }
 
@@ -264,5 +314,75 @@ class ComponentData
             'total_pages' => $totalPages,
             'articles' => $formattedArticles
         ];
+    }
+
+    /* ==========================
+     * Sidebar 组件数据
+     * ========================== */
+
+    /**
+     * 获取侧边栏组件数据
+     * @return array
+     */
+    public static function GetSidebarData()
+    {
+        $widgetList = [];
+
+        // 按固定顺序读取卡片配置
+        // 1. 用户信息卡片
+        if (Get::themeOption('sidebar_widget_user', true)) {
+            // 处理 QQ：支持QQ号或主页链接
+            $qq = Get::themeOption('sidebar_user_qq', '');
+            if (!empty($qq)) {
+                // 如果是完整链接，提取QQ号
+                if (preg_match('/qq\.com\/(\d+)/', $qq, $matches)) {
+                    $qq = $matches[1];
+                }
+            }
+
+            // 处理 Bilibili：UID自动生成链接
+            $bilibili_uid = Get::themeOption('sidebar_user_bilibili', '');
+            $bilibili = '';
+            if (!empty($bilibili_uid)) {
+                $bilibili = 'https://space.bilibili.com/' . trim($bilibili_uid);
+            }
+
+            $widgetList[] = [
+                'type' => 'user',
+                'data' => [
+                    'status' => Get::themeOption('sidebar_user_status', 'EMOing'),
+                    'avatar' => Get::resolveUri(Get::themeOption('sidebar_user_avatar', 'http://q1.qlogo.cn/g?b=qq&nk=2291374026&s=640')),
+                    'name' => Get::themeOption('sidebar_user_name', 'Inaline'),
+                    'bio' => Get::themeOption('sidebar_user_bio', '昔人已乘黄鹤去，此地空余黄鹤楼'),
+                    'qq' => $qq,
+                    'email' => Get::themeOption('sidebar_user_email', ''),
+                    'bilibili' => $bilibili,
+                    'article_count' => GetArticle::total(),
+                    'comment_count' => GetComment::total()
+                ]
+            ];
+        }
+
+        // 2. 测试卡片 1
+        if (Get::themeOption('sidebar_widget_test1', true)) {
+            $widgetList[] = [
+                'type' => 'test',
+                'data' => [
+                    'content' => Get::themeOption('sidebar_widget_test1_content', '这是一行测试文字')
+                ]
+            ];
+        }
+
+        // 3. 测试卡片 2
+        if (Get::themeOption('sidebar_widget_test2', true)) {
+            $widgetList[] = [
+                'type' => 'test',
+                'data' => [
+                    'content' => Get::themeOption('sidebar_widget_test2_content', '这是另一行测试文字')
+                ]
+            ];
+        }
+
+        return $widgetList;
     }
 }
