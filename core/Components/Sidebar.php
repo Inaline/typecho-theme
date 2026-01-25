@@ -80,13 +80,76 @@ switch ($type) {
         <?php
         break;
 
-    case 'test':
-        // 测试卡片
-        $content = $data['content'] ?? '测试文字';
+    case 'hot_articles':
+        // 热门文章卡片
+        $articles = $data['articles'] ?? [];
+        $sort = $data['sort'] ?? 'views';
         ?>
-        <div class="card test-card">
+        <div class="card hot-articles-card">
+            <div class="card-title">热门文章</div>
             <div class="card-content">
-                <?= e($content) ?>
+                <?php if (!empty($articles)): ?>
+                <ul class="article-list">
+                    <?php foreach ($articles as $article): ?>
+                    <li class="article-item">
+                        <a href="<?= e($article['url']) ?>" class="article-link" title="<?= e($article['title']) ?>">
+                            <div class="article-thumbnail">
+                                <img src="<?= e($article['thumbnail']) ?>" alt="<?= e($article['title']) ?>">
+                            </div>
+                            <div class="article-info">
+                                <div class="article-title"><?= e($article['title']) ?></div>
+                                <div class="article-meta">
+                                    <span class="article-date"><span class="mdi mdi-calendar"></span> <?= e($article['created']) ?></span>
+                                    <?php if ($sort === 'views'): ?>
+                                    <span class="article-views"><span class="mdi mdi-eye"></span> <?= e($article['views']) ?></span>
+                                    <?php elseif ($sort === 'comments'): ?>
+                                    <span class="article-comments"><span class="mdi mdi-comment"></span> <?= e($article['comments']) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php else: ?>
+                <div class="empty-text">暂无文章</div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php
+        break;
+
+    case 'recent_comments':
+        // 最新评论卡片
+        $comments = $data['comments'] ?? [];
+        ?>
+        <div class="card recent-comments-card">
+            <div class="card-title">最新评论</div>
+            <div class="card-content">
+                <?php if (!empty($comments)): ?>
+                <ul class="comment-list">
+                    <?php foreach ($comments as $comment): ?>
+                    <li class="comment-item">
+                        <div class="comment-avatar">
+                            <img src="<?= e($comment['avatar']) ?>" alt="<?= e($comment['author']) ?>">
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author"><?= e($comment['author']) ?></span>
+                                <span class="comment-date"><?= e($comment['created']) ?></span>
+                            </div>
+                            <div class="comment-text">
+                                <a href="<?= e($comment['comment_url']) ?>" title="<?= e($comment['article_title']) ?>">
+                                    <?= e($comment['text']) ?>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php else: ?>
+                <div class="empty-text">暂无评论</div>
+                <?php endif; ?>
             </div>
         </div>
         <?php

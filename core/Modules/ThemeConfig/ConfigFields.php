@@ -187,37 +187,44 @@ return [
                 'description' => '显示用户信息卡片（状态、头像、用户名、简介）'
             ],
             [
-                'name'    => 'sidebar_widget_test1',
-                'label'   => '测试卡片 1',
+                'name'    => 'sidebar_widget_hot_articles',
+                'label'   => '热门文章',
                 'type'    => 'checkbox',
                 'default' => true,
-                'description' => '显示第一个测试卡片'
+                'description' => '显示热门文章卡片'
             ],
-            [
-                'name'    => 'sidebar_widget_test1_content',
-                'label'   => '测试卡片 1 内容',
-                'type'    => 'text',
-                'default' => '这是一行测试文字',
-                'description' => '测试卡片 1 显示的文字内容'
-            ],
-            [
-                'name'    => 'sidebar_widget_test2',
-                'label'   => '测试卡片 2',
-                'type'    => 'checkbox',
-                'default' => true,
-                'description' => '显示第二个测试卡片'
-            ],
-            [
-                'name'    => 'sidebar_widget_test2_content',
-                'label'   => '测试卡片 2 内容',
-                'type'    => 'text',
-                'default' => '这是另一行测试文字',
-                'description' => '测试卡片 2 显示的文字内容'
-            ]
-        ]
-    ],
-    [
-        'title' => '页脚设置',
+                        [
+                            'name'    => 'sidebar_widget_hot_articles_count',
+                            'label'   => '热门文章数量',
+                            'type'    => 'text',
+                            'default' => '5',
+                            'description' => '热门文章显示数量'
+                        ],
+                        [
+                            'name'    => 'sidebar_widget_hot_articles_sort',
+                            'label'   => '热门文章排序',
+                            'type'    => 'radio',
+                            'default' => 'views',
+                            'options' => ['views' => '阅读量', 'comments' => '评论数', 'likes' => '点赞数']
+                        ],
+                        [
+                            'name'    => 'sidebar_widget_recent_comments',
+                            'label'   => '最新评论',
+                            'type'    => 'checkbox',
+                            'default' => true,
+                            'description' => '显示最新评论卡片'
+                        ],
+                        [
+                            'name'    => 'sidebar_widget_recent_comments_count',
+                            'label'   => '最新评论数量',
+                            'type'    => 'text',
+                            'default' => '5',
+                            'description' => '最新评论显示数量'
+                        ]
+                    ]
+                ],
+                [
+                    'title' => '页脚设置',
         'fields' => [
             [
                 'name'        => 'footer_start_date',

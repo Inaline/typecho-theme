@@ -363,22 +363,124 @@ class ComponentData
             ];
         }
 
-        // 2. 测试卡片 1
-        if (Get::themeOption('sidebar_widget_test1', true)) {
+        // 2. 热门文章
+        if (Get::themeOption('sidebar_widget_hot_articles', true)) {
+            $count = intval(Get::themeOption('sidebar_widget_hot_articles_count', 5));
+            $sort = Get::themeOption('sidebar_widget_hot_articles_sort', 'views');
+
+            // 排序映射
+            $orderMap = [
+                'views' => 'views',
+                'comments' => 'commentsNum',
+                'likes' => 'likes'
+            ];
+
+            $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'views';
+
+            // 获取热门文章
+            $articles = GetArticle::all(
+                ['cid', 'title', 'slug', 'created', 'views', 'commentsNum'],
+                $order,
+                'desc',
+                $count,
+                0
+            );
+
+            // 格式化文章数据
+            $formattedArticles = [];
+            foreach ($articles as $article) {
+                // 获取完整的文章信息（包含URL）
+                $fullArticle = GetArticle::get($article['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum']);
+                if ($fullArticle) {
+                    // 获取缩略图
+                    $thumbnail = '';
+                    try {
+                        $db = Typecho_Db::get();
+                        $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $fullArticle['cid']));
+                        if ($row) {
+                            $fields = unserialize($row['fields']);
+                            if (is_array($fields)) {
+                                $thumbnail = $fields['article_thumbnail'] ?? '';
+                            }
+                        }
+                    } catch (Exception $e) {
+                        // 忽略错误
+                    }
+
+                    // 如果没有自定义缩略图，尝试从文章内容中提取
+                    if (empty($thumbnail)) {
+                        $thumbnail = GetArticle::firstImage($fullArticle['cid']);
+                    }
+
+                    // 如果没有缩略图，使用默认缩略图
+                    if (empty($thumbnail)) {
+                        $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
+                    } else {
+                        $thumbnail = Get::resolveUri($thumbnail);
+                    }
+
+                    $formattedArticles[] = [
+                        'title' => $fullArticle['title'],
+                        'url' => $fullArticle['url'],
+                        'thumbnail' => $thumbnail,
+                        'created' => date('Y-m-d', $fullArticle['created']),
+                        'views' => $fullArticle['views'] ?? 0,
+                        'comments' => $fullArticle['commentsNum'] ?? 0
+                    ];
+                }
+            }
+
             $widgetList[] = [
-                'type' => 'test',
+                'type' => 'hot_articles',
                 'data' => [
-                    'content' => Get::themeOption('sidebar_widget_test1_content', '这是一行测试文字')
+                    'articles' => $formattedArticles,
+                    'sort' => $sort
                 ]
             ];
         }
 
-        // 3. 测试卡片 2
-        if (Get::themeOption('sidebar_widget_test2', true)) {
+        // 5. 最新评论
+        if (Get::themeOption('sidebar_widget_recent_comments', true)) {
+            $count = intval(Get::themeOption('sidebar_widget_recent_comments_count', 5));
+
+            // 获取最新评论
+            $comments = GetComment::all(
+                ['coid', 'author', 'mail', 'text', 'created', 'cid'],
+                'created',
+                'desc',
+                $count,
+                0
+            );
+
+            // 格式化评论数据
+            $formattedComments = [];
+            foreach ($comments as $comment) {
+                // 获取评论所属文章
+                $article = GetArticle::get($comment['cid'], ['cid', 'title', 'url']);
+
+                // 生成头像URL
+                $avatar = '';
+                if (!empty($comment['mail'])) {
+                    $avatar = 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($comment['mail']))) . '?s=32&d=mp';
+                } else {
+                    $avatar = 'https://www.gravatar.com/avatar/?s=32&d=mp';
+                }
+
+                $formattedComments[] = [
+                    'author' => $comment['author'],
+                    'avatar' => $avatar,
+                    'text' => mb_substr(strip_tags($comment['text']), 0, 50, 'UTF-8'),
+                    'created' => date('Y-m-d', $comment['created']),
+                    'article_title' => $article ? $article['title'] : '',
+                    'article_url' => $article ? $article['url'] : '',
+                    'comment_url' => $article ? $article['url'] . '#comment-' . $comment['coid'] : ''
+                ];
+            }
+
             $widgetList[] = [
-                'type' => 'test',
+                'type' => 'recent_comments',
                 'data' => [
-                    'content' => Get::themeOption('sidebar_widget_test2_content', '这是另一行测试文字')
+                    'comments' => $formattedComments
                 ]
             ];
         }

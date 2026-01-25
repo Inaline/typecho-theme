@@ -24,6 +24,7 @@
     --border-radius: 8px;
     --transition-speed: 0.3s;
     --card-padding: 13.14px;
+    --content-max-width: 1200px;
 }
 
 /* 深色模式变量 */
@@ -68,7 +69,7 @@ body.overflow-hidden {
 
 /* Main 内容区域 */
 main {
-    max-width: 1200px;
+    max-width: var(--content-max-width);
     margin: 0 auto;
     padding: 16px;
     padding-top: calc(var(--topbar-height) + var(--categories-height) + 16px);
@@ -118,8 +119,6 @@ main {
     font-weight: 600;
     color: var(--text-color);
     margin-bottom: 12px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid var(--primary-color);
 }
 
 .card-content {
@@ -288,6 +287,179 @@ main {
     line-height: 1.6;
 }
 
+/* 热门文章卡片样式 */
+.hot-articles-card .card-content {
+    padding: 12px;
+}
+
+.hot-articles-card .article-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hot-articles-card .article-item {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--bg-color-secondary);
+    transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.hot-articles-card .article-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.hot-articles-card .article-link {
+    display: flex;
+    text-decoration: none;
+    color: var(--text-color);
+    align-items: center;
+}
+
+.hot-articles-card .article-thumbnail {
+    width: 80px;
+    height: 60px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: var(--border-radius);
+}
+
+.hot-articles-card .article-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hot-articles-card .article-info {
+    flex: 1;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+}
+
+.hot-articles-card .article-title {
+    font-size: 13px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 6px;
+}
+
+.hot-articles-card .article-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 11px;
+    color: var(--text-color-light);
+}
+
+.hot-articles-card .article-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* 最新评论卡片样式 */
+.recent-comments-card .card-content {
+    padding: 12px;
+}
+
+.recent-comments-card .comment-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recent-comments-card .comment-item {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.recent-comments-card .comment-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.recent-comments-card .comment-avatar {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.recent-comments-card .comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.recent-comments-card .comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.recent-comments-card .comment-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.recent-comments-card .comment-author {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.recent-comments-card .comment-date {
+    font-size: 11px;
+    color: var(--text-color-light);
+}
+
+.recent-comments-card .comment-text {
+    font-size: 12px;
+    color: var(--text-color-light);
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.recent-comments-card .comment-text a {
+    text-decoration: none;
+    color: var(--text-color-light);
+    transition: color var(--transition-speed);
+}
+
+.recent-comments-card .comment-text a:hover {
+    color: var(--primary-color);
+}
+
+/* 空状态样式 */
+.empty-text {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-color-light);
+    font-size: 13px;
+}
+
 /* 轮播图样式 */
 .carousel {
     position: relative;
@@ -452,7 +624,7 @@ main {
     align-items: center;
     height: var(--topbar-height);
     padding: 0 16px;
-    max-width: 1200px;
+    max-width: var(--content-max-width);
     margin: 0 auto;
 }
 
@@ -546,7 +718,7 @@ body.dark-mode .topbar-divider {
     align-items: center;
     justify-content: flex-start;
     gap: 4px;
-    max-width: 1200px;
+    max-width: var(--content-max-width);
     margin: 0 auto;
     padding: 0 16px;
     height: var(--categories-height);
