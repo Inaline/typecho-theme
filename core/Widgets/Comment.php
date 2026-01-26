@@ -329,7 +329,7 @@ class GetComment
      * @param int $parentId 父评论 ID
      * @return array
      */
-    private static function buildTree(array $elements, $parentId = 0)
+    public static function buildTree(array $elements, $parentId = 0)
     {
         $branch = [];
 

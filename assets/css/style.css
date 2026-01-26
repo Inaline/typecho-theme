@@ -106,7 +106,6 @@ main {
     box-shadow: var(--shadow-xs);
     padding: var(--card-padding);
     margin-bottom: 16px;
-    min-height: 120px;
     transition: box-shadow var(--transition-speed);
 }
 
@@ -372,7 +371,7 @@ main {
     padding: 12px;
 }
 
-.recent-comments-card .comment-list {
+.recent-comments-card .list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -416,7 +415,6 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 6px;
 }
 
 .recent-comments-card .comment-author {

@@ -155,6 +155,20 @@ switch ($type) {
         <?php
         break;
 
+    case 'toc':
+        // 文章目录卡片
+        ?>
+        <div class="card toc-card">
+            <div class="card-title">文章目录</div>
+            <div class="card-content">
+                <div id="article-toc" class="article-toc">
+                    <div class="toc-loading">正在生成目录...</div>
+                </div>
+            </div>
+        </div>
+        <?php
+        break;
+
     default:
         // 默认卡片
         ?>

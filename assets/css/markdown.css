@@ -69,6 +69,7 @@
     color: var(--text-color);
     position: relative;
     padding-left: 24px;
+    scroll-margin-top: calc(var(--topbar-height) + var(--categories-height) + 20px);
 }
 
 /* 使用伪元素添加左侧 # 符号 */
@@ -297,4 +298,322 @@
 .markdown-content pre code {
     scrollbar-width: thin;
     scrollbar-color: #555 #2d2d2d;
+}
+
+/* ==========================
+ * 文章目录样式
+ * ========================== */
+
+.toc-card {
+    position: sticky;
+    top: calc(var(--topbar-height) + var(--categories-height) + 20px);
+}
+
+.article-toc {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.toc-loading,
+.toc-empty {
+    text-align: center;
+    color: var(--text-color-light);
+    padding: 20px 0;
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-sub-list {
+    list-style: none;
+    padding-left: 20px;
+    margin: 5px 0;
+}
+
+.toc-item {
+    margin: 5px 0;
+}
+
+.toc-link {
+    display: block;
+    padding: 6px 10px;
+    color: var(--text-color);
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.toc-link:hover {
+    background: var(--page-bg-color);
+    color: var(--primary-color);
+}
+
+.toc-link.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.toc-level-1 {
+    font-weight: 600;
+}
+
+.toc-level-2 {
+    font-weight: 500;
+}
+
+.toc-level-3,
+.toc-level-4,
+.toc-level-5,
+.toc-level-6 {
+    font-weight: 400;
+    font-size: 13px;
+}
+
+/* ==========================
+ * 评论列表样式
+ * ========================== */
+
+.comment-section {
+    margin-top: 24px;
+}
+
+.comment-header-card {
+    margin-bottom: 16px;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.comment-sort {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-sort-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-color);
+    color: var(--text-color-light);
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.comment-sort-btn:hover {
+    background: var(--page-bg-color);
+    color: var(--text-color);
+}
+
+.comment-sort-btn.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.comment-empty-card {
+    margin-bottom: 16px;
+}
+
+.comment-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-color-light);
+}
+
+.comment-empty .mdi {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.comment-empty p {
+    font-size: 16px;
+}
+
+.comment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.comment-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.comment-card {
+    margin-bottom: 0;
+}
+
+.comment-main {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+}
+
+.comment-avatar {
+    flex-shrink: 0;
+}
+
+.comment-avatar img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.comment-author a {
+    font-weight: 600;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.comment-author a:hover {
+    color: var(--primary-color);
+}
+
+.comment-reply-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--page-bg-color);
+    color: var(--text-color-light);
+    font-size: 12px;
+    border-radius: 4px;
+}
+
+.comment-date {
+    font-size: 13px;
+    color: var(--text-color-light);
+}
+
+.comment-text {
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.comment-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-color-light);
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.comment-action-btn:hover {
+    background: var(--page-bg-color);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.comment-children {
+    margin-left: 60px;
+    margin-top: 16px;
+    padding-left: 16px;
+    border-left: 2px solid var(--border-color);
+}
+
+.comment-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+}
+
+.comment-page-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.comment-page-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
+.comment-page-info {
+    color: var(--text-color-light);
+    font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .comment-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .comment-children {
+        margin-left: 20px;
+        padding-left: 12px;
+    }
+
+    .comment-avatar img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .comment-main {
+        padding: 12px;
+    }
 }

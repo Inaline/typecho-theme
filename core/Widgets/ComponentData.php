@@ -470,9 +470,10 @@ class ComponentData
 
     /**
      * 获取侧边栏组件数据
+     * @param string $pageType 页面类型 ('home', 'post', 'page' 等)
      * @return array
      */
-    public static function GetSidebarData()
+    public static function GetSidebarData($pageType = 'home')
     {
         $widgetList = [];
 
@@ -511,8 +512,8 @@ class ComponentData
             ];
         }
 
-        // 2. 热门文章
-        if (Get::themeOption('sidebar_widget_hot_articles', true)) {
+        // 2. 热门文章（文章页面不显示）
+        if (Get::themeOption('sidebar_widget_hot_articles', true) && $pageType !== 'post') {
             $count = intval(Get::themeOption('sidebar_widget_hot_articles_count', 5));
             $sort = Get::themeOption('sidebar_widget_hot_articles_sort', 'views');
 
@@ -587,8 +588,8 @@ class ComponentData
             ];
         }
 
-        // 5. 最新评论
-        if (Get::themeOption('sidebar_widget_recent_comments', true)) {
+        // 5. 最新评论（文章页面不显示）
+        if (Get::themeOption('sidebar_widget_recent_comments', true) && $pageType !== 'post') {
             $count = intval(Get::themeOption('sidebar_widget_recent_comments_count', 5));
 
             // 获取最新评论
@@ -633,6 +634,36 @@ class ComponentData
             ];
         }
 
+        // 6. 文章目录（仅文章页面显示）
+        if ($pageType === 'post') {
+            $widgetList[] = [
+                'type' => 'toc',
+                'data' => []
+            ];
+        }
+
         return $widgetList;
+    }
+
+    /* ==========================
+     * Comment 组件数据
+     * ========================== */
+
+    /**
+     * 获取评论列表数据
+     * @param int $cid 文章ID
+     * @param int $page 当前页码
+     * @param int $pageSize 每页评论数
+     * @param string $order 排序方式 ('asc' | 'desc')
+     * @return array
+     */
+    public static function GetCommentData($cid, $page = 1, $pageSize = 10, $order = 'desc')
+    {
+        return [
+            'cid' => $cid,
+            'page' => $page,
+            'pageSize' => $pageSize,
+            'order' => $order
+        ];
     }
 }

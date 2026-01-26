@@ -9,6 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
         addLineNumbers();
     }
 
+    // 初始化文章目录
+    initTOC();
+
+    // 初始化评论功能
+    initComments();
+
     // 点赞按钮功能
     initLikeButton();
 
@@ -243,4 +249,230 @@ function showShareDialog(title, url) {
 function updateLikes(articleId, isLiked) {
     // TODO: 实现后端 API 调用
     console.log('更新点赞数:', articleId, isLiked);
+}
+
+/**
+ * 初始化评论功能
+ */
+function initComments() {
+    const commentSection = document.querySelector('.comment-section');
+    if (!commentSection) return;
+
+    // 评论排序按钮
+    const sortButtons = commentSection.querySelectorAll('.comment-sort-btn');
+    sortButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const order = this.getAttribute('data-order');
+            loadComments(1, order);
+        });
+    });
+
+    // 分页按钮
+    const pageButtons = commentSection.querySelectorAll('.comment-page-btn');
+    pageButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const page = parseInt(this.getAttribute('data-page'));
+            const activeSortBtn = commentSection.querySelector('.comment-sort-btn.active');
+            const order = activeSortBtn ? activeSortBtn.getAttribute('data-order') : 'desc';
+            loadComments(page, order);
+        });
+    });
+}
+
+/**
+ * 加载评论列表
+ * @param {number} page 页码
+ * @param {string} order 排序方式 ('asc' | 'desc')
+ */
+function loadComments(page, order) {
+    const commentSection = document.querySelector('.comment-section');
+    if (!commentSection) return;
+
+    // 获取文章ID
+    const articleId = commentSection.getAttribute('data-cid');
+    if (!articleId) return;
+
+    // 显示加载状态
+    const commentList = document.getElementById('comment-list');
+    if (commentList) {
+        commentList.style.opacity = '0.5';
+    }
+
+    // 构建请求URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('comment_page', page);
+    url.searchParams.set('comment_order', order);
+
+    // 发送请求
+    fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            throw new Error('网络请求失败');
+        }
+        return response.text();
+    })
+    .then(function(html) {
+        // 解析返回的HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newCommentSection = doc.querySelector('.comment-section');
+
+        if (newCommentSection) {
+            // 替换评论区域
+            commentSection.innerHTML = newCommentSection.innerHTML;
+
+            // 重新初始化评论功能
+            initComments();
+        }
+    })
+    .catch(function(error) {
+        console.error('加载评论失败:', error);
+        alert('加载评论失败，请重试');
+    })
+    .finally(function() {
+        // 恢复评论列表透明度
+        if (commentList) {
+            commentList.style.opacity = '1';
+        }
+    });
+}
+
+/**
+ * 初始化文章目录
+ */
+function initTOC() {
+    const tocContainer = document.getElementById('article-toc');
+    if (!tocContainer) return;
+
+    // 查找文章内容区域
+    const articleContent = document.querySelector('.markdown-content');
+    if (!articleContent) {
+        tocContainer.innerHTML = '<div class="toc-empty">未找到目录</div>';
+        return;
+    }
+
+    // 查找所有标题
+    const headings = articleContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    if (headings.length === 0) {
+        tocContainer.innerHTML = '<div class="toc-empty">暂无目录</div>';
+        return;
+    }
+
+    // 生成目录 HTML
+    let tocHtml = '<ul class="toc-list">';
+    let currentLevel = 0;
+    let levelStack = [];
+
+    headings.forEach(function(heading, index) {
+        const level = parseInt(heading.tagName.charAt(1));
+        const text = heading.textContent.trim();
+        const id = 'heading-' + index;
+
+        // 为标题添加 ID
+        heading.id = id;
+
+        // 处理层级
+        if (level > currentLevel) {
+            // 进入更深层级
+            for (let i = currentLevel; i < level; i++) {
+                tocHtml += '<ul class="toc-sub-list">';
+                levelStack.push('</ul>');
+            }
+        } else if (level < currentLevel) {
+            // 返回更浅层级
+            for (let i = currentLevel; i > level; i--) {
+                tocHtml += '</ul>';
+                levelStack.pop();
+            }
+        }
+
+        currentLevel = level;
+
+        // 添加目录项
+        tocHtml += '<li class="toc-item toc-level-' + level + '">';
+        tocHtml += '<a href="#' + id + '" class="toc-link" data-target="' + id + '">';
+        tocHtml += text;
+        tocHtml += '</a>';
+        tocHtml += '</li>';
+    });
+
+    // 关闭所有未闭合的列表
+    while (levelStack.length > 0) {
+        tocHtml += levelStack.pop();
+    }
+
+    tocHtml += '</ul>';
+
+    // 渲染目录
+    tocContainer.innerHTML = tocHtml;
+
+    // 添加点击事件
+    const tocLinks = tocContainer.querySelectorAll('.toc-link');
+    tocLinks.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('data-target');
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                // 使用 scrollIntoView 滚动
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // 更新 URL hash
+                history.pushState(null, null, '#' + targetId);
+            }
+        });
+    });
+
+    // 监听滚动，高亮当前目录项
+    window.addEventListener('scroll', function() {
+        updateActiveTOCItem(headings, tocLinks);
+    });
+}
+
+/**
+ * 更新当前激活的目录项
+ * @param {NodeList} headings 标题列表
+ * @param {NodeList} tocLinks 目录链接列表
+ */
+function updateActiveTOCItem(headings, tocLinks) {
+    // 获取顶部导航栏高度
+    const topBar = document.querySelector('.topbar');
+    const topBarHeight = topBar ? topBar.offsetHeight : 88;
+    const offset = topBarHeight + 20; // 额外添加 20px 偏移
+
+    let currentHeading = null;
+    let maxScrollPosition = -Infinity;
+
+    // 找到当前可见的标题
+    headings.forEach(function(heading) {
+        const rect = heading.getBoundingClientRect();
+        const scrollPosition = window.scrollY + rect.top;
+
+        // 如果标题在视口上方（考虑导航栏高度）或者在视口内
+        if (rect.top <= offset) {
+            // 选择滚动位置最大的标题（即最接近视口顶部的标题）
+            if (scrollPosition > maxScrollPosition) {
+                maxScrollPosition = scrollPosition;
+                currentHeading = heading;
+            }
+        }
+    });
+
+    // 移除所有激活状态
+    tocLinks.forEach(function(link) {
+        link.classList.remove('active');
+    });
+
+    // 添加激活状态
+    if (currentHeading) {
+        const activeLink = document.querySelector('.toc-link[data-target="' + currentHeading.id + '"]');
+        if (activeLink) {
+            activeLink.classList.add('active');
+        }
+    }
 }
