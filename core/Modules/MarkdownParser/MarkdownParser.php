@@ -154,6 +154,16 @@ class MarkdownParser
         // 再解析剩余内容的 Markdown
         $content = Utils\Markdown::convert($content);
 
+        // 清理代码块中可能存在的行号文本（如 "3", "4", "11" 等单独的数字）
+        // 匹配 <code> 标签内单独的数字行号
+        $content = preg_replace_callback('/<code>(.*?)<\/code>/s', function($matches) {
+            $codeContent = $matches[1];
+            // 移除行开头的纯数字行号（如 "3", "4", "11" 等）
+            // 匹配行首或换行后的纯数字，后面跟着空格或特殊字符
+            $codeContent = preg_replace('/(^|\n)\s*\d+\s*/', '$1', $codeContent);
+            return '<code>' . $codeContent . '</code>';
+        }, $content);
+
         // 最后将 HTML 块替换回去
         foreach ($htmlBlocks as $index => $html) {
             $placeholder = '<inaline-html-block id="' . $index . '"></inaline-html-block>';

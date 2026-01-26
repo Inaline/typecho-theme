@@ -4,10 +4,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化代码高亮
+    // 为代码块添加行号（函数内部会处理高亮逻辑）
     if (typeof hljs !== 'undefined') {
-        hljs.highlightAll();
-        // 为代码块添加行号
         addLineNumbers();
     }
 
@@ -25,7 +23,11 @@ function addLineNumbers() {
     const codeBlocks = document.querySelectorAll('.markdown-content pre code');
 
     codeBlocks.forEach(function(block) {
-        const code = block.innerHTML;
+        const pre = block.parentElement;
+
+        // 获取纯文本内容
+        const code = block.textContent;
+
         // 将代码按行分割
         const lines = code.split('\n');
 
@@ -34,22 +36,30 @@ function addLineNumbers() {
             lines.pop();
         }
 
-        // 计算总行数
-        const totalLines = lines.length;
-
-        // 根据行数计算行号宽度
-        const maxLineNumber = totalLines;
-        const digits = maxLineNumber.toString().length;
-        const charWidth = 7; // 每个字符大约 7px
-        const lineNumberWidth = digits * charWidth + 10; // 加上一些边距
+        // 创建行号列
+        const lineNumbersDiv = document.createElement('div');
+        lineNumbersDiv.className = 'line-numbers';
 
         // 为每一行添加行号
-        const numberedCode = lines.map(function(line, index) {
-            const lineNumber = index + 1;
-            return '<span class="code-line"><span class="line-number" style="width: ' + lineNumberWidth + 'px;">' + lineNumber + '</span>' + line + '</span>';
-        }).join('\n');
+        for (let i = 1; i <= lines.length; i++) {
+            const lineNumber = document.createElement('span');
+            lineNumber.className = 'line-number';
+            lineNumber.textContent = i;
+            lineNumbersDiv.appendChild(lineNumber);
+        }
 
-        block.innerHTML = numberedCode;
+        // 重新构建代码内容（不带行号）
+        block.textContent = lines.join('\n');
+
+        // 移除可能存在的高亮标记
+        block.removeAttribute('data-highlighted');
+        block.classList.remove('hljs');
+
+        // 将行号列插入到 pre 的最前面
+        pre.insertBefore(lineNumbersDiv, block);
+
+        // 重新高亮代码
+        hljs.highlightElement(block);
 
         // 添加复制按钮
         addCopyButton(block);
@@ -80,13 +90,8 @@ function copyCode(codeBlock, copyBtn) {
     const clonedBlock = codeBlock.cloneNode(true);
     const codeLines = clonedBlock.querySelectorAll('.code-line');
 
-    // 获取纯文本代码（去除行号）
+    // 获取纯文本代码（行号由 CSS 伪元素生成，不会出现在文本中）
     const codeText = Array.from(codeLines).map(function(line) {
-        // 移除行号元素，只保留代码内容
-        const lineNumber = line.querySelector('.line-number');
-        if (lineNumber) {
-            lineNumber.remove();
-        }
         return line.textContent;
     }).join('\n');
 

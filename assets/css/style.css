@@ -2778,6 +2778,63 @@ body.dark-mode .search-clear:hover {
     transition: color var(--transition-speed);
 }
 
+/* ==========================
+ * 全局自定义滚动条样式
+ * ========================== */
+
+/* Webkit 浏览器 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--page-bg-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--text-color-light);
+    border-radius: 4px;
+    border: 2px solid var(--page-bg-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-color);
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: var(--primary-color);
+}
+
+/* 深色模式滚动条 */
+body.dark-mode ::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #666;
+    border-color: #1a1a1a;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #888;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:active {
+    background: var(--primary-color);
+}
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-color-light) var(--page-bg-color);
+}
+
+body.dark-mode * {
+    scrollbar-color: #666 #1a1a1a;
+}
+
 .article-meta-value a:hover {
     color: var(--primary-color);
     text-decoration: underline;
