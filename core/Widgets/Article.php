@@ -40,7 +40,14 @@ class GetArticle
                 if (in_array('created', $fields)) $item['created'] = $widget->created;
                 if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
                 if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                if (in_array('author', $fields)) $item['author'] = $widget->author;
+                if (in_array('author', $fields)) {
+                        // author 可能是对象或字符串
+                        if (is_object($widget->author)) {
+                            $item['author'] = $widget->author->name ?? '';
+                        } else {
+                            $item['author'] = $widget->author ?? '';
+                        }
+                    }
                 if (in_array('text', $fields)) $item['text'] = $widget->text;
                 if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
                 if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
@@ -128,7 +135,14 @@ class GetArticle
                     if (in_array('created', $fields)) $item['created'] = $widget->created;
                     if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
                     if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) $item['author'] = $widget->author;
+                    if (in_array('author', $fields)) {
+                        // author 可能是对象或字符串
+                        if (is_object($widget->author)) {
+                            $item['author'] = $widget->author->name ?? '';
+                        } else {
+                            $item['author'] = $widget->author ?? '';
+                        }
+                    }
                     if (in_array('text', $fields)) $item['text'] = $widget->text;
                     if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
                     if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
@@ -415,7 +429,14 @@ class GetArticle
                     if (in_array('created', $fields)) $item['created'] = $widget->created;
                     if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
                     if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) $item['author'] = $widget->author;
+                    if (in_array('author', $fields)) {
+                        // author 可能是对象或字符串
+                        if (is_object($widget->author)) {
+                            $item['author'] = $widget->author->name ?? '';
+                        } else {
+                            $item['author'] = $widget->author ?? '';
+                        }
+                    }
                     if (in_array('text', $fields)) $item['text'] = $widget->text;
                     if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
                     if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
@@ -498,7 +519,14 @@ class GetArticle
                     if (in_array('created', $fields)) $item['created'] = $widget->created;
                     if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
                     if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) $item['author'] = $widget->author;
+                    if (in_array('author', $fields)) {
+                        // author 可能是对象或字符串
+                        if (is_object($widget->author)) {
+                            $item['author'] = $widget->author->name ?? '';
+                        } else {
+                            $item['author'] = $widget->author ?? '';
+                        }
+                    }
                     if (in_array('text', $fields)) $item['text'] = $widget->text;
                     if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
                     if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
@@ -539,6 +567,99 @@ class GetArticle
         }
 
         return $result;
+    }
+
+    /* ==========================
+     * 当前文章
+     * ========================== */
+
+    /**
+     * 获取当前正在显示的文章
+     * @return array|null
+     */
+    public static function current()
+    {
+        try {
+            $widget = \Widget\Contents\Post::alloc();
+            
+            if ($widget->have()) {
+                $widget->next();
+                
+                return [
+                    'cid' => $widget->cid,
+                    'title' => $widget->title,
+                    'slug' => $widget->slug,
+                    'created' => $widget->created,
+                    'modified' => $widget->modified,
+                    'authorId' => $widget->authorId,
+                    'author' => $widget->author,
+                    'text' => $widget->text,
+                    'views' => isset($widget->views) ? $widget->views : 0,
+                    'commentsNum' => $widget->commentsNum,
+                    'order' => $widget->order,
+                    'url' => $widget->permalink,
+                    'excerpt' => $widget->excerpt(200, '...'),
+                    'tags' => self::getTagsFromWidget($widget),
+                    'categories' => self::getCategoriesFromWidget($widget)
+                ];
+            }
+        } catch (Exception $e) {
+            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * 从 Widget 对象中获取标签
+     * @param object $widget Widget 对象
+     * @return array
+     */
+    private static function getTagsFromWidget($widget)
+    {
+        $tags = [];
+        
+        if (isset($widget->tags) && is_array($widget->tags)) {
+            foreach ($widget->tags as $tag) {
+                $tags[] = [
+                    'mid' => $tag['mid'],
+                    'name' => $tag['name'],
+                    'slug' => $tag['slug'],
+                    'count' => $tag['count'],
+                    'order' => $tag['order'],
+                    'url' => $tag['permalink']
+                ];
+            }
+        }
+        
+        return $tags;
+    }
+
+    /**
+     * 从 Widget 对象中获取分类
+     * @param object $widget Widget 对象
+     * @return array
+     */
+    private static function getCategoriesFromWidget($widget)
+    {
+        $categories = [];
+        
+        if (isset($widget->categories) && is_array($widget->categories)) {
+            foreach ($widget->categories as $category) {
+                $categories[] = [
+                    'mid' => $category['mid'],
+                    'name' => $category['name'],
+                    'slug' => $category['slug'],
+                    'parent' => $category['parent'],
+                    'description' => $category['description'],
+                    'count' => $category['count'],
+                    'order' => $category['order'],
+                    'url' => $category['permalink']
+                ];
+            }
+        }
+        
+        return $categories;
     }
 
     /* ==========================
@@ -646,7 +767,14 @@ class GetArticle
                     if (in_array('created', $fields)) $item['created'] = $widget->created;
                     if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
                     if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) $item['author'] = $widget->author;
+                    if (in_array('author', $fields)) {
+                        // author 可能是对象或字符串
+                        if (is_object($widget->author)) {
+                            $item['author'] = $widget->author->name ?? '';
+                        } else {
+                            $item['author'] = $widget->author ?? '';
+                        }
+                    }
                     if (in_array('text', $fields)) $item['text'] = $widget->text;
                     if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
                     if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;

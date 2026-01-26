@@ -16,9 +16,10 @@ class ComponentData
     /**
      * 获取 Header 组件数据
      * @param string $body_id 页面 body_id
+     * @param object $archive 当前 Archive 对象（可选）
      * @return array
      */
-    public static function GetHeader($body_id = 'home')
+    public static function GetHeader($body_id = 'home', $archive = null)
     {
         // 获取性能统计数据
         $performanceStats = Inaline::getPerformanceStats();
@@ -39,24 +40,48 @@ class ComponentData
             $performanceData['debug_mode'] = false;
         }
         
+        // 构建样式表链接
+        $links = [
+            [
+                'rel'  => 'stylesheet',
+                'href' => 'https://cdn.bootcdn.net/ajax/libs/MaterialDesign-Webfont/7.4.47/css/materialdesignicons.min.css'
+            ],
+            [
+                'rel'  => 'stylesheet',
+                'type' => 'text/css',
+                'href' => Get::Assets('assets/css/style.css')
+            ]
+        ];
+
+        // 仅在文章页面引入 markdown.css 和 highlight.js
+        if ($body_id === 'post') {
+            $links[] = [
+                'rel'  => 'stylesheet',
+                'type' => 'text/css',
+                'href' => Get::Assets('assets/css/markdown.css')
+            ];
+            $links[] = [
+                'rel'  => 'stylesheet',
+                'href' => 'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css'
+            ];
+        }
+
+        // 获取标题
+        $title = GetSite::title();
+        if ($body_id === 'post' && $archive && isset($archive->title)) {
+            // 文章页面使用"文章名 - 站名"格式
+            $siteName = GetSite::title();
+            $title = $archive->title . ' - ' . $siteName;
+        }
+
         return [
-            'title'       => GetSite::title(),
+            'title'       => $title,
             'keywords'    => GetSite::keywords(),
             'description' => GetSite::description(),
             'favicon'     => Get::resolveUri(Get::themeOption('favicon')),
             'copyright'   => GetSite::authorName(),
             'author'      => GetSite::authorName(),
-            'links'       => [
-                [
-                    'rel'  => 'stylesheet',
-                    'href' => 'https://cdn.bootcdn.net/ajax/libs/MaterialDesign-Webfont/7.4.47/css/materialdesignicons.min.css'
-                ],
-                [
-                    'rel'  => 'stylesheet',
-                    'type' => 'text/css',
-                    'href' => Get::Assets('assets/css/style.css')
-                ]
-            ],
+            'links'       => $links,
             'scripts'     => [],
             'custom'      => Get::themeOption('custom_head'),
             'body_id'     => $body_id,
@@ -100,7 +125,7 @@ class ComponentData
      * 获取 Footer 组件数据
      * @return array
      */
-    public static function GetFooter()
+    public static function GetFooter($body_id = 'home')
     {
         // 计算网站运行时间（精确到秒）
         $start_date = Get::themeOption('footer_start_date', '2024-01-01');
@@ -145,17 +170,32 @@ class ComponentData
         $rss_url = GetSite::rssUrl();
         $sitemap_url = Get::Assets('library/sitemap.php');
 
-        return [
-            'scripts' => [
-                [
-                    'type' => 'text/javascript',
-                    'src' => GetSite::adminPath() . 'js/jquery.js',
-                ],
-                [
-                    'type' => 'text/javascript',
-                    'src' => Get::Assets('assets/js/index.js')
-                ]
+        // 构建脚本列表
+        $scripts = [
+            [
+                'type' => 'text/javascript',
+                'src' => GetSite::adminPath() . 'js/jquery.js',
             ],
+            [
+                'type' => 'text/javascript',
+                'src' => Get::Assets('assets/js/index.js')
+            ]
+        ];
+
+        // 仅在文章页面引入 highlight.js 和 article.js
+        if ($body_id === 'post') {
+            $scripts[] = [
+                'type' => 'text/javascript',
+                'src' => 'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/highlight.min.js'
+            ];
+            $scripts[] = [
+                'type' => 'text/javascript',
+                'src' => Get::Assets('assets/js/article.js')
+            ];
+        }
+
+        return [
+            'scripts' => $scripts,
             'custom' => Get::themeOption('custom_foot'),
             'run_time' => $run_time,
             'start_date' => $start_date,
@@ -313,6 +353,114 @@ class ComponentData
             'per_page' => $perPage,
             'total_pages' => $totalPages,
             'articles' => $formattedArticles
+        ];
+    }
+
+    /* ==========================
+     * ArticleReader 组件数据
+     * ========================== */
+
+    /**
+     * 获取文章阅读组件数据
+     * @param object $archive 当前 Archive 对象
+     * @return array
+     */
+    public static function GetArticleData($archive = null)
+    {
+        // 引入 Markdown 解析器
+        require_once dirname(__FILE__) . '/../Modules/MarkdownParser/MarkdownParser.php';
+
+        // 如果没有传入 archive 对象，尝试从全局获取
+        if ($archive === null) {
+            global $archive;
+            if ($archive === null) {
+                return [];
+            }
+        }
+
+        // 直接从 archive 对象获取文章数据
+        $title = $archive->title ?? '';
+        $text = $archive->text ?? '';
+        $created = $archive->created ?? time();
+
+        // 获取作者信息 - 使用 Typecho 自带的 Widget\User 组件
+        $author = '';
+        if (isset($archive->authorId) && $archive->authorId) {
+            try {
+                $userWidget = \Widget\User::alloc('uid=' . $archive->authorId);
+                if ($userWidget->have()) {
+                    $userWidget->next();
+                    $author = $userWidget->name;
+                }
+            } catch (Exception $e) {
+                // 忽略错误
+            }
+        }
+
+        $views = isset($archive->views) ? $archive->views : 0;
+        $commentsNum = $archive->commentsNum ?? 0;
+
+        // 获取点赞数（从自定义字段获取）
+        $likes = 0;
+        try {
+            $db = Typecho_Db::get();
+            $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $archive->cid));
+            if ($row) {
+                $fields = unserialize($row['fields']);
+                if (is_array($fields) && isset($fields['article_likes'])) {
+                    $likes = intval($fields['article_likes']);
+                }
+            }
+        } catch (Exception $e) {
+            // 忽略错误
+        }
+
+        // 先解析文章内容中的自定义 Markdown 语法（转换为占位符）
+        $content = $text;
+        $content = MarkdownParser::parse($content);
+
+        // 再使用 Typecho 的 Markdown 解析器处理标准 Markdown
+        $content = Utils\Markdown::convert($content);
+
+        // 最后渲染自定义组件（将占位符替换为最终 HTML）
+        $content = MarkdownParser::renderComponents($content);
+
+        // 获取标签
+        $tags = [];
+        if (isset($archive->tags) && is_array($archive->tags)) {
+            foreach ($archive->tags as $tag) {
+                $tags[] = [
+                    'name' => $tag['name'],
+                    'slug' => $tag['slug'],
+                    'url' => $tag['permalink']
+                ];
+            }
+        }
+
+        // 获取分类
+        $categories = [];
+        if (isset($archive->categories) && is_array($archive->categories)) {
+            foreach ($archive->categories as $category) {
+                $categories[] = [
+                    'name' => $category['name'],
+                    'slug' => $category['slug'],
+                    'url' => $category['permalink']
+                ];
+            }
+        }
+
+        return [
+            'title' => $title,
+            'content' => $content,
+            'date' => date('Y-m-d', $created),
+            'author' => $author,
+            'views' => $views,
+            'comments' => $commentsNum,
+            'likes' => $likes,
+            'tags' => $tags,
+            'categories' => $categories,
+            'url' => $archive->permalink,
+            'cid' => $archive->cid
         ];
     }
 

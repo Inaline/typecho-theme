@@ -58,8 +58,12 @@ $scripts = $this->data->scripts ?? [];
 foreach ($scripts as $item):
     if (isset($item['src'])):
         echo '<script';
-        foreach ($item as $k => $v) echo ' ' . $k . '="' . e($v) . '"';
+        foreach ($item as $k => $v):
+            if ($k !== 'content') echo ' ' . $k . '="' . e($v) . '"';
+        endforeach;
         echo '></script>';
+    elseif (isset($item['content'])):
+        echo '<script>' . $item['content'] . '</script>';
     endif;
 endforeach;
 ?>
