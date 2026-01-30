@@ -11,9 +11,9 @@
 
 // [DEBUG] 现在页面直接 echo 输出的都是调试信息，不得用于生产环境
 
-$params_head = ComponentData::GetHeader('home');
+$params_head = ComponentData::GetHeader('home', $this);
 $params_top_bar = ComponentData::GetTopBar('home');
-$params_foot = ComponentData::GetFooter();
+$params_foot = ComponentData::GetFooter('home', $this);
 $params_carousel = ComponentData::GetCarouselData();
 $params_sidebar = ComponentData::GetSidebarData();
 

@@ -74,6 +74,14 @@ class ComponentData
             $title = $archive->title . ' - ' . $siteName;
         }
 
+        // 获取 Typecho 头部输出（包含评论系统所需的 JavaScript）
+        $typechoHeader = '';
+        if ($archive) {
+            ob_start();
+            $archive->header();
+            $typechoHeader = ob_get_clean();
+        }
+
         return [
             'title'       => $title,
             'keywords'    => GetSite::keywords(),
@@ -87,7 +95,8 @@ class ComponentData
             'body_id'     => $body_id,
             'font'        => Get::resolveUri(Get::themeOption('font')),
             'font_type'   => Get::themeOption('font_type'),
-            'performance' => $performanceData
+            'performance' => $performanceData,
+            'typecho_header' => $typechoHeader
         ];
     }
 
@@ -123,9 +132,11 @@ class ComponentData
 
     /**
      * 获取 Footer 组件数据
+     * @param string $body_id 页面 body_id
+     * @param object $archive 当前 Archive 对象（可选）
      * @return array
      */
-    public static function GetFooter($body_id = 'home')
+    public static function GetFooter($body_id = 'home', $archive = null)
     {
         // 计算网站运行时间（精确到秒）
         $start_date = Get::themeOption('footer_start_date', '2024-01-01');
@@ -194,6 +205,14 @@ class ComponentData
             ];
         }
 
+        // 获取 Typecho 底部输出
+        $typechoFooter = '';
+        if ($archive) {
+            ob_start();
+            $archive->footer();
+            $typechoFooter = ob_get_clean();
+        }
+
         return [
             'scripts' => $scripts,
             'custom' => Get::themeOption('custom_foot'),
@@ -203,7 +222,8 @@ class ComponentData
             'icp' => $icp,
             'custom_content' => Get::themeOption('footer_custom', ''),
             'rss_url' => $rss_url,
-            'sitemap_url' => $sitemap_url
+            'sitemap_url' => $sitemap_url,
+            'typecho_footer' => $typechoFooter
         ];
     }
 
@@ -383,9 +403,7 @@ class ComponentData
 
         $views = isset($archive->views) ? $archive->views : 0;
         $commentsNum = $archive->commentsNum ?? 0;
-
-        // 获取点赞数（从自定义字段获取）
-        $likes = getArticleLikes($archive);
+        $likes = 0;
 
         // 先解析文章内容中的自定义 Markdown 语法（转换为占位符）
         $content = $text;
@@ -617,11 +635,86 @@ class ComponentData
      */
     public static function GetCommentData($cid, $page = 1, $pageSize = 10, $order = 'desc')
     {
+        // 获取该文章的所有评论（只获取顶级评论）
+        $allComments = GetComment::byArticle($cid, ['coid', 'cid', 'created', 'author', 'authorId', 'mail', 'text', 'status', 'parent'], 'created', $order);
+
+        // 只保留顶级评论（parent = 0）
+        $topLevelComments = array_filter($allComments, function($comment) {
+            return $comment['parent'] == 0;
+        });
+
+        // 重新索引数组
+        $topLevelComments = array_values($topLevelComments);
+
+        // 计算总数和总页数
+        $total = count($topLevelComments);
+        $totalPages = ceil($total / $pageSize);
+
+        // 计算偏移量
+        $offset = ($page - 1) * $pageSize;
+
+        // 获取当前页的评论
+        $pageComments = array_slice($topLevelComments, $offset, $pageSize);
+
+        // 格式化评论数据
+        $formattedComments = [];
+        $floor = $offset + 1; // 楼层号
+
+        foreach ($pageComments as $comment) {
+            // 获取子评论
+            $children = GetComment::children($comment['coid'], ['coid', 'cid', 'created', 'author', 'authorId', 'mail', 'text', 'status', 'parent']);
+
+            // 格式化子评论
+            $formattedChildren = [];
+            $childFloor = 1;
+            foreach ($children as $child) {
+                // 获取被回复的评论信息
+                $parentComment = GetComment::get($child['parent'], ['author']);
+                $parentName = $parentComment ? $parentComment['author'] : '';
+
+                $formattedChildren[] = [
+                    'coid' => $child['coid'],
+                    'author' => $child['author'],
+                    'authorId' => $child['authorId'],
+                    'mail' => $child['mail'],
+                    'text' => $child['text'],
+                    'created' => date('Y-m-d H:i', $child['created']),
+                    'parent' => $parentName,
+                    'floor' => $floor . '.' . $childFloor
+                ];
+                $childFloor++;
+            }
+
+            // 生成头像URL
+            $avatar = '';
+            if (!empty($comment['mail'])) {
+                $avatar = 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($comment['mail']))) . '?s=32&d=' . urlencode(Get::Assets('assets/images/cover/cover1.jpg'));
+            } else {
+                $avatar = Get::Assets('assets/images/cover/cover1.jpg');
+            }
+
+            $formattedComments[] = [
+                'coid' => $comment['coid'],
+                'author' => $comment['author'],
+                'authorId' => $comment['authorId'],
+                'mail' => $comment['mail'],
+                'avatar' => $avatar,
+                'text' => $comment['text'],
+                'created' => date('Y-m-d H:i', $comment['created']),
+                'floor' => '#' . $floor,
+                'children' => $formattedChildren
+            ];
+            $floor++;
+        }
+
         return [
             'cid' => $cid,
             'page' => $page,
             'pageSize' => $pageSize,
-            'order' => $order
+            'total' => $total,
+            'totalPages' => $totalPages,
+            'order' => $order,
+            'comments' => $formattedComments
         ];
     }
 }

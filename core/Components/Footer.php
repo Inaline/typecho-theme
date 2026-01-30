@@ -67,6 +67,9 @@ foreach ($scripts as $item):
     endif;
 endforeach;
 ?>
+<?php if (isset($this->data->typecho_footer)): ?>
+    <?= $this->data->typecho_footer ?>
+<?php endif; ?>
 <?php if (isset($this->data->custom)): ?>
     <?= $this->data->custom; ?>
 <?php endif; ?>

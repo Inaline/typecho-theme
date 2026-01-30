@@ -279,6 +279,26 @@ function initComments() {
     });
 }
 
+// 使用事件委托处理回复按钮点击（因为评论内容可能被动态替换）
+document.addEventListener('click', function(e) {
+    // 检查点击的是否是回复按钮或其子元素
+    const replyBtn = e.target.closest('.reply-btn');
+    if (replyBtn) {
+        e.preventDefault();
+        const commentId = replyBtn.getAttribute('data-comment-id');
+        console.log('点击回复按钮，评论ID:', commentId);
+        console.log('TypechoComment 是否存在:', typeof TypechoComment !== 'undefined');
+        
+        if (typeof TypechoComment !== 'undefined') {
+            console.log('调用 TypechoComment.reply');
+            TypechoComment.reply('comment-' + commentId, commentId);
+        } else {
+            console.error('TypechoComment 对象未定义');
+            alert('评论回复功能暂不可用，请刷新页面重试');
+        }
+    }
+});
+
 /**
  * 加载评论列表
  * @param {number} page 页码

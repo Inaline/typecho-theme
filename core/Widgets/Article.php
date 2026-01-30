@@ -25,11 +25,12 @@ class GetArticle
     public static function all($fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order'], $order = 'created', $sort = 'desc', $limit = 0, $offset = 0)
     {
         $result = [];
+        $cids = [];
         
         try {
             $widget = \Widget\Contents\Post\Recent::alloc('pageSize=' . ($limit > 0 ? $limit : 999999) . '&page=' . ceil(($offset + 1) / ($limit > 0 ? $limit : 1)));
             
-            // 遍历文章
+            // 遍历文章，收集所有 CID
             while ($widget->next()) {
                 $item = [];
                 
@@ -59,18 +60,64 @@ class GetArticle
                 // 添加摘要
                 if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
                 
+                // 收集 CID 用于后续批量查询自定义字段
+                $cids[] = $widget->cid;
+                
+                $result[] = $item;
+            }
+            
+            // 批量获取所有文章的自定义字段
+            $allCustomFields = [];
+            if (!empty($cids)) {
+                $db = \Typecho_Db::get();
+                $fieldRows = $db->fetchAll($db->select('cid', 'name', 'str_value', 'int_value', 'float_value')
+                    ->from('table.fields')
+                    ->where('cid IN ?', $cids));
+                
+                foreach ($fieldRows as $fieldRow) {
+                    $cid = $fieldRow['cid'];
+                    $fieldName = $fieldRow['name'];
+                    $fieldValue = null;
+                    
+                    // 根据不同的值字段判断类型并获取值
+                    if (!empty($fieldRow['str_value'])) {
+                        $fieldValue = $fieldRow['str_value'];
+                    } elseif (!empty($fieldRow['int_value'])) {
+                        $fieldValue = $fieldRow['int_value'];
+                    } elseif (!empty($fieldRow['float_value'])) {
+                        $fieldValue = $fieldRow['float_value'];
+                    }
+                    
+                    if ($fieldValue !== null) {
+                        if (!isset($allCustomFields[$cid])) {
+                            $allCustomFields[$cid] = [];
+                        }
+                        $allCustomFields[$cid][$fieldName] = $fieldValue;
+                    }
+                }
+            }
+            
+            // 将自定义字段添加到结果中
+            foreach ($result as &$item) {
+                $cid = $item['cid'];
+                
                 // 添加自定义字段
                 if (in_array('fields', $fields)) {
-                    $item['fields'] = self::getCustomFields($widget->cid);
+                    $item['fields'] = $allCustomFields[$cid] ?? [];
                 }
                 
                 // 添加点赞数（从自定义字段获取）
                 if (in_array('likes', $fields)) {
-                    $item['likes'] = isset($item['fields']['article_likes']) ? intval($item['fields']['article_likes']) : 0;
+                    $item['likes'] = isset($allCustomFields[$cid]['article_likes']) ? intval($allCustomFields[$cid]['article_likes']) : 0;
                 }
                 
-                $result[] = $item;
+                // 更新浏览量（从自定义字段获取，如果有的话）
+                if (in_array('views', $fields) && isset($allCustomFields[$cid]['article_views'])) {
+                    $item['views'] = intval($allCustomFields[$cid]['article_views']);
+                }
             }
+            unset($item);
+            
         } catch (Exception $e) {
             return [];
         }

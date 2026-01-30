@@ -55,6 +55,9 @@
     <?php if (isset($this->data->author)): ?>
         <meta name="author" content="<?=e($this->data->author) ?>">
     <?php endif; ?>
+    <?php if (isset($this->data->typecho_header)): ?>
+        <?= $this->data->typecho_header ?>
+    <?php endif; ?>
     <?php if (isset($this->data->custom)): ?>
         <?= $this->data->custom; ?>
     <?php endif; ?>

@@ -33,9 +33,6 @@ $articles = $data['articles'] ?? [];
             <a href="?sort=comments&layout=<?= $currentLayout ?>&p=1" class="article-list-tab <?= $currentSort === 'comments' ? 'active' : '' ?>" data-sort="comments">
                 评论最多
             </a>
-            <a href="?sort=likes&layout=<?= $currentLayout ?>&p=1" class="article-list-tab <?= $currentSort === 'likes' ? 'active' : '' ?>" data-sort="likes">
-                热门文章
-            </a>
         </div>
         <div class="article-list-tabs-right">
             <a href="?sort=<?= $currentSort ?>&layout=list&p=<?= $currentPage ?>" class="article-list-layout-btn <?= $currentLayout === 'list' ? 'active' : '' ?>" data-layout="list" title="列表视图">
@@ -80,10 +77,6 @@ $articles = $data['articles'] ?? [];
                                     <span class="mdi mdi-comment"></span>
                                     <?= $article['comments'] ?>
                                 </span>
-                                <span class="article-item-likes">
-                                    <span class="mdi mdi-heart"></span>
-                                    <?= $article['likes'] ?>
-                                </span>
                             </div>
                         </div>
                     </a>
@@ -113,10 +106,6 @@ $articles = $data['articles'] ?? [];
                                 <span class="article-card-comments">
                                     <span class="mdi mdi-comment"></span>
                                     <?= $article['comments'] ?>
-                                </span>
-                                <span class="article-card-likes">
-                                    <span class="mdi mdi-heart"></span>
-                                    <?= $article['likes'] ?>
                                 </span>
                             </div>
                         </div>
