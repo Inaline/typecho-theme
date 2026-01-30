@@ -41,13 +41,13 @@ class GetArticle
                 if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
                 if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
                 if (in_array('author', $fields)) {
-                        // author 可能是对象或字符串
-                        if (is_object($widget->author)) {
-                            $item['author'] = $widget->author->name ?? '';
-                        } else {
-                            $item['author'] = $widget->author ?? '';
-                        }
+                    // author 可能是对象或字符串
+                    if (is_object($widget->author)) {
+                        $item['author'] = $widget->author->name ?? '';
+                    } else {
+                        $item['author'] = $widget->author ?? '';
                     }
+                }
                 if (in_array('text', $fields)) $item['text'] = $widget->text;
                 if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
                 if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
@@ -59,21 +59,14 @@ class GetArticle
                 // 添加摘要
                 if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
                 
+                // 添加自定义字段
+                if (in_array('fields', $fields)) {
+                    $item['fields'] = self::getCustomFields($widget->cid);
+                }
+                
                 // 添加点赞数（从自定义字段获取）
                 if (in_array('likes', $fields)) {
-                    $item['likes'] = 0;
-                    try {
-                        $db = Typecho_Db::get();
-                        $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $widget->cid));
-                        if ($row) {
-                            $fields_data = unserialize($row['fields']);
-                            if (is_array($fields_data) && isset($fields_data['article_likes'])) {
-                                $item['likes'] = intval($fields_data['article_likes']);
-                            }
-                        }
-                    } catch (Exception $e) {
-                        // 忽略错误
-                    }
+                    $item['likes'] = isset($item['fields']['article_likes']) ? intval($item['fields']['article_likes']) : 0;
                 }
                 
                 $result[] = $item;
@@ -121,43 +114,57 @@ class GetArticle
      */
     public static function get($cid, $fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order'])
     {
-        $widget = \Widget\Contents\Post\Recent::alloc('pageSize=1');
         $result = null;
-
+    
         try {
-            while ($widget->next()) {
-                if ($widget->cid == $cid || $widget->slug == $cid) {
-                    $item = [];
-                    
-                    if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                    if (in_array('title', $fields)) $item['title'] = $widget->title;
-                    if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                    if (in_array('created', $fields)) $item['created'] = $widget->created;
-                    if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                    if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) {
-                        // author 可能是对象或字符串
-                        if (is_object($widget->author)) {
-                            $item['author'] = $widget->author->name ?? '';
-                        } else {
-                            $item['author'] = $widget->author ?? '';
-                        }
-                    }
-                    if (in_array('text', $fields)) $item['text'] = $widget->text;
-                    if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                    if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                    if (in_array('order', $fields)) $item['order'] = $widget->order;
-                    if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                    if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-
-                    $result = $item;
-                    break;
+            $db = \Typecho_Db::get();
+            
+            // 判断是 ID 还是 slug
+            if (is_numeric($cid)) {
+                $row = $db->fetchRow($db->select()->from('table.contents')->where('cid = ?', $cid)->where('type = ?', 'post')->limit(1));
+            } else {
+                $row = $db->fetchRow($db->select()->from('table.contents')->where('slug = ?', $cid)->where('type = ?', 'post')->limit(1));
+            }
+    
+            if ($row) {
+                $item = [];
+                
+                if (in_array('cid', $fields)) $item['cid'] = $row['cid'];
+                if (in_array('title', $fields)) $item['title'] = $row['title'];
+                if (in_array('slug', $fields)) $item['slug'] = $row['slug'];
+                if (in_array('created', $fields)) $item['created'] = $row['created'];
+                if (in_array('modified', $fields)) $item['modified'] = $row['modified'];
+                if (in_array('authorId', $fields)) $item['authorId'] = $row['authorId'];
+                if (in_array('author', $fields)) {
+                    // 获取作者信息
+                    $authorRow = $db->fetchRow($db->select('screenName')->from('table.users')->where('uid = ?', $row['authorId'])->limit(1));
+                    $item['author'] = $authorRow ? $authorRow['screenName'] : '';
                 }
+                if (in_array('text', $fields)) $item['text'] = $row['text'];
+                if (in_array('views', $fields)) $item['views'] = isset($row['views']) ? $row['views'] : 0;
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
+                if (in_array('order', $fields)) $item['order'] = $row['order'];
+                if (in_array('url', $fields)) {
+                    // 构建 URL
+                    $options = \Helper::options();
+                    $item['url'] = $options->siteUrl . ($options->rewrite ? $row['slug'] : 'archives/' . $row['cid'] . '.html');
+                }
+                if (in_array('excerpt', $fields)) {
+                    $text = strip_tags($row['text']);
+                    $item['excerpt'] = mb_substr($text, 0, 200, 'UTF-8') . '...';
+                }
+                
+                // 添加自定义字段
+                if (in_array('fields', $fields)) {
+                    $item['fields'] = self::getCustomFields($row['cid']);
+                }
+    
+                $result = $item;
             }
         } catch (Exception $e) {
             return null;
         }
-
+    
         return $result;
     }
 
@@ -842,6 +849,51 @@ class GetArticle
         }
         
         return null;
+    }
+
+    /* ==========================
+     * 自定义字段
+     * ========================== */
+
+    /**
+     * 从数据库获取文章的自定义字段
+     * @param int $cid 文章 ID
+     * @return array 自定义字段数组
+     */
+    private static function getCustomFields($cid)
+    {
+        $fields = [];
+        
+        try {
+            $db = \Typecho\Db::get();
+            $fieldRows = $db->fetchAll($db->select()->from('table.fields')->where('cid = ?', $cid));
+            
+            if ($fieldRows) {
+                foreach ($fieldRows as $fieldRow) {
+                    $fieldName = $fieldRow['name'];
+                    $fieldType = $fieldRow['type'];
+                    $fieldValue = null;
+                    
+                    // 根据字段类型获取值
+                    if ($fieldType === 'str') {
+                        $fieldValue = $fieldRow['str_value'];
+                    } elseif ($fieldType === 'int') {
+                        $fieldValue = $fieldRow['int_value'];
+                    } elseif ($fieldType === 'float') {
+                        $fieldValue = $fieldRow['float_value'];
+                    }
+                    
+                    if ($fieldValue !== null) {
+                        $fields[$fieldName] = $fieldValue;
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            // 忽略错误，返回空数组
+            $fields = [];
+        }
+        
+        return $fields;
     }
 
     /* ==========================

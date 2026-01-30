@@ -49,13 +49,8 @@ $articleId = $data['cid'] ?? '';
         </div>
         <?php endif; ?>
 
-        <!-- 点赞和分享按钮 -->
+        <!-- 分享按钮 -->
         <div class="article-actions">
-            <button class="article-action-btn like-btn" data-likes="<?= $likes ?>" data-article-id="<?= $articleId ?>">
-                <span class="mdi mdi-thumb-up"></span>
-                <span class="article-action-text">点赞</span>
-                <span class="article-action-count"><?= $likes ?></span>
-            </button>
             <button class="article-action-btn share-btn">
                 <span class="mdi mdi-share-variant"></span>
                 <span class="article-action-text">分享</span>
@@ -64,25 +59,34 @@ $articleId = $data['cid'] ?? '';
 
         <!-- 文章信息 -->
         <div class="article-meta-info">
-            <div class="article-meta-item">
-                <span class="mdi mdi-copyright article-meta-icon"></span>
-                <span class="article-meta-label">版权属于：</span>
-                <span class="article-meta-value"><?= $author ?></span>
+            <div class="article-meta-title"><?= $title ?></div>
+            <div class="article-meta-url">
+                <a href="<?= $articleUrl ?>" target="_blank" rel="noopener noreferrer" class="inaline-link">
+                    <span class="mdi mdi-link-variant"></span>
+                    <?= $articleUrl ?>
+                </a>
             </div>
-            <div class="article-meta-item">
-                <span class="mdi mdi-link article-meta-icon"></span>
-                <span class="article-meta-label">本文链接：</span>
-                <a href="<?= $articleUrl ?>" class="article-meta-link" target="_blank"><?= $articleUrl ?></a>
-            </div>
-            <div class="article-meta-item">
-                <span class="mdi mdi-license article-meta-icon"></span>
-                <span class="article-meta-label">作品采用：</span>
-                <span class="article-meta-value">
-                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener noreferrer">
-                        《署名-非商业性使用-相同方式共享 4.0 国际 (CC BY-NC-SA 4.0)》
-                    </a>
-                    许可协议授权
-                </span>
+            <div class="article-meta-stats">
+                <div class="article-meta-stat-item">
+                    <div class="article-meta-stat-label">作者</div>
+                    <div class="article-meta-stat-value"><?= $author ?></div>
+                </div>
+                <div class="article-meta-stat-item">
+                    <div class="article-meta-stat-label">发布于</div>
+                    <div class="article-meta-stat-value"><?= $date ?></div>
+                </div>
+                <div class="article-meta-stat-item">
+                    <div class="article-meta-stat-label">更新于</div>
+                    <div class="article-meta-stat-value"><?= $date ?></div>
+                </div>
+                <div class="article-meta-stat-item">
+                    <div class="article-meta-stat-label">许可协议</div>
+                    <div class="article-meta-stat-value">
+                        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener noreferrer" class="inaline-link">
+                            CC BY-NC-SA 4
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

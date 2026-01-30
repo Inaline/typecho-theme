@@ -219,15 +219,6 @@
     font-style: italic;
 }
 
-.markdown-content a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.markdown-content a:hover {
-    text-decoration: underline;
-}
-
 .markdown-content table {
     width: 100%;
     border-collapse: collapse;

@@ -86,34 +86,38 @@ class GetCategory
      */
     public static function get($mid, $fields = ['mid', 'name', 'slug', 'parent', 'description', 'count', 'order'])
     {
-        $widget = \Widget\Metas\Category\Rows::alloc();
         $result = null;
-
+    
         try {
-            while ($widget->next()) {
-                if ($widget->mid == $mid || $widget->slug == $mid) {
-                    $item = [];
-                    
-                    if (in_array('mid', $fields)) $item['mid'] = $widget->mid;
-                    if (in_array('name', $fields)) $item['name'] = $widget->name;
-                    if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                    if (in_array('parent', $fields)) $item['parent'] = $widget->parent;
-                    if (in_array('description', $fields)) $item['description'] = $widget->description;
-                    if (in_array('count', $fields)) $item['count'] = $widget->count;
-                    if (in_array('order', $fields)) $item['order'] = $widget->order;
-                    if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-
-                    $result = $item;
-                    break;
-                }
+            $db = \Typecho_Db::get();
+            
+            // 判断是 ID 还是 slug
+            if (is_numeric($mid)) {
+                $row = $db->fetchRow($db->select()->from('table.metas')->where('mid = ?', $mid)->where('type = ?', 'category')->limit(1));
+            } else {
+                $row = $db->fetchRow($db->select()->from('table.metas')->where('slug = ?', $mid)->where('type = ?', 'category')->limit(1));
+            }
+    
+            if ($row) {
+                $item = [];
+                
+                if (in_array('mid', $fields)) $item['mid'] = $row['mid'];
+                if (in_array('name', $fields)) $item['name'] = $row['name'];
+                if (in_array('slug', $fields)) $item['slug'] = $row['slug'];
+                if (in_array('parent', $fields)) $item['parent'] = $row['parent'];
+                if (in_array('description', $fields)) $item['description'] = $row['description'];
+                if (in_array('count', $fields)) $item['count'] = $row['count'];
+                if (in_array('order', $fields)) $item['order'] = $row['order'];
+                if (in_array('url', $fields)) $item['url'] = $row['permalink'] ?? '';
+    
+                $result = $item;
             }
         } catch (Exception $e) {
             return null;
         }
-
+    
         return $result;
     }
-
     /**
      * 获取分类名称
      * @param int|string $mid 分类 ID 或缩略名

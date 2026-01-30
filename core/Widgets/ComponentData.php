@@ -278,7 +278,7 @@ class ComponentData
 
         // 获取文章列表
         $articles = GetArticle::all(
-            ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order', 'url'],
+            ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order', 'url', 'fields'],
             $order,
             'desc',
             $perPage,
@@ -289,25 +289,9 @@ class ComponentData
         $formattedArticles = [];
         foreach ($articles as $article) {
             // 获取自定义字段
-            $thumbnail = '';
-            $excerpt = '';
-            $articleViews = 0;
-
-            // 尝试从自定义字段获取数据
-            try {
-                $db = Typecho_Db::get();
-                $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $article['cid']));
-                if ($row) {
-                    $fields = unserialize($row['fields']);
-                    if (is_array($fields)) {
-                        $thumbnail = $fields['article_thumbnail'] ?? '';
-                        $excerpt = $fields['article_excerpt'] ?? '';
-                        $articleViews = intval($fields['article_views'] ?? 0);
-                    }
-                }
-            } catch (Exception $e) {
-                // 忽略错误
-            }
+            $thumbnail = getArticleThumbnail($article);
+            $excerpt = getArticleExcerpt($article, 200);
+            $articleViews = getArticleViews($article);
 
             // 如果没有自定义缩略图，尝试从文章内容中提取
             if (empty($thumbnail)) {
@@ -401,19 +385,7 @@ class ComponentData
         $commentsNum = $archive->commentsNum ?? 0;
 
         // 获取点赞数（从自定义字段获取）
-        $likes = 0;
-        try {
-            $db = Typecho_Db::get();
-            $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $archive->cid));
-            if ($row) {
-                $fields = unserialize($row['fields']);
-                if (is_array($fields) && isset($fields['article_likes'])) {
-                    $likes = intval($fields['article_likes']);
-                }
-            }
-        } catch (Exception $e) {
-            // 忽略错误
-        }
+        $likes = getArticleLikes($archive);
 
         // 先解析文章内容中的自定义 Markdown 语法（转换为占位符）
         $content = $text;
@@ -539,22 +511,10 @@ class ComponentData
             $formattedArticles = [];
             foreach ($articles as $article) {
                 // 获取完整的文章信息（包含URL）
-                $fullArticle = GetArticle::get($article['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum']);
+                $fullArticle = GetArticle::get($article['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum', 'fields']);
                 if ($fullArticle) {
                     // 获取缩略图
-                    $thumbnail = '';
-                    try {
-                        $db = Typecho_Db::get();
-                        $row = $db->fetchRow($db->select('fields')->from('table.contents')->where('cid = ?', $fullArticle['cid']));
-                        if ($row) {
-                            $fields = unserialize($row['fields']);
-                            if (is_array($fields)) {
-                                $thumbnail = $fields['article_thumbnail'] ?? '';
-                            }
-                        }
-                    } catch (Exception $e) {
-                        // 忽略错误
-                    }
+                    $thumbnail = getArticleThumbnail($fullArticle);
 
                     // 如果没有自定义缩略图，尝试从文章内容中提取
                     if (empty($thumbnail)) {
@@ -564,8 +524,6 @@ class ComponentData
                     // 如果没有缩略图，使用默认缩略图
                     if (empty($thumbnail)) {
                         $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
-                    } else {
-                        $thumbnail = Get::resolveUri($thumbnail);
                     }
 
                     $formattedArticles[] = [

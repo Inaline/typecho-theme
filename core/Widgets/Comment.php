@@ -90,40 +90,38 @@ class GetComment
      */
     public static function get($coid, $fields = ['coid', 'cid', 'created', 'author', 'authorId', 'mail', 'url', 'ip', 'agent', 'text', 'type', 'status', 'parent', 'likes'])
     {
-        $widget = \Widget\Comments\Recent::alloc('pageSize=999999');
         $result = null;
-
+    
         try {
-            while ($widget->next()) {
-                if ($widget->coid == $coid) {
-                    $item = [];
-                    
-                    if (in_array('coid', $fields)) $item['coid'] = $widget->coid;
-                    if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                    if (in_array('created', $fields)) $item['created'] = $widget->created;
-                    if (in_array('author', $fields)) $item['author'] = $widget->author;
-                    if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('mail', $fields)) $item['mail'] = $widget->mail;
-                    if (in_array('url', $fields)) $item['url'] = $widget->url;
-                    if (in_array('ip', $fields)) $item['ip'] = $widget->ip;
-                    if (in_array('agent', $fields)) $item['agent'] = $widget->agent;
-                    if (in_array('text', $fields)) $item['text'] = $widget->text;
-                    if (in_array('type', $fields)) $item['type'] = $widget->type;
-                    if (in_array('status', $fields)) $item['status'] = $widget->status;
-                    if (in_array('parent', $fields)) $item['parent'] = $widget->parent;
-                    if (in_array('likes', $fields)) $item['likes'] = isset($widget->likes) ? $widget->likes : 0;
-
-                    $result = $item;
-                    break;
-                }
+            $db = \Typecho_Db::get();
+            $row = $db->fetchRow($db->select()->from('table.comments')->where('coid = ?', $coid)->limit(1));
+    
+            if ($row) {
+                $item = [];
+                
+                if (in_array('coid', $fields)) $item['coid'] = $row['coid'];
+                if (in_array('cid', $fields)) $item['cid'] = $row['cid'];
+                if (in_array('created', $fields)) $item['created'] = $row['created'];
+                if (in_array('author', $fields)) $item['author'] = $row['author'];
+                if (in_array('authorId', $fields)) $item['authorId'] = $row['authorId'];
+                if (in_array('mail', $fields)) $item['mail'] = $row['mail'];
+                if (in_array('url', $fields)) $item['url'] = $row['url'];
+                if (in_array('ip', $fields)) $item['ip'] = $row['ip'];
+                if (in_array('agent', $fields)) $item['agent'] = $row['agent'];
+                if (in_array('text', $fields)) $item['text'] = $row['text'];
+                if (in_array('type', $fields)) $item['type'] = $row['type'];
+                if (in_array('status', $fields)) $item['status'] = $row['status'];
+                if (in_array('parent', $fields)) $item['parent'] = $row['parent'];
+                if (in_array('likes', $fields)) $item['likes'] = isset($row['likes']) ? $row['likes'] : 0;
+    
+                $result = $item;
             }
         } catch (Exception $e) {
             return null;
         }
-
+    
         return $result;
     }
-
     /**
      * 获取评论作者
      * @param int $coid 评论 ID
