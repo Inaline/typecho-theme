@@ -46,15 +46,17 @@ class Inaline
             return $html;
         }
 
-        // 保护块
+        // 保护块 - 使用更安全的占位符格式（不含特殊字符，避免被正则表达式破坏）
         $protect = [];
         $i = 0;
+        $placeholderPrefix = 'INALINE_PROTECT_';
+        $placeholderSuffix = '_BLOCK';
         
         foreach (['pre','textarea','script','style'] as $tag) {
             $html = preg_replace_callback(
-                "#<{$tag}[^>]*>.*?</{$tag}>#isU",  // 添加 U 修饰符，使用非贪婪模式
-                function($m) use (&$protect, &$i) {
-                    $token = "🐱‍👤".($i++)."🐱‍👤";
+                "#<{$tag}[^>]*>.*?</{$tag}>#isU",
+                function($m) use (&$protect, &$i, $placeholderPrefix, $placeholderSuffix) {
+                    $token = $placeholderPrefix . ($i++) . $placeholderSuffix;
                     $protect[$token] = $m[0];
                     return $token;
                 },
@@ -70,12 +72,10 @@ class Inaline
         // 压缩 - 修正正则表达式
         $patterns = [
             '/<!--(?!\s*\[if).*?-->/s',  // 删除普通注释，保留条件注释
-            '/\s+/s',                    // 压缩多个空白字符
         ];
         
         $replacements = [
             '',  // 删除注释
-            ' ', // 多个空白替换为单个空格
         ];
         
         $html = preg_replace($patterns, $replacements, $html);
@@ -93,7 +93,9 @@ class Inaline
 
         // 还原保护块
         if (!empty($protect)) {
-            $html = strtr($html, $protect);
+            foreach ($protect as $token => $content) {
+                $html = str_replace($token, $content, $html);
+            }
         }
         
         return trim($html);

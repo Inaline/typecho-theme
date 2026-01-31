@@ -27,7 +27,9 @@ class GetComment
         $result = [];
         
         try {
-            $widget = \Widget\Comments\Recent::alloc('pageSize=' . ($limit > 0 ? $limit : 999999) . '&page=' . ceil(($offset + 1) / ($limit > 0 ? $limit : 1)));
+            // 获取评论，如果有限制数量，则获取更多以便排序后再限制
+            $fetchLimit = ($limit > 0) ? max($limit + $offset, $limit) : 999999;
+            $widget = \Widget\Comments\Recent::alloc('pageSize=' . $fetchLimit . '&page=1');
             
             // 遍历评论
             while ($widget->next()) {
@@ -77,6 +79,11 @@ class GetComment
                     return $valA <=> $valB;
                 }
             });
+        }
+
+        // 应用偏移量和限制
+        if ($offset > 0 || $limit > 0) {
+            $result = array_slice($result, $offset, $limit > 0 ? $limit : null);
         }
 
         return $result;

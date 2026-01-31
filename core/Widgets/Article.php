@@ -150,6 +150,11 @@ class GetArticle
             });
         }
 
+        // 应用偏移量和限制
+        if ($offset > 0 || $limit > 0) {
+            $result = array_slice($result, $offset, $limit > 0 ? $limit : null);
+        }
+
         return $result;
     }
 

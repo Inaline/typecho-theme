@@ -439,7 +439,7 @@ main {
     padding: 12px;
 }
 
-.recent-comments-card .list {
+.recent-comments-card .recent-comments-list {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -448,19 +448,19 @@ main {
     gap: 12px;
 }
 
-.recent-comments-card .comment-item {
+.recent-comments-card .recent-comments-item {
     display: flex;
     gap: 10px;
-    padding-bottom: 12px;
+    padding-bottom: 6px;
     border-bottom: 1px solid var(--border-color);
 }
 
-.recent-comments-card .comment-item:last-child {
+.recent-comments-card .recent-comments-item:last-child {
     padding-bottom: 0;
     border-bottom: none;
 }
 
-.recent-comments-card .comment-avatar {
+.recent-comments-card .recent-comments-avatar {
     width: 32px;
     height: 32px;
     flex-shrink: 0;
@@ -468,35 +468,36 @@ main {
     overflow: hidden;
 }
 
-.recent-comments-card .comment-avatar img {
+.recent-comments-card .recent-comments-avatar img,
+.recent-comments-card .recent-comments-avatar .avatar-default {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.recent-comments-card .comment-content {
+.recent-comments-card .recent-comments-content {
     flex: 1;
     min-width: 0;
 }
 
-.recent-comments-card .comment-header {
+.recent-comments-card .recent-comments-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.recent-comments-card .comment-author {
+.recent-comments-card .recent-comments-author {
     font-size: 13px;
     font-weight: 500;
     color: var(--text-color);
 }
 
-.recent-comments-card .comment-date {
+.recent-comments-card .recent-comments-date {
     font-size: 11px;
     color: var(--text-color-light);
 }
 
-.recent-comments-card .comment-text {
+.recent-comments-card .recent-comments-text {
     font-size: 12px;
     color: var(--text-color-light);
     line-height: 1.5;
@@ -505,16 +506,6 @@ main {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-}
-
-.recent-comments-card .comment-text a {
-    text-decoration: none;
-    color: var(--text-color-light);
-    transition: color var(--transition-speed);
-}
-
-.recent-comments-card .comment-text a:hover {
-    color: var(--primary-color);
 }
 
 /* 空状态样式 */
@@ -3230,7 +3221,8 @@ body.dark-mode .form-group textarea:focus {
     flex-shrink: 0;
 }
 
-.comment-avatar img {
+.comment-avatar img,
+.comment-avatar .avatar-default {
     width: 100%;
     height: 100%;
     object-fit: cover;

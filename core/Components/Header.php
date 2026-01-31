@@ -9,12 +9,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?=e($this->data->title, GetSite::title()) ?></title>
-    <?php if (isset($this->data->keywords)): ?>
-        <meta name="keywords" content="<?=e($this->data->keywords) ?>">
-    <?php endif; ?>
-    <?php if (isset($this->data->description)): ?>
-        <meta name="description" content="<?=e($this->data->description) ?>">
-    <?php endif; ?>
     <?php if (isset($this->data->favicon)): ?>
         <link rel="icon" href="<?=e($this->data->favicon) ?>">
     <?php endif; ?>

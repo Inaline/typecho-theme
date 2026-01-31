@@ -29,7 +29,7 @@ $articleUrl = $data['url'] ?? '';
 $articleId = $data['cid'] ?? '';
 ?>
 
-<div class="article-reader">
+<div class="article-reader" data-cid="<?= $articleId ?>">
     <div class="card article-reader-content">
         <div class="article-content markdown-content">
             <?= $content ?>

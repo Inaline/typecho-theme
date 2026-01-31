@@ -70,16 +70,6 @@ function themeFields($layout)
         _t('设置文章的初始阅读量')
     );
     $layout->addItem($articleViews);
-
-    // 文章点赞量
-    $articleLikes = new \Typecho\Widget\Helper\Form\Element\Text(
-        'article_likes',
-        NULL,
-        '0',
-        _t('文章点赞量'),
-        _t('设置文章的初始点赞量')
-    );
-    $layout->addItem($articleLikes);
 }
 
 /**

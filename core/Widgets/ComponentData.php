@@ -67,25 +67,113 @@ class ComponentData
         }
 
         // 获取标题
-        $title = GetSite::title();
-        if ($body_id === 'post' && $archive && isset($archive->title)) {
-            // 文章页面使用"文章名 - 站名"格式
-            $siteName = GetSite::title();
-            $title = $archive->title . ' - ' . $siteName;
-        }
 
-        // 获取 Typecho 头部输出（包含评论系统所需的 JavaScript）
-        $typechoHeader = '';
-        if ($archive) {
-            ob_start();
-            $archive->header();
-            $typechoHeader = ob_get_clean();
-        }
+                $title = GetSite::title();
 
-        return [
-            'title'       => $title,
-            'keywords'    => GetSite::keywords(),
-            'description' => GetSite::description(),
+                $keywords = GetSite::keywords();
+
+                $description = GetSite::description();
+
+        
+
+                if ($body_id === 'post' && $archive && isset($archive->title)) {
+
+                    // 文章页面使用"文章名 - 站名"格式
+
+                    $siteName = GetSite::title();
+
+                    $title = $archive->title . ' - ' . $siteName;
+
+                    
+
+                    // 尝试获取文章的 SEO 信息
+
+                    // 直接从数据库查询文章的自定义字段
+
+                    if (isset($archive->cid) && $archive->cid) {
+
+                        try {
+
+                            $db = \Typecho\Db::get();
+
+                            $fields = $db->fetchAll($db->select('name', 'str_value')
+
+                                ->from('table.fields')
+
+                                ->where('cid = ?', $archive->cid)
+
+                                ->where('name IN ?', ['seo_keywords', 'seo_description']));
+
+                            
+
+                            foreach ($fields as $field) {
+
+                                if ($field['name'] === 'seo_keywords' && !empty($field['str_value'])) {
+
+                                    $keywords = $field['str_value'];
+
+                                }
+
+                                if ($field['name'] === 'seo_description' && !empty($field['str_value'])) {
+
+                                    $description = $field['str_value'];
+
+                                }
+
+                            }
+
+                        } catch (Exception $e) {
+
+                            // 忽略错误
+
+                        }
+
+                    }
+
+                }
+
+        
+
+                // 获取 Typecho 头部输出（包含评论系统所需的 JavaScript）
+                // 注意：在文章页面，如果存在自定义的 description 或 keywords，需要移除 Typecho 输出的默认值并添加自定义值
+                $typechoHeader = '';
+                if ($archive) {
+                    ob_start();
+                    $archive->header();
+                    $typechoHeader = ob_get_clean();
+                    
+                    // 检查是否是文章页面且有自定义 SEO 信息
+                    $hasCustomDescription = ($body_id === 'post' && isset($archive->cid) && $archive->cid && !empty($description) && $description !== GetSite::description());
+                    $hasCustomKeywords = ($body_id === 'post' && isset($archive->cid) && $archive->cid && !empty($keywords) && $keywords !== GetSite::keywords());
+                    
+                    if ($hasCustomDescription || $hasCustomKeywords) {
+                        // 移除 Typecho 输出的默认 description 和 keywords 元标签
+                        $typechoHeader = preg_replace('/<meta\s+name=["\']description["\'][^>]*\/?>/i', '', $typechoHeader);
+                        $typechoHeader = preg_replace('/<meta\s+name=["\']keywords["\'][^>]*\/?>/i', '', $typechoHeader);
+                        
+                        // 在最前面添加自定义的 SEO meta 标签
+                        $customSeoTags = '';
+                        if ($hasCustomDescription) {
+                            $customSeoTags .= '<meta name="description" content="' . htmlspecialchars($description) . '" />' . "\n";
+                        }
+                        if ($hasCustomKeywords) {
+                            $customSeoTags .= '<meta name="keywords" content="' . htmlspecialchars($keywords) . '" />' . "\n";
+                        }
+                        
+                        // 将自定义 SEO 标签添加到最前面
+                        $typechoHeader = $customSeoTags . $typechoHeader;
+                    }
+                }
+
+        
+
+                return [
+
+                    'title'       => $title,
+
+                    'keywords'    => $keywords,
+
+                    'description' => $description,
             'favicon'     => Get::resolveUri(Get::themeOption('favicon')),
             'copyright'   => GetSite::authorName(),
             'author'      => GetSite::authorName(),
@@ -405,6 +493,42 @@ class ComponentData
         $commentsNum = $archive->commentsNum ?? 0;
         $likes = 0;
 
+        // 增加文章阅读数（存储在 fields 表中）
+        if (isset($archive->cid) && $archive->cid) {
+            try {
+                $db = \Typecho\Db::get();
+                $cid = $archive->cid;
+                
+                // 检查是否已有 article_views 字段
+                $existing = $db->fetchRow($db->select('str_value')
+                    ->from('table.fields')
+                    ->where('cid = ?', $cid)
+                    ->where('name = ?', 'article_views')
+                    ->limit(1));
+                
+                if ($existing) {
+                    // 已存在，更新
+                    $db->query($db->update('table.fields')
+                        ->expression('str_value', 'str_value + 1')
+                        ->where('cid = ?', $cid)
+                        ->where('name = ?', 'article_views'));
+                } else {
+                    // 不存在，插入
+                    $db->query($db->insert('table.fields')
+                        ->rows([
+                            'cid' => $cid,
+                            'name' => 'article_views',
+                            'type' => 'str',
+                            'str_value' => 1,
+                            'int_value' => 0,
+                            'float_value' => 0
+                        ]));
+                }
+            } catch (Exception $e) {
+                // 忽略错误
+            }
+        }
+
         // 先解析文章内容中的自定义 Markdown 语法（转换为占位符）
         $content = $text;
         $content = MarkdownParser::parse($content);
@@ -583,17 +707,8 @@ class ComponentData
                 // 获取评论所属文章
                 $article = GetArticle::get($comment['cid'], ['cid', 'title', 'url']);
 
-                // 生成头像URL
-                $avatar = '';
-                if (!empty($comment['mail'])) {
-                    $avatar = 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($comment['mail']))) . '?s=32&d=mp';
-                } else {
-                    $avatar = 'https://www.gravatar.com/avatar/?s=32&d=mp';
-                }
-
                 $formattedComments[] = [
                     'author' => $comment['author'],
-                    'avatar' => $avatar,
                     'text' => mb_substr(strip_tags($comment['text']), 0, 50, 'UTF-8'),
                     'created' => date('Y-m-d', $comment['created']),
                     'article_title' => $article ? $article['title'] : '',
@@ -688,7 +803,7 @@ class ComponentData
             // 生成头像URL
             $avatar = '';
             if (!empty($comment['mail'])) {
-                $avatar = 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($comment['mail']))) . '?s=32&d=' . urlencode(Get::Assets('assets/images/cover/cover1.jpg'));
+                $avatar = Get::Assets('assets/images/cover/cover1.jpg');
             } else {
                 $avatar = Get::Assets('assets/images/cover/cover1.jpg');
             }

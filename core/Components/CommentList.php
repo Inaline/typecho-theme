@@ -85,7 +85,7 @@ $isLoggedIn = $user->hasLogin();
                         <div class="comment-main">
                             <div class="comment-header">
                                 <div class="comment-avatar">
-                                    <img src="<?= $comment['avatar'] ?>" alt="用户头像">
+                                    <?= GetAvatar::generate($comment['author'], $comment['mail'] ?? '', 32, false) ?>
                                 </div>
                                 <div class="comment-author">
                                     <span class="author-name"><?= htmlspecialchars($comment['author']) ?></span>
@@ -117,7 +117,7 @@ $isLoggedIn = $user->hasLogin();
                                         <div class="comment-main">
                                             <div class="comment-header">
                                                 <div class="comment-avatar">
-                                                    <img src="<?= $child['mail'] ? 'https://www.gravatar.com/avatar/' . md5(strtolower(trim($child['mail']))) . '?s=28&d=' . urlencode(Get::Assets('assets/images/cover/cover1.jpg')) : Get::Assets('assets/images/cover/cover1.jpg') ?>" alt="用户头像">
+                                                    <?= GetAvatar::generate($child['author'], $child['mail'] ?? '', 28, false) ?>
                                                 </div>
                                                 <div class="comment-author">
                                                     <span class="author-name"><?= htmlspecialchars($child['author']) ?></span>
@@ -132,12 +132,6 @@ $isLoggedIn = $user->hasLogin();
                                                     <a href="#comment-<?= $child['coid'] ?>" class="reply-to">@<?= htmlspecialchars($child['parent']) ?></a>
                                                 <?php endif; ?>
                                                 <?= $child['text'] ?>
-                                            </div>
-                                            <div class="comment-actions">
-                                                <button class="action-btn reply-btn" data-comment-id="<?= $child['coid'] ?>">
-                                                    <i class="mdi mdi-reply"></i>
-                                                    回复
-                                                </button>
                                             </div>
                                         </div>
                                     </div>

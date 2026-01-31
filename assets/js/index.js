@@ -100,18 +100,17 @@ $(document).ready(function() {
         const $this = $(this);
         const $dropdownMenu = $this.find('.category-dropdown-menu');
         
-        // 如果点击的是链接本身，允许跳转
+        // 如果点击的是链接本身，允许跳转，不阻止默认行为
         if ($(e.target).hasClass('category-link') || $(e.target).closest('.category-link').length > 0) {
-            // 如果有子菜单，阻止链接跳转，改为展开/收起
-            if ($this.attr('data-has-children') === 'true') {
-                e.preventDefault();
-                e.stopPropagation();
-                $this.toggleClass('expanded');
-            }
             return;
         }
         
-        // 点击箭头或整个下拉项时，切换展开/收起状态
+        // 如果点击的是子菜单中的链接，不阻止默认行为
+        if ($(e.target).hasClass('category-item') || $(e.target).closest('.category-item').length > 0) {
+            return;
+        }
+        
+        // 点击箭头或整个下拉项的空白区域时，切换展开/收起状态
         e.preventDefault();
         e.stopPropagation();
         $this.toggleClass('expanded');

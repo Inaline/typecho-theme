@@ -127,21 +127,19 @@ switch ($type) {
             <div class="card-title">最新评论</div>
             <div class="card-content">
                 <?php if (!empty($comments)): ?>
-                <ul class="comment-list">
+                <ul class="recent-comments-list">
                     <?php foreach ($comments as $comment): ?>
-                    <li class="comment-item">
-                        <div class="comment-avatar">
-                            <img src="<?= e($comment['avatar']) ?>" alt="<?= e($comment['author']) ?>">
+                    <li class="recent-comments-item">
+                        <div class="recent-comments-avatar">
+                            <?= GetAvatar::generate($comment['author'], '', 32, false) ?>
                         </div>
-                        <div class="comment-content">
-                            <div class="comment-header">
-                                <span class="comment-author"><?= e($comment['author']) ?></span>
-                                <span class="comment-date"><?= e($comment['created']) ?></span>
+                        <div class="recent-comments-content">
+                            <div class="recent-comments-header">
+                                <span class="recent-comments-author"><?= e($comment['author']) ?></span>
+                                <span class="recent-comments-date"><?= e($comment['created']) ?></span>
                             </div>
-                            <div class="comment-text">
-                                <a href="<?= e($comment['comment_url']) ?>" title="<?= e($comment['article_title']) ?>">
-                                    <?= e($comment['text']) ?>
-                                </a>
+                            <div class="recent-comments-text">
+                                <?= e($comment['text']) ?>
                             </div>
                         </div>
                     </li>
