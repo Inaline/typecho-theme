@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 分享按钮功能
     initShareButton();
+
+    // 初始化文章页面滚动效果
+    initArticlePageScrollEffect();
 });
 
 /**
@@ -495,4 +498,53 @@ function updateActiveTOCItem(headings, tocLinks) {
             activeLink.classList.add('active');
         }
     }
+}
+
+/**
+ * 初始化文章页面滚动效果
+ */
+function initArticlePageScrollEffect() {
+    // 检查是否为文章页面
+    if (document.body.id !== 'post') return;
+
+    const topbar = document.querySelector('.topbar');
+    if (!topbar) return;
+
+    // 监听滚动事件
+    window.addEventListener('scroll', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const articleHeader = document.getElementById('articleHeader');
+
+        if (articleHeader) {
+            // 获取文章头部的高度
+            const headerHeight = articleHeader.offsetHeight;
+
+            // 当滚动超过文章头部的一定比例时，添加 scrolled 类
+            if (scrollTop > headerHeight * 0.5) {
+                topbar.classList.add('scrolled');
+            } else {
+                topbar.classList.remove('scrolled');
+            }
+        }
+    });
+
+    // 鼠标移入 topbar 时恢复
+    topbar.addEventListener('mouseenter', function() {
+        topbar.classList.add('scrolled');
+    });
+
+    // 鼠标移出 topbar 时，根据滚动位置决定是否恢复
+    topbar.addEventListener('mouseleave', function() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const articleHeader = document.getElementById('articleHeader');
+
+        if (articleHeader) {
+            const headerHeight = articleHeader.offsetHeight;
+
+            // 只有在头部范围内才移除 scrolled 类
+            if (scrollTop <= headerHeight * 0.5) {
+                topbar.classList.remove('scrolled');
+            }
+        }
+    });
 }

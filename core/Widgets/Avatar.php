@@ -22,18 +22,47 @@ class GetAvatar
     /**
      * 根据用户名生成头像 HTML
      * @param string $username 用户名
-     * @param string $email 邮箱（保留参数以兼容，但不再使用）
+     * @param string $email 邮箱
      * @param int $size 头像大小
      * @param bool $useGravatar 是否使用 Gravatar（已禁用，保留参数以兼容）
      * @return string 头像 HTML
      */
     public static function generate($username, $email = '', $size = 32, $useGravatar = false)
     {
-        // 直接生成默认头像（不使用 Gravatar）
+        // 如果有邮箱，使用 WeAvatar
+        if (!empty($email)) {
+            return self::generateWeAvatar($username, $email, $size);
+        }
+        
+        // 没有邮箱，生成默认头像
         return self::generateDefault($username, $size);
     }
-
     /**
+     * 使用 WeAvatar 生成头像
+     * @param string $username 用户名
+     * @param string $email 邮箱
+     * @param int $size 头像大小
+     * @return string 头像 HTML (img 标签)
+     */
+    public static function generateWeAvatar($username, $email, $size = 32)
+    {
+        // 去除首尾空格
+        $email = trim($email);
+        
+        // 使用 sha256 哈希算法
+        $hash = hash('sha256', $email);
+        
+        // 提取首字母作为默认头像（最多两个字符）
+        $initials = self::extractText($username);
+        // WeAvatar 最多支持 2 个字符
+        $initial = mb_substr($initials, 0, 2, 'UTF-8');
+        
+        // 构建 WeAvatar URL，请求 64px 大小
+        $url = "https://weavatar.com/avatar/{$hash}?s=64&d=initials&initials=" . urlencode($initial);
+        
+        // 生成头像 HTML
+        return '<img src="' . htmlspecialchars($url) . '" alt="' . htmlspecialchars($username) . '" width="' . $size . '" height="' . $size . '" style="border-radius:50%;">';
+    }    /**
      * 生成默认头像（基于用户名的首字母）
      * @param string $username 用户名
      * @param int $size 头像大小
@@ -47,14 +76,13 @@ class GetAvatar
         // 根据用户名计算颜色
         $color = self::getColorByUsername($username);
         
-        // 计算字体大小（约为头像大小的 40-50%）
-        $fontSize = $size * 0.45;
+        // 计算字体大小（两个字符时稍小一些）
+        $textLength = mb_strlen($text, 'UTF-8');
+        $fontSize = $textLength >= 2 ? $size * 0.35 : $size * 0.45;
         
         // 生成头像 HTML
         return '<div class="avatar-default" style="width:' . $size . 'px;height:' . $size . 'px;background-color:' . $color . ';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:' . $fontSize . 'px;font-weight:600;color:#fff;text-transform:uppercase;">' . htmlspecialchars($text) . '</div>';
-    }
-
-    /**
+    }    /**
      * 从用户名提取显示文字
      * @param string $username 用户名
      * @return string 显示文字
@@ -64,7 +92,7 @@ class GetAvatar
         if (empty($username)) {
             return '?';
         }
-
+    
         // 移除特殊符号，只保留字母、数字和中文
         $clean = preg_replace('/[^\p{L}\p{N}]/u', '', $username);
         
@@ -72,7 +100,7 @@ class GetAvatar
             // 如果清理后为空，返回第一个字符
             return mb_substr($username, 0, 1, 'UTF-8');
         }
-
+    
         // 检查是否有中文字符
         if (preg_match('/[\x{4e00}-\x{9fa5}]/u', $clean)) {
             // 有中文，取第一个汉字
@@ -80,11 +108,10 @@ class GetAvatar
         } else {
             // 没有中文，取前两个字母
             $text = strtoupper(substr($clean, 0, 2));
-            // 如果只有一个字符，就返回一个
-            return strlen($text) >= 2 ? $text : $text . '?';
+            // 如果只有一个字符，重复一次
+            return strlen($text) >= 2 ? $text : $text . $text;
         }
     }
-
     /**
      * 根据用户名计算颜色
      * @param string $username 用户名

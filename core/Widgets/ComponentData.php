@@ -489,11 +489,11 @@ class ComponentData
             }
         }
 
-        $views = isset($archive->views) ? $archive->views : 0;
         $commentsNum = $archive->commentsNum ?? 0;
         $likes = 0;
 
-        // 增加文章阅读数（存储在 fields 表中）
+        // 从数据库获取并增加文章阅读数
+        $views = 0;
         if (isset($archive->cid) && $archive->cid) {
             try {
                 $db = \Typecho\Db::get();
@@ -507,11 +507,19 @@ class ComponentData
                     ->limit(1));
                 
                 if ($existing) {
-                    // 已存在，更新
+                    // 已存在，更新并获取新值
                     $db->query($db->update('table.fields')
                         ->expression('str_value', 'str_value + 1')
                         ->where('cid = ?', $cid)
                         ->where('name = ?', 'article_views'));
+                    
+                    // 重新获取更新后的值
+                    $updated = $db->fetchRow($db->select('str_value')
+                        ->from('table.fields')
+                        ->where('cid = ?', $cid)
+                        ->where('name = ?', 'article_views')
+                        ->limit(1));
+                    $views = intval($updated['str_value'] ?? 0);
                 } else {
                     // 不存在，插入
                     $db->query($db->insert('table.fields')
@@ -523,9 +531,11 @@ class ComponentData
                             'int_value' => 0,
                             'float_value' => 0
                         ]));
+                    $views = 1;
                 }
             } catch (Exception $e) {
-                // 忽略错误
+                // 忽略错误，使用默认值 0
+                $views = 0;
             }
         }
 
@@ -563,6 +573,25 @@ class ComponentData
             }
         }
 
+        // 获取文章缩略图（从自定义字段获取）
+        $thumbnail = '';
+        if (isset($archive->cid) && $archive->cid) {
+            try {
+                $db = \Typecho_Db::get();
+                $thumbnailField = $db->fetchRow($db->select('str_value')
+                    ->from('table.fields')
+                    ->where('cid = ?', $archive->cid)
+                    ->where('name = ?', 'thumbnail')
+                    ->limit(1));
+                
+                if ($thumbnailField && !empty($thumbnailField['str_value'])) {
+                    $thumbnail = $thumbnailField['str_value'];
+                }
+            } catch (Exception $e) {
+                // 忽略错误
+            }
+        }
+
         return [
             'title' => $title,
             'content' => $content,
@@ -574,7 +603,8 @@ class ComponentData
             'tags' => $tags,
             'categories' => $categories,
             'url' => $archive->permalink,
-            'cid' => $archive->cid
+            'cid' => $archive->cid,
+            'thumbnail' => $thumbnail
         ];
     }
 

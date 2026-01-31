@@ -1775,6 +1775,12 @@ body.dark-mode .search-clear:hover {
         display: flex;
     }
 
+    /* 文章页面分类栏特殊处理 */
+    body#post header.topbar.scrolled .categories-container,
+    body#post header.topbar:hover .categories-container {
+        display: flex;
+    }
+
     .topbar-search {
         position: absolute;
         top: calc(100% + 8px);
@@ -1814,6 +1820,12 @@ body.dark-mode .search-clear:hover {
     .categories-container,
     .topbar-divider {
         display: none;
+    }
+
+    /* 移动端文章页面分类栏始终隐藏 */
+    body#post header.topbar .categories-container,
+    body#post header.topbar .topbar-divider {
+        display: none !important;
     }
 
     .search-overlay {
@@ -2035,6 +2047,12 @@ body.dark-mode .search-clear:hover {
     .categories-container,
     .topbar-divider {
         display: none;
+    }
+
+    /* 移动端文章页面分类栏始终隐藏 */
+    body#post header.topbar .categories-container,
+    body#post header.topbar .topbar-divider {
+        display: none !important;
     }
 
     .search-overlay {
@@ -3518,6 +3536,284 @@ body.dark-mode .pagination-page:hover {
 
     .pagination-page {
         min-width: 26px;
+    }
+}
+
+/* ========================
+ * 文章头部样式
+ * ======================== */
+
+/* 文章页面特殊样式 */
+body#post {
+    padding-top: 0;
+}
+
+/* 文章头部 */
+.article-header {
+    position: relative;
+    width: 100%;
+    height: 60vh;
+    min-height: 400px;
+    max-height: 600px;
+    overflow: hidden;
+    margin-bottom: 24px;
+}
+
+/* 文章头部背景图 */
+.article-header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.3s ease;
+}
+
+/* 文章头部遮罩层 */
+.article-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+}
+
+/* 文章头部内容 */
+.article-header-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+}
+
+.article-header-inner {
+    max-width: 800px;
+    text-align: center;
+    color: white;
+}
+
+/* 文章头部分类 */
+.article-header-categories {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.article-header-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 16px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.article-header-category:hover {
+    background: rgba(255, 121, 0, 0.8);
+    transform: translateY(-2px);
+}
+
+/* 文章头部标题 */
+.article-header-title {
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    line-height: 1.4;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 文章头部信息 */
+.article-header-info {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.article-header-info-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.article-header-info-item .mdi {
+    font-size: 16px;
+}
+
+/* 文章页面 topbar 透明背景 */
+body#post .topbar {
+    background-color: transparent;
+    box-shadow: none;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* 文章页面 topbar 透明状态下文字为白色 */
+body#post .topbar:not(.scrolled) {
+    color: white;
+}
+
+body#post .topbar:not(.scrolled) .topbar-btn {
+    color: white;
+}
+
+body#post .topbar:not(.scrolled) .topbar-btn:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+body#post .topbar:not(.scrolled) .topbar-logo img {
+    filter: brightness(0) invert(1);
+}
+
+/* 文章页面 topbar 透明状态下导航项为白色 */
+body#post .topbar:not(.scrolled) .topbar-nav-item {
+    color: white;
+}
+
+body#post .topbar:not(.scrolled) .topbar-nav-item:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body#post .topbar:not(.scrolled) .topbar-nav-item.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+body#post .topbar:not(.scrolled) .topbar-nav-item.active::after {
+    background-color: white;
+}
+
+/* 文章页面 topbar 透明状态下下拉菜单为白色 */
+body#post .topbar:not(.scrolled) .topbar-nav-link {
+    color: white;
+}
+
+body#post .topbar:not(.scrolled) .topbar-nav-arrow {
+    color: white;
+}
+
+body#post .topbar:not(.scrolled) .topbar-nav-icon {
+    color: white;
+}
+
+body#post .topbar:not(.scrolled) .topbar-dropdown-menu {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+body#post .topbar:not(.scrolled) .topbar-dropdown-item {
+    color: #333;
+}
+
+body#post .topbar:not(.scrolled) .topbar-dropdown-item:hover {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.05);
+}
+
+/* 文章页面 topbar 滚动后恢复背景 */
+body#post .topbar.scrolled {
+    background-color: var(--bg-color);
+    box-shadow: var(--shadow-sm);
+    color: var(--text-color);
+}
+
+body#post .topbar.scrolled .topbar-btn {
+    color: var(--text-color);
+}
+
+body#post .topbar.scrolled .topbar-btn:hover {
+    color: var(--primary-color);
+    background-color: rgba(255, 121, 0, 0.1);
+}
+
+body#post .topbar.scrolled .topbar-logo img {
+    filter: none;
+}
+
+/* 文章页面分类栏和分割线固定定位 */
+body#post header.topbar .categories-container,
+body#post header.topbar .topbar-divider {
+    position: fixed;
+    top: var(--topbar-height);
+    left: 0;
+    right: 0;
+    z-index: 999;
+    background-color: var(--bg-color);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+body#post header.topbar .topbar-divider {
+    height: 1px;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 文章页面 topbar 有scrolled类时显示分类栏和分割线 */
+body#post header.topbar.scrolled .categories-container {
+    visibility: visible;
+    opacity: 1;
+}
+
+body#post header.topbar.scrolled .topbar-divider {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 文章页面 main 调整 */
+body#post main {
+    padding-top:0px;
+}
+
+/* 响应式设计 */
+@media (max-width: 767px) {
+    body#post main {
+        margin-top:-5.20px;
+    }
+    
+    .article-header {
+        height: 50vh;
+        min-height: 350px;
+        max-height: 500px;
+    }
+
+    .article-header-title {
+        font-size: 28px;
+    }
+
+    .article-header-info {
+        gap: 16px;
+    }
+
+    .article-header-info-item {
+        font-size: 13px;
+    }
+
+    .article-header-categories {
+        gap: 8px;
+    }
+
+    .article-header-category {
+        padding: 4px 12px;
+        font-size: 13px;
+    }
+}
         height: 26px;
         font-size: 11px;
     }

@@ -113,19 +113,28 @@ class GetSite
      * ========================== */
 
     /**
-     * 快速输出 Gravatar
-     * @param string $mail 邮箱
-     * @param int $size 尺寸
-     * @param string $d 默认头像
-     * @return string
-     */
-    public static function gravatar($mail, $size = 64, $d = 'mp')
-    {
-        $hash = md5(strtolower(trim($mail)));
-        return "https://secure.gravatar.com/avatar/{$hash}?s={$size}&d={$d}";
-    }
 
-    /**
+     * 快速输出 WeAvatar
+
+     * @param string $mail 邮箱
+
+     * @param int $size 尺寸
+
+     * @param string $d 默认头像
+
+     * @return string
+
+     */
+
+    public static function gravatar($mail, $size = 64, $d = 'mp')
+
+    {
+
+        $hash = hash('sha256', trim($mail));
+
+        return "https://weavatar.com/avatar/{$hash}?s={$size}&d={$d}";
+
+    }    /**
      * 获取主题目录下的静态资源完整 URL
      * @param string $path 例如 css/style.css
      * @return string

@@ -16,6 +16,13 @@ $params_sidebar = ComponentData::GetSidebarData('post');
 
 Get::Component($this, 'Header', $params_head);
 Get::Component($this, 'TopBar', $params_top_bar);
+
+// 获取文章数据
+$params_article = ComponentData::GetArticleData($this);
+
+// 渲染文章头部
+Get::Component($this, 'ArticleHeader', $params_article);
+
 Get::Component($this, 'Common', ['type' => 'main-start']);
 Get::Component($this, 'Common', ['type' => 'wrapper-start']);
 Get::Component($this, 'Common', ['type' => 'content-column-start']);
