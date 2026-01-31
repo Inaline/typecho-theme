@@ -264,7 +264,8 @@ $(document).ready(function() {
         if (keyword) {
             SearchHistory.saveHistory(keyword);
             SearchHistory.renderHistory();
-            // TODO: 执行实际搜索
+            // 跳转到搜索页面
+            window.location.href = '/search/' + encodeURIComponent(keyword) + '/';
         }
     });
 
@@ -275,7 +276,8 @@ $(document).ready(function() {
             if (keyword) {
                 SearchHistory.saveHistory(keyword);
                 SearchHistory.renderHistory();
-                // TODO: 执行实际搜索
+                // 跳转到搜索页面
+                window.location.href = '/search/' + encodeURIComponent(keyword) + '/';
             }
         }
     });
@@ -286,7 +288,8 @@ $(document).ready(function() {
         $searchInput.val(keyword);
         SearchHistory.saveHistory(keyword);
         SearchHistory.renderHistory();
-        // TODO: 执行实际搜索
+        // 跳转到搜索页面
+        window.location.href = '/search/' + encodeURIComponent(keyword) + '/';
     });
 
     // 清空所有搜索历史
@@ -302,7 +305,8 @@ $(document).ready(function() {
         $searchInput.val(keyword);
         SearchHistory.saveHistory(keyword);
         SearchHistory.renderHistory();
-        // TODO: 执行实际搜索
+        // 跳转到搜索页面
+        window.location.href = '/search/' + encodeURIComponent(keyword) + '/';
     });
 
     // 打开搜索框时渲染搜索历史

@@ -63,7 +63,7 @@ $articles = $data['articles'] ?? [];
                         </div>
                         <div class="article-item-content">
                             <h3 class="article-item-title"><?= $article['title'] ?></h3>
-                            <p class="article-item-excerpt"><?= $article['excerpt'] ?></p>
+                            <p class="article-item-excerpt"><?= htmlspecialchars(mb_substr($article['excerpt'], 0, 200, 'UTF-8')) ?></p>
                             <div class="article-item-meta">
                                 <span class="article-item-date">
                                     <span class="mdi mdi-calendar"></span>
@@ -93,7 +93,7 @@ $articles = $data['articles'] ?? [];
                         </div>
                         <div class="article-card-content">
                             <h3 class="article-card-title"><?= $article['title'] ?></h3>
-                            <p class="article-card-excerpt"><?= $article['excerpt'] ?></p>
+                            <p class="article-card-excerpt"><?= htmlspecialchars(mb_substr($article['excerpt'], 0, 200, 'UTF-8')) ?></p>
                             <div class="article-card-meta">
                                 <span class="article-card-date">
                                     <span class="mdi mdi-calendar"></span>

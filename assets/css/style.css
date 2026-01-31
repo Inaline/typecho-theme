@@ -3657,6 +3657,99 @@ body#post {
     font-size: 16px;
 }
 
+/* 文章头部波浪效果 */
+.article-header-wave {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+    z-index: 2;
+    overflow: hidden;
+}
+
+.article-header-wave .waves-svg {
+    position: relative;
+    width: 100%;
+    height: 64px;
+}
+
+.article-header-wave .parallax > use {
+    animation: move-forever 30s cubic-bezier(.36,.45,.63,.53) infinite;
+}
+
+.article-header-wave .parallax > use:nth-child(1) {
+    animation-delay: -2s;
+    animation-duration: 7s;
+    fill: rgba(242, 242, 242, 0.7);
+}
+
+.article-header-wave .parallax > use:nth-child(2) {
+    animation-delay: -3s;
+    animation-duration: 10s;
+    fill: rgba(242, 242, 242, 0.5);
+}
+
+.article-header-wave .parallax > use:nth-child(3) {
+    animation-delay: -4s;
+    animation-duration: 13s;
+    fill: rgba(242, 242, 242, 0.3);
+}
+
+.article-header-wave .parallax > use:nth-child(4) {
+    animation-delay: -5s;
+    animation-duration: 18s;
+    fill: var(--page-bg-color);
+}
+
+/* 波浪动画 */
+@keyframes move-forever {
+    0% {
+        transform: translate3d(-90px, 0, 0);
+    }
+    100% {
+        transform: translate3d(85px, 0, 0);
+    }
+}
+
+/* 深色模式下的波浪效果 */
+body.dark-mode .article-header-wave .parallax > use {
+    animation-delay: inherit;
+}
+
+body.dark-mode .article-header-wave .parallax > use:nth-child(1) {
+    fill: rgba(26, 26, 26, 0.7);
+}
+
+body.dark-mode .article-header-wave .parallax > use:nth-child(2) {
+    fill: rgba(26, 26, 26, 0.5);
+}
+
+body.dark-mode .article-header-wave .parallax > use:nth-child(3) {
+    fill: rgba(26, 26, 26, 0.3);
+}
+
+body.dark-mode .article-header-wave .parallax > use:nth-child(4) {
+    fill: var(--page-bg-color);
+}
+
+/* 移动端波浪效果 */
+@media (max-width: 767px) {
+    .article-header-wave {
+        height: 48px;
+    }
+
+    .article-header-wave .waves-svg {
+        height: 48px;
+    }
+
+    /* 隐藏第2和第3层波浪，保留第1层和第4层 */
+    .article-header-wave .parallax > use:nth-child(2),
+    .article-header-wave .parallax > use:nth-child(3) {
+        display: none;
+    }
+}
+
 /* 文章页面 topbar 透明背景 */
 body#post .topbar {
     background-color: transparent;
@@ -3818,3 +3911,231 @@ body#post main {
         font-size: 11px;
     }
 }
+/* 归档页面样式 */
+.archive-header {
+    margin-bottom: 32px;
+    padding: 32px;
+    background: var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border-left: 4px solid var(--primary-color);
+    position: relative;
+    overflow: hidden;
+}
+
+.archive-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 60%);
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+.archive-header-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--primary-color);
+    border-radius: 12px;
+    margin-right: 16px;
+    float: left;
+}
+
+.archive-header-icon .mdi {
+    font-size: 24px;
+    color: white;
+}
+
+.archive-header-content {
+    overflow: hidden;
+}
+
+.archive-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.archive-description {
+    font-size: 15px;
+    color: var(--text-color-light);
+    line-height: 1.6;
+    margin: 0;
+}
+
+body.dark-mode .archive-header {
+    border-left-color: var(--primary-color);
+}
+
+body.dark-mode .archive-header::before {
+    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 60%);
+}
+
+@media (max-width: 768px) {
+    .archive-header {
+        padding: 20px;
+    }
+    
+    .archive-header-icon {
+        width: 40px;
+        height: 40px;
+        margin-right: 12px;
+    }
+    
+    .archive-header-icon .mdi {
+        font-size: 20px;
+    }
+    
+    .archive-title {
+        font-size: 22px;
+    }
+    
+    .archive-description {
+        font-size: 14px;
+    }
+}
+
+/* 404 错误页面样式 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+    border: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.error-page {
+    padding: 40px;
+    min-height: calc(100vh - var(--topbar-height) - var(--categories-height) - 100px);
+    display: flex;
+    align-items: center;
+}
+
+.error-page-content {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.error-page-image {
+    flex: 0 0 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.error-page-image img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+}
+
+.error-page-text {
+    flex: 1;
+    text-align: left;
+}
+
+.error-page-title {
+    font-size: 72px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 8px 0;
+    line-height: 1;
+}
+
+.error-page-subtitle {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text-color-light);
+    margin: 0 0 16px 0;
+}
+
+.error-page-description {
+    font-size: 15px;
+    color: var(--text-color-light);
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+}
+
+.error-page .btn-primary {
+    background: var(--primary-color);
+    color: white;
+    padding: 10px 28px;
+    font-size: 15px;
+}
+
+.error-page .btn-primary:hover {
+    background: var(--primary-color-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 768px) {
+    .error-page {
+        padding: 24px 20px;
+        min-height: auto;
+    }
+    
+    .error-page-content {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+    }
+    
+    .error-page-image {
+        flex: 0 0 auto;
+        width: 200px;
+    }
+    
+    .error-page-image img {
+        max-height: 200px;
+    }
+    
+    .error-page-text {
+        text-align: center;
+    }
+    
+    .error-page-title {
+        font-size: 48px;
+    }
+    
+    .error-page-subtitle {
+        font-size: 20px;
+    }
+    
+    .error-page-description {
+        font-size: 14px;
+    }
+    
+    .error-page .btn-primary {
+        width: 100%;
+        max-width: 240px;
+    }
+}
+

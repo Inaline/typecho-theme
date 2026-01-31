@@ -68,4 +68,18 @@ if (empty($thumbnail)) {
             </div>
         </div>
     </div>
+    <!-- 波浪效果 -->
+    <div class="article-header-wave">
+        <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 24 150 28" preserveAspectRatio="none" shape-rendering="auto">
+            <defs>
+                <path id="gentle-wave" d="M -160 44 c 30 0 58 -18 88 -18 s 58 18 88 18 s 58 -18 88 -18 s 58 18 88 18 v 44 h -352 Z"></path>
+            </defs>
+            <g class="parallax">
+                <use href="#gentle-wave" x="48" y="0"></use>
+                <use href="#gentle-wave" x="48" y="3"></use>
+                <use href="#gentle-wave" x="48" y="5"></use>
+                <use href="#gentle-wave" x="48" y="7"></use>
+            </g>
+        </svg>
+    </div>
 </div>

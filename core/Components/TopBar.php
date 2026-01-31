@@ -77,15 +77,15 @@ function renderNavItem($item, $depth = 0, $currentPage = '') {
 }
 
 // 递归渲染分类项的辅助函数
-function renderCategoryItem($item, $depth = 0, $currentPage = '') {
+function renderCategoryItem($item, $depth = 0, $currentPage = '', $categoryPathSlugs = []) {
     $hasChildren = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
     $icon = isset($item['icon']) ? $item['icon'] : '';
     $label = isset($item['label']) ? $item['label'] : '';
     $url = isset($item['url']) ? $item['url'] : '#';
     $itemName = isset($item['name']) ? $item['name'] : '';
 
-    // 检查是否为当前分类
-    $isActive = ($itemName === $currentPage);
+    // 检查是否为当前分类或其父分类
+    $isActive = ($itemName === $currentPage) || in_array($itemName, $categoryPathSlugs);
 
     if ($hasChildren) {
         // 下拉菜单（鼠标移入展开）
@@ -104,7 +104,7 @@ function renderCategoryItem($item, $depth = 0, $currentPage = '') {
         echo '<span class="mdi ' . $arrowClass . ' category-arrow"></span>';
         echo '<div class="category-dropdown-menu" data-depth="' . $depth . '">';
         foreach ($item['children'] as $child) {
-            renderCategoryItem($child, $depth + 1, $currentPage);
+            renderCategoryItem($child, $depth + 1, $currentPage, $categoryPathSlugs);
         }
         echo '</div></div>';
     } else {
@@ -120,7 +120,7 @@ function renderCategoryItem($item, $depth = 0, $currentPage = '') {
 }
 
 // 递归渲染侧边栏链接的辅助函数
-function renderSidebarItem($item, $depth = 0, $currentPage = '') {
+function renderSidebarItem($item, $depth = 0, $currentPage = '', $categoryPathSlugs = []) {
     $hasChildren = isset($item['children']) && is_array($item['children']) && !empty($item['children']);
     $icon = isset($item['icon']) ? $item['icon'] : 'mdi-file';
     $label = isset($item['label']) ? $item['label'] : '';
@@ -139,6 +139,10 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
                 break;
             }
         }
+    }
+    // 检查是否为父分类
+    if (!$isActive && in_array($itemName, $categoryPathSlugs)) {
+        $isActive = true;
     }
     
     if ($hasChildren) {
@@ -160,7 +164,7 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
         if ($isActive) echo ' active';
         echo '">';
         foreach ($item['children'] as $child) {
-            renderSidebarItem($child, $depth + 1, $currentPage);
+            renderSidebarItem($child, $depth + 1, $currentPage, $categoryPathSlugs);
         }
         echo '</div></div></div>';
     } else {
@@ -230,8 +234,9 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
     <!-- 桌面端分类标签 -->
     <nav class="categories-container">
         <?php
+        $categoryPathSlugs = isset($this->data->category_path_slugs) ? $this->data->category_path_slugs : [];
         foreach ($categories as $category) {
-            renderCategoryItem($category, 0, $currentPage);
+            renderCategoryItem($category, 0, $currentPage, $categoryPathSlugs);
         }
         ?>
     </nav>
@@ -346,8 +351,9 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
             <!-- 分类列表 -->
             <div class="sidebar-tab-pane" id="categories">
                 <?php
+                $categoryPathSlugs = isset($this->data->category_path_slugs) ? $this->data->category_path_slugs : [];
                 foreach ($categories as $category) {
-                    renderSidebarItem($category, 0, $currentPage);
+                    renderSidebarItem($category, 0, $currentPage, $categoryPathSlugs);
                 }
                 ?>
             </div>

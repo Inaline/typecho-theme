@@ -131,7 +131,7 @@ switch ($type) {
                     <?php foreach ($comments as $comment): ?>
                     <li class="recent-comments-item">
                         <div class="recent-comments-avatar">
-                            <?= GetAvatar::generate($comment['author'], '', 32, false) ?>
+                            <?= GetAvatar::generate($comment['author'], $comment['mail'] ?? '', 32, false) ?>
                         </div>
                         <div class="recent-comments-content">
                             <div class="recent-comments-header">

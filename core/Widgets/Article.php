@@ -197,9 +197,27 @@ class GetArticle
                 if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
                 if (in_array('order', $fields)) $item['order'] = $row['order'];
                 if (in_array('url', $fields)) {
-                    // 构建 URL
-                    $options = \Helper::options();
-                    $item['url'] = $options->siteUrl . ($options->rewrite ? $row['slug'] : 'archives/' . $row['cid'] . '.html');
+                    // 使用 Typecho Widget 获取正确的 permalink
+                    $widget = \Widget\Contents\Post\Recent::alloc();
+                    $widget->row = $row;
+                    $widget->cid = $row['cid'];
+                    $widget->title = $row['title'];
+                    $widget->slug = $row['slug'];
+                    $widget->created = $row['created'];
+                    $widget->modified = $row['modified'];
+                    $widget->authorId = $row['authorId'];
+                    $widget->type = $row['type'];
+                    $widget->status = $row['status'];
+                    $widget->commentsNum = $row['commentsNum'];
+                    $widget->order = $row['order'];
+                    $widget->template = $row['template'];
+                    $widget->password = $row['password'];
+                    $widget->allowComment = $row['allowComment'];
+                    $widget->allowPing = $row['allowPing'];
+                    $widget->allowFeed = $row['allowFeed'];
+                    $widget->parent = $row['parent'];
+                    $widget->text = $row['text'];
+                    $item['url'] = $widget->permalink;
                 }
                 if (in_array('excerpt', $fields)) {
                     $text = strip_tags($row['text']);
