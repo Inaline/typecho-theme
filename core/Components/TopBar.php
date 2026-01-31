@@ -216,18 +216,9 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '') {
 
             <!-- 更多选项菜单 -->
             <div class="more-menu" id="moreMenu">
-                <div class="more-menu-item">
-                    <span class="mdi mdi-cog more-menu-icon"></span>
-                    <span>设置</span>
-                </div>
                 <div class="more-menu-item dark-mode-toggle">
-                    <span class="mdi mdi-brightness-6 more-menu-icon"></span>
-                    <span>暗色模式</span>
-                </div>
-                <div class="more-menu-divider"></div>
-                <div class="more-menu-item">
-                    <span class="mdi mdi-login more-menu-icon"></span>
-                    <span>登录</span>
+                    <span class="mdi mdi-brightness-6 more-menu-icon" data-icon-light="mdi-brightness-4" data-icon-dark="mdi-brightness-6"></span>
+                    <span data-text-light="暗色模式" data-text-dark="浅色模式">暗色模式</span>
                 </div>
             </div>
         </div>

@@ -161,6 +161,9 @@ $(document).ready(function() {
         }
     }
 
+    // 更新暗色模式菜单项
+    updateDarkModeMenuItem();
+
     // 切换深色模式
     window.toggleDarkMode = function() {
         $('body').toggleClass('dark-mode');
@@ -178,6 +181,9 @@ $(document).ready(function() {
             }
         }
 
+        // 更新暗色模式菜单项
+        updateDarkModeMenuItem();
+
         // 保存到 localStorage
         if (isDarkMode) {
             localStorage.setItem('theme', 'dark');
@@ -185,6 +191,38 @@ $(document).ready(function() {
             localStorage.setItem('theme', 'light');
         }
     };
+
+    // 更新暗色模式菜单项的图标和文本
+    function updateDarkModeMenuItem() {
+        const $menuItem = $('.dark-mode-toggle');
+        if ($menuItem.length === 0) return;
+
+        const isDarkMode = $('body').hasClass('dark-mode');
+        const $icon = $menuItem.find('.more-menu-icon');
+        const $text = $menuItem.find('span:last-child');
+
+        if (isDarkMode) {
+            // 当前是暗色模式，显示切换到浅色模式的图标和文本
+            const darkIcon = $icon.data('icon-dark');
+            const darkText = $text.data('text-dark');
+            if (darkIcon) {
+                $icon.removeClass('mdi-brightness-4').addClass(darkIcon);
+            }
+            if (darkText) {
+                $text.text(darkText);
+            }
+        } else {
+            // 当前是浅色模式，显示切换到暗色模式的图标和文本
+            const lightIcon = $icon.data('icon-light');
+            const lightText = $text.data('text-light');
+            if (lightIcon) {
+                $icon.removeClass('mdi-brightness-6').addClass(lightIcon);
+            }
+            if (lightText) {
+                $text.text(lightText);
+            }
+        }
+    }
 
     // 绑定暗色模式菜单项点击事件
     $(document).on('click', '.dark-mode-toggle', function(e) {
