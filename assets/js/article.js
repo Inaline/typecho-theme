@@ -23,6 +23,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 初始化文章页面滚动效果
     initArticlePageScrollEffect();
+
+    // 初始化图片懒加载和加载失败处理
+    initImageLazyLoad();
 });
 
 /**
@@ -545,6 +548,51 @@ function initArticlePageScrollEffect() {
             if (scrollTop <= headerHeight * 0.5) {
                 topbar.classList.remove('scrolled');
             }
+        }
+    });
+}
+
+/**
+ * 初始化图片懒加载和加载失败处理
+ */
+function initImageLazyLoad() {
+    const markdownContent = document.querySelector('.markdown-content');
+    if (!markdownContent) return;
+
+    // 查找所有图片
+    const images = markdownContent.querySelectorAll('img');
+
+    images.forEach(function(img) {
+        // 创建图片容器
+        const container = document.createElement('div');
+        container.className = 'img-container';
+
+        // 将图片包裹在容器中
+        img.parentNode.insertBefore(container, img);
+        container.appendChild(img);
+
+        // 添加懒加载属性
+        img.setAttribute('loading', 'lazy');
+
+        // 处理加载失败的函数
+        function handleImageError() {
+            img.style.display = 'none';
+            var errorDiv = document.createElement('div');
+            errorDiv.className = 'img-error';
+            errorDiv.innerHTML = '<span class="mdi mdi-image-off"></span><span class="img-error-text">图片加载失败</span>';
+            container.appendChild(errorDiv);
+        }
+
+        // 检查图片是否已经加载完成
+        if (img.complete) {
+            // 如果图片已经加载完成，检查是否加载成功
+            if (img.naturalWidth === 0) {
+                // 图片加载失败
+                handleImageError();
+            }
+        } else {
+            // 图片还在加载中，添加错误处理
+            img.onerror = handleImageError;
         }
     });
 }

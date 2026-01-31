@@ -203,8 +203,10 @@ function extractPlainTextParagraphs($content, $length = 200)
     // 8. 移除引用
     $content = preg_replace('/^>\s+.+$/m', '', $content);
     
-    // 9. 移除图片
-    $content = preg_replace('/!\[.*?\]\(.*?\)/', '', $content);
+    // 9. 移除图片（包括行内图片和引用式图片）
+    $content = preg_replace('/!\[.*?\]\(.*?\)/', '', $content);  // 移除 ![alt](url)
+    $content = preg_replace('/!\[.*?\]\[.*?\]/', '', $content);  // 移除 ![alt][id]
+    $content = preg_replace('/\n\[\d+\]:\s*\S+/m', '', $content);  // 移除图片引用定义 [1]: url
     
     // 10. 移除链接但保留链接文本
     $content = preg_replace('/\[([^\]]+)\]\([^)]+\)/', '$1', $content);

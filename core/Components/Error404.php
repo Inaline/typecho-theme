@@ -55,7 +55,7 @@
         }
         
         .error-page-container {
-            max-width: 900px;
+            max-width: 600px;
             width: 100%;
             padding: 40px;
             background: var(--bg-color);
@@ -66,12 +66,12 @@
         .error-page-content {
             display: flex;
             align-items: center;
-            gap: 40px;
+            gap: 24px;
             width: 100%;
         }
         
         .error-page-image {
-            flex: 0 0 300px;
+            flex: 0 0 200px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -80,7 +80,7 @@
         .error-page-image img {
             width: 100%;
             height: auto;
-            max-height: 300px;
+            max-height: 200px;
             object-fit: contain;
         }
         
@@ -90,7 +90,7 @@
         }
         
         .error-page-title {
-            font-size: 72px;
+            font-size: 56px;
             font-weight: 700;
             color: var(--text-color);
             margin: 0 0 8px 0;
@@ -99,7 +99,7 @@
         }
         
         .error-page-subtitle {
-            font-size: 28px;
+            font-size: 22px;
             font-weight: 600;
             color: var(--text-color-light);
             margin: 0 0 16px 0;

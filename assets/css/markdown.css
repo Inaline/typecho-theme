@@ -237,11 +237,48 @@
     font-weight: 600;
 }
 
+/* 图片容器 */
+.markdown-content .img-container {
+    max-width: 100%;
+    margin: 12px 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .markdown-content img {
     max-width: 100%;
+    max-height: 60vh;
     height: auto;
     border-radius: var(--border-radius);
-    margin: 12px 0;
+    display: block;
+    margin: 0;
+    object-fit: contain;
+}
+
+/* 图片加载失败样式 */
+.markdown-content .img-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--text-color-light);
+    text-align: center;
+}
+
+.markdown-content .img-error .mdi {
+    font-size: 48px;
+    color: var(--text-color-light);
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.markdown-content .img-error .img-error-text {
+    font-size: 14px;
+    line-height: 1.6;
 }
 
 .markdown-content hr {

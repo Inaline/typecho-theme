@@ -4028,7 +4028,7 @@ body.dark-mode .archive-header::before {
 
 .error-page {
     padding: 40px;
-    min-height: calc(100vh - var(--topbar-height) - var(--categories-height) - 100px);
+    min-height: calc(100vh - var(--topbar-height) - var(--categories-height) - 131.4px);
     display: flex;
     align-items: center;
 }

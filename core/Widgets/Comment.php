@@ -734,4 +734,101 @@ class GetComment
 
         return $result;
     }
+
+    /* ==========================
+     * 评论列表组件数据
+     * ========================== */
+
+    /**
+     * 获取评论列表数据
+     * @param int $cid 文章ID
+     * @param int $page 当前页码
+     * @param int $pageSize 每页评论数
+     * @param string $order 排序方式 ('asc' | 'desc')
+     * @return array
+     */
+    public static function getListData($cid, $page = 1, $pageSize = 10, $order = 'desc')
+    {
+        // 获取该文章的所有评论（只获取顶级评论）
+        $allComments = self::byArticle($cid, ['coid', 'cid', 'created', 'author', 'authorId', 'mail', 'text', 'status', 'parent'], 'created', $order);
+
+        // 只保留顶级评论（parent = 0）
+        $topLevelComments = array_filter($allComments, function($comment) {
+            return $comment['parent'] == 0;
+        });
+
+        // 重新索引数组
+        $topLevelComments = array_values($topLevelComments);
+
+        // 计算总数和总页数
+        $total = count($topLevelComments);
+        $totalPages = ceil($total / $pageSize);
+
+        // 计算偏移量
+        $offset = ($page - 1) * $pageSize;
+
+        // 获取当前页的评论
+        $pageComments = array_slice($topLevelComments, $offset, $pageSize);
+
+        // 格式化评论数据
+        $formattedComments = [];
+        $floor = $offset + 1; // 楼层号
+
+        foreach ($pageComments as $comment) {
+            // 获取子评论
+            $children = self::children($comment['coid'], ['coid', 'cid', 'created', 'author', 'authorId', 'mail', 'text', 'status', 'parent']);
+
+            // 格式化子评论
+            $formattedChildren = [];
+            $childFloor = 1;
+            foreach ($children as $child) {
+                // 获取被回复的评论信息
+                $parentComment = self::get($child['parent'], ['author']);
+                $parentName = $parentComment ? $parentComment['author'] : '';
+
+                $formattedChildren[] = [
+                    'coid' => $child['coid'],
+                    'author' => $child['author'],
+                    'authorId' => $child['authorId'],
+                    'mail' => $child['mail'],
+                    'text' => $child['text'],
+                    'created' => date('Y-m-d H:i', $child['created']),
+                    'parent' => $parentName,
+                    'floor' => $floor . '.' . $childFloor
+                ];
+                $childFloor++;
+            }
+
+            // 生成头像URL
+            $avatar = '';
+            if (!empty($comment['mail'])) {
+                $avatar = Get::Assets('assets/images/cover/cover1.jpg');
+            } else {
+                $avatar = Get::Assets('assets/images/cover/cover1.jpg');
+            }
+
+            $formattedComments[] = [
+                'coid' => $comment['coid'],
+                'author' => $comment['author'],
+                'authorId' => $comment['authorId'],
+                'mail' => $comment['mail'],
+                'avatar' => $avatar,
+                'text' => $comment['text'],
+                'created' => date('Y-m-d H:i', $comment['created']),
+                'floor' => '#' . $floor,
+                'children' => $formattedChildren
+            ];
+            $floor++;
+        }
+
+        return [
+            'cid' => $cid,
+            'page' => $page,
+            'pageSize' => $pageSize,
+            'total' => $total,
+            'totalPages' => $totalPages,
+            'order' => $order,
+            'comments' => $formattedComments
+        ];
+    }
 }
