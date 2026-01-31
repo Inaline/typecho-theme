@@ -359,10 +359,54 @@
     list-style: none;
     padding-left: 20px;
     margin: 5px 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+}
+
+.toc-sub-list.expanded {
+    max-height: 500px;
+    opacity: 1;
+    transition: max-height 0.3s ease-in, opacity 0.3s ease-in;
 }
 
 .toc-item {
     margin: 5px 0;
+}
+
+/* 目录项折叠按钮 */
+.toc-item-toggle {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: var(--text-color-light);
+    font-size: 12px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.toc-item-toggle:hover {
+    color: var(--primary-color);
+}
+
+.toc-item-toggle.collapsed {
+    transform: rotate(-90deg);
+}
+
+.toc-item-content {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* 有子项的目录项添加特殊样式 */
+.toc-item.has-children > .toc-link {
+    display: inline-flex;
+    align-items: center;
 }
 
 .toc-link {

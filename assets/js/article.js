@@ -393,11 +393,13 @@ function initTOC() {
     let tocHtml = '<ul class="toc-list">';
     let currentLevel = 0;
     let levelStack = [];
+    const headingLevels = []; // 存储每个标题的层级
 
     headings.forEach(function(heading, index) {
         const level = parseInt(heading.tagName.charAt(1));
         const text = heading.textContent.trim();
         const id = 'heading-' + index;
+        headingLevels.push(level);
 
         // 为标题添加 ID
         heading.id = id;
@@ -406,7 +408,7 @@ function initTOC() {
         if (level > currentLevel) {
             // 进入更深层级
             for (let i = currentLevel; i < level; i++) {
-                tocHtml += '<ul class="toc-sub-list">';
+                tocHtml += '<ul class="toc-sub-list" data-level="' + (i + 1) + '">';
                 levelStack.push('</ul>');
             }
         } else if (level < currentLevel) {
@@ -419,9 +421,18 @@ function initTOC() {
 
         currentLevel = level;
 
+        // 检查是否有子标题
+        const hasChildren = index < headings.length - 1 && parseInt(headings[index + 1].tagName.charAt(1)) > level;
+
         // 添加目录项
-        tocHtml += '<li class="toc-item toc-level-' + level + '">';
-        tocHtml += '<a href="#' + id + '" class="toc-link" data-target="' + id + '">';
+        tocHtml += '<li class="toc-item toc-level-' + level + (hasChildren ? ' has-children' : '') + '" data-index="' + index + '" data-level="' + level + '">';
+
+        // 如果有子标题，添加折叠按钮
+        if (hasChildren) {
+            tocHtml += '<span class="mdi mdi-chevron-down toc-item-toggle" data-target-index="' + index + '"></span>';
+        }
+
+        tocHtml += '<a href="#' + id + '" class="toc-link" data-target="' + id + '" data-index="' + index + '">';
         tocHtml += text;
         tocHtml += '</a>';
         tocHtml += '</li>';
@@ -437,6 +448,9 @@ function initTOC() {
     // 渲染目录
     tocContainer.innerHTML = tocHtml;
 
+    // 初始化折叠状态
+    initTOCFoldState();
+
     // 添加点击事件
     const tocLinks = tocContainer.querySelectorAll('.toc-link');
     tocLinks.forEach(function(link) {
@@ -450,14 +464,191 @@ function initTOC() {
 
                 // 更新 URL hash
                 history.pushState(null, null, '#' + targetId);
+
+                // 展开当前项及其父级
+                expandTOCItem(parseInt(this.getAttribute('data-index')));
             }
         });
     });
 
-    // 监听滚动，高亮当前目录项
+    // 添加折叠按钮点击事件
+    const toggleButtons = tocContainer.querySelectorAll('.toc-item-toggle');
+    toggleButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const targetIndex = parseInt(this.getAttribute('data-target-index'));
+            toggleTOCItem(targetIndex);
+        });
+    });
+
+    // 监听滚动，高亮当前目录项并自动展开/折叠
     window.addEventListener('scroll', function() {
         updateActiveTOCItem(headings, tocLinks);
+        autoExpandCollapseTOC(headings);
     });
+}
+
+/**
+ * 初始化目录折叠状态（默认展开所有）
+ */
+function initTOCFoldState() {
+    const subLists = document.querySelectorAll('.toc-sub-list');
+    subLists.forEach(function(list) {
+        list.classList.add('expanded');
+    });
+
+    const toggleButtons = document.querySelectorAll('.toc-item-toggle');
+    toggleButtons.forEach(function(btn) {
+        btn.classList.remove('collapsed');
+    });
+}
+
+/**
+ * 切换目录项的折叠/展开状态
+ * @param {number} index 目录项索引
+ */
+function toggleTOCItem(index) {
+    const tocItem = document.querySelector('.toc-item[data-index="' + index + '"]');
+    if (!tocItem) return;
+
+    const toggleBtn = tocItem.querySelector('.toc-item-toggle');
+    if (!toggleBtn) return;
+
+    // 查找子列表
+    let nextElement = tocItem.nextElementSibling;
+    while (nextElement && nextElement.tagName !== 'UL') {
+        nextElement = nextElement.nextElementSibling;
+    }
+
+    if (nextElement && nextElement.classList.contains('toc-sub-list')) {
+        // 切换展开/折叠状态
+        nextElement.classList.toggle('expanded');
+        toggleBtn.classList.toggle('collapsed');
+    }
+}
+
+/**
+ * 展开指定目录项及其所有父级
+ * @param {number} index 目录项索引
+ */
+function expandTOCItem(index) {
+    const tocItem = document.querySelector('.toc-item[data-index="' + index + '"]');
+    if (!tocItem) return;
+
+    // 展开当前项
+    const toggleBtn = tocItem.querySelector('.toc-item-toggle');
+    if (toggleBtn) {
+        toggleBtn.classList.remove('collapsed');
+    }
+
+    // 展开子列表
+    let nextElement = tocItem.nextElementSibling;
+    while (nextElement && nextElement.tagName !== 'UL') {
+        nextElement = nextElement.nextElementSibling;
+    }
+    if (nextElement && nextElement.classList.contains('toc-sub-list')) {
+        nextElement.classList.add('expanded');
+    }
+
+    // 递归展开父级
+    let parentItem = tocItem.parentElement.closest('.toc-item');
+    while (parentItem) {
+        const parentIndex = parseInt(parentItem.getAttribute('data-index'));
+        expandTOCItem(parentIndex);
+        parentItem = parentItem.parentElement.closest('.toc-item');
+    }
+}
+
+/**
+ * 自动展开/折叠目录（根据滚动位置）
+ * @param {NodeList} headings 标题列表
+ */
+function autoExpandCollapseTOC(headings) {
+    const topBar = document.querySelector('.topbar');
+    const topBarHeight = topBar ? topBar.offsetHeight : 88;
+    const offset = topBarHeight + 20;
+
+    // 找到当前可见的标题
+    let currentHeadingIndex = -1;
+    let maxScrollPosition = -Infinity;
+
+    headings.forEach(function(heading, index) {
+        const rect = heading.getBoundingClientRect();
+        const scrollPosition = window.scrollY + rect.top;
+
+        if (rect.top <= offset && scrollPosition > maxScrollPosition) {
+            maxScrollPosition = scrollPosition;
+            currentHeadingIndex = index;
+        }
+    });
+
+    if (currentHeadingIndex === -1) return;
+
+    // 获取所有目录项
+    const tocItems = document.querySelectorAll('.toc-item');
+    const headingLevels = Array.from(headings).map(h => parseInt(h.tagName.charAt(1)));
+
+    // 展开当前标题的目录项及其父级
+    expandTOCItem(currentHeadingIndex);
+
+    // 折叠其他未激活的子目录
+    tocItems.forEach(function(item) {
+        const itemIndex = parseInt(item.getAttribute('data-index'));
+        const itemLevel = parseInt(item.getAttribute('data-level'));
+        const hasChildren = item.classList.contains('has-children');
+
+        if (!hasChildren) return;
+
+        // 检查是否是当前标题的祖先或兄弟
+        const currentItemLevel = headingLevels[itemIndex];
+        const currentHeadingLevel = headingLevels[currentHeadingIndex];
+
+        // 如果不是当前标题的路径上的项，则折叠
+        if (!isAncestorOrSibling(itemIndex, currentHeadingIndex, headingLevels)) {
+            const toggleBtn = item.querySelector('.toc-item-toggle');
+            let nextElement = item.nextElementSibling;
+            while (nextElement && nextElement.tagName !== 'UL') {
+                nextElement = nextElement.nextElementSibling;
+            }
+            if (nextElement && nextElement.classList.contains('toc-sub-list')) {
+                nextElement.classList.remove('expanded');
+                if (toggleBtn) toggleBtn.classList.add('collapsed');
+            }
+        }
+    });
+}
+
+/**
+ * 检查一个目录项是否是另一个目录项的祖先或兄弟
+ * @param {number} itemIndex 目录项索引
+ * @param {number} currentIndex 当前索引
+ * @param {Array} headingLevels 标题层级数组
+ * @return {boolean}
+ */
+function isAncestorOrSibling(itemIndex, currentIndex, headingLevels) {
+    if (itemIndex === currentIndex) return true;
+
+    const itemLevel = headingLevels[itemIndex];
+    const currentLevel = headingLevels[currentIndex];
+
+    // 如果是同一层级且在当前项之前，可能是兄弟
+    if (itemLevel === currentLevel && itemIndex < currentIndex) {
+        return true;
+    }
+
+    // 检查是否是祖先
+    if (itemLevel < currentLevel) {
+        // 查找从 itemIndex 到 currentIndex 之间是否有更深的层级
+        for (let i = itemIndex + 1; i <= currentIndex; i++) {
+            if (headingLevels[i] <= itemLevel) {
+                // 遇到了同层或更浅的层级，说明不是祖先
+                return false;
+            }
+        }
+        return true;
+    }
+
+    return false;
 }
 
 /**

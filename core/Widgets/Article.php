@@ -239,6 +239,44 @@ class GetArticle
     }
 
     /**
+     * 获取文章自定义字段
+     * @param int $cid 文章 ID
+     * @return array
+     */
+    private static function getCustomFields($cid)
+    {
+        $fields = [];
+        
+        try {
+            $db = \Typecho\Db::get();
+            $fieldRows = $db->fetchAll($db->select('name', 'str_value', 'int_value', 'float_value')
+                ->from('table.fields')
+                ->where('cid = ?', $cid));
+
+            foreach ($fieldRows as $fieldRow) {
+                $fieldName = $fieldRow['name'];
+                $fieldValue = null;
+
+                if (!empty($fieldRow['str_value'])) {
+                    $fieldValue = $fieldRow['str_value'];
+                } elseif (!empty($fieldRow['int_value'])) {
+                    $fieldValue = $fieldRow['int_value'];
+                } elseif (!empty($fieldRow['float_value'])) {
+                    $fieldValue = $fieldRow['float_value'];
+                }
+
+                if ($fieldValue !== null) {
+                    $fields[$fieldName] = $fieldValue;
+                }
+            }
+        } catch (Exception $e) {
+            $fields = [];
+        }
+        
+        return $fields;
+    }
+
+    /**
      * 获取文章标题
      * @param int|string $cid 文章 ID 或缩略名
      * @return string
@@ -484,45 +522,33 @@ class GetArticle
         $result = [];
         
         try {
-            $widget = \Widget\Contents\Post\Recent::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
+            $widget = \Widget\Contents\Post\Category::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
             
             while ($widget->next()) {
-                $categories = $widget->categories;
-                $inCategory = false;
+                $item = [];
                 
-                foreach ($categories as $category) {
-                    if ($category['mid'] == $mid || $category['slug'] == $mid) {
-                        $inCategory = true;
-                        break;
+                if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
+                if (in_array('title', $fields)) $item['title'] = $widget->title;
+                if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
+                if (in_array('created', $fields)) $item['created'] = $widget->created;
+                if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
+                if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
+                if (in_array('author', $fields)) {
+                    // author 可能是对象或字符串
+                    if (is_object($widget->author)) {
+                        $item['author'] = $widget->author->name ?? '';
+                    } else {
+                        $item['author'] = $widget->author ?? '';
                     }
                 }
+                if (in_array('text', $fields)) $item['text'] = $widget->text;
+                if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
+                if (in_array('order', $fields)) $item['order'] = $widget->order;
+                if (in_array('url', $fields)) $item['url'] = $widget->permalink;
+                if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
                 
-                if ($inCategory) {
-                    $item = [];
-                    
-                    if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                    if (in_array('title', $fields)) $item['title'] = $widget->title;
-                    if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                    if (in_array('created', $fields)) $item['created'] = $widget->created;
-                    if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                    if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) {
-                        // author 可能是对象或字符串
-                        if (is_object($widget->author)) {
-                            $item['author'] = $widget->author->name ?? '';
-                        } else {
-                            $item['author'] = $widget->author ?? '';
-                        }
-                    }
-                    if (in_array('text', $fields)) $item['text'] = $widget->text;
-                    if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                    if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                    if (in_array('order', $fields)) $item['order'] = $widget->order;
-                    if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                    if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-                    
-                    $result[] = $item;
-                }
+                $result[] = $item;
             }
         } catch (Exception $e) {
             return [];
@@ -574,45 +600,33 @@ class GetArticle
         $result = [];
         
         try {
-            $widget = \Widget\Contents\Post\Recent::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
+            $widget = \Widget\Contents\Post\Tag::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
             
             while ($widget->next()) {
-                $tags = $widget->tags;
-                $hasTag = false;
+                $item = [];
                 
-                foreach ($tags as $tag) {
-                    if ($tag['mid'] == $mid || $tag['slug'] == $mid) {
-                        $hasTag = true;
-                        break;
+                if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
+                if (in_array('title', $fields)) $item['title'] = $widget->title;
+                if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
+                if (in_array('created', $fields)) $item['created'] = $widget->created;
+                if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
+                if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
+                if (in_array('author', $fields)) {
+                    // author 可能是对象或字符串
+                    if (is_object($widget->author)) {
+                        $item['author'] = $widget->author->name ?? '';
+                    } else {
+                        $item['author'] = $widget->author ?? '';
                     }
                 }
+                if (in_array('text', $fields)) $item['text'] = $widget->text;
+                if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
+                if (in_array('order', $fields)) $item['order'] = $widget->order;
+                if (in_array('url', $fields)) $item['url'] = $widget->permalink;
+                if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
                 
-                if ($hasTag) {
-                    $item = [];
-                    
-                    if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                    if (in_array('title', $fields)) $item['title'] = $widget->title;
-                    if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                    if (in_array('created', $fields)) $item['created'] = $widget->created;
-                    if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                    if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) {
-                        // author 可能是对象或字符串
-                        if (is_object($widget->author)) {
-                            $item['author'] = $widget->author->name ?? '';
-                        } else {
-                            $item['author'] = $widget->author ?? '';
-                        }
-                    }
-                    if (in_array('text', $fields)) $item['text'] = $widget->text;
-                    if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                    if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                    if (in_array('order', $fields)) $item['order'] = $widget->order;
-                    if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                    if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-                    
-                    $result[] = $item;
-                }
+                $result[] = $item;
             }
         } catch (Exception $e) {
             return [];
@@ -744,6 +758,43 @@ class GetArticle
      * ========================== */
 
     /**
+     * 通过 CID 获取文章永久链接
+     * @param int $cid 文章 ID
+     * @return string 文章 URL
+     */
+    private static function getPermalinkByCid($cid)
+    {
+        try {
+            $db = \Typecho_Db::get();
+            $row = $db->fetchRow($db->select('cid', 'slug', 'created')
+                ->from('table.contents')
+                ->where('cid = ?', $cid)
+                ->where('type = ?', 'post')
+                ->limit(1));
+            
+            if ($row) {
+                $options = \Typecho_Widget::widget('Widget_Options');
+                $slug = $row['slug'];
+                
+                if (!empty($slug)) {
+                    // 使用 slug 生成 URL
+                    $permalink = $options->siteUrl . $slug . '/';
+                } else {
+                    // 使用 cid 生成 URL
+                    $permalink = $options->siteUrl . 'archives/' . $cid . '/';
+                }
+                
+                return $permalink;
+            }
+        } catch (Exception $e) {
+            // 出错时返回默认 URL
+            return '/archives/' . $cid . '/';
+        }
+        
+        return '/archives/' . $cid . '/';
+    }
+
+    /**
      * 检查文章是否存在
      * @param int|string $cid 文章 ID 或缩略名
      * @return bool
@@ -811,7 +862,7 @@ class GetArticle
         
         // 随机打乱数组
         shuffle($articles);
-        
+
         // 返回指定数量的文章
         return array_slice($articles, 0, $limit);
     }
@@ -828,7 +879,7 @@ class GetArticle
         $result = [];
         
         try {
-            $widget = \Widget\Contents\Post\Recent::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
+            $widget = \Widget\Contents\Post\Search::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
             
             while ($widget->next()) {
                 $title = $widget->title;
@@ -919,51 +970,6 @@ class GetArticle
         }
         
         return null;
-    }
-
-    /* ==========================
-     * 自定义字段
-     * ========================== */
-
-    /**
-     * 从数据库获取文章的自定义字段
-     * @param int $cid 文章 ID
-     * @return array 自定义字段数组
-     */
-    private static function getCustomFields($cid)
-    {
-        $fields = [];
-        
-        try {
-            $db = \Typecho\Db::get();
-            $fieldRows = $db->fetchAll($db->select()->from('table.fields')->where('cid = ?', $cid));
-            
-            if ($fieldRows) {
-                foreach ($fieldRows as $fieldRow) {
-                    $fieldName = $fieldRow['name'];
-                    $fieldType = $fieldRow['type'];
-                    $fieldValue = null;
-                    
-                    // 根据字段类型获取值
-                    if ($fieldType === 'str') {
-                        $fieldValue = $fieldRow['str_value'];
-                    } elseif ($fieldType === 'int') {
-                        $fieldValue = $fieldRow['int_value'];
-                    } elseif ($fieldType === 'float') {
-                        $fieldValue = $fieldRow['float_value'];
-                    }
-                    
-                    if ($fieldValue !== null) {
-                        $fields[$fieldName] = $fieldValue;
-                    }
-                }
-            }
-        } catch (Exception $e) {
-            // 忽略错误，返回空数组
-            $fields = [];
-        }
-        
-        return $fields;
     }
 
     /* ==========================
@@ -1121,6 +1127,10 @@ class GetArticle
         ];
     }
 
+    /* ==========================
+     * 归档文章列表
+     * ========================== */
+
     /**
      * 获取归档页面文章列表数据
      * @param object $archive 当前 Archive 对象
@@ -1129,543 +1139,187 @@ class GetArticle
      */
     public static function getArchiveListData($archive = null, $archive_type = 'archive')
     {
+        // 获取分页和排序参数
         $sort = Get::queryParam('sort', 'date');
         $layout = Get::queryParam('layout', 'list');
         $currentPage = max(1, intval(Get::queryParam('p', '1')));
         $perPage = 10;
 
-        // 排序映射
-        $orderMap = [
-            'date' => 'created',
-            'views' => 'views',
-            'comments' => 'commentsNum',
-            'likes' => 'likes'
-        ];
-
-        $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'created';
-
-        // 使用 Widget 获取文章列表
-        $articles = [];
-        $total = 0;
-
         try {
-            if ($archive_type === 'category') {
-                // 分类文章 - 使用 SQL 查询，避免触发自动输出
-                $db = \Typecho_Db::get();
-                
-                // 获取分类 mid
-                $mid = 0;
-                
-                if (isset($archive->mid) && $archive->mid) {
-                    $mid = $archive->mid;
-                } elseif (isset($archive->categories) && is_array($archive->categories) && !empty($archive->categories)) {
-                    $mid = $archive->categories[0]['mid'];
-                } else {
-                    // 从请求路径中提取分类 slug
-                    $request_path = $archive->request->getPathInfo();
-                    $request_path = trim($request_path, '/');
-                    $path_parts = explode('/', $request_path);
-                    $category_slug_from_url = end($path_parts);
-                    
-                    if (!empty($category_slug_from_url)) {
-                        $row = $db->fetchRow($db->select('mid')->from('table.metas')
-                            ->where('slug = ?', $category_slug_from_url)
-                            ->where('type = ?', 'category')
-                            ->order('mid', Typecho_Db::SORT_DESC)
-                            ->limit(1));
-                        if ($row) {
-                            $mid = $row['mid'];
-                        }
-                    }
-                    
-                    // 如果通过 URL slug 查询失败，尝试其他方式
-                    if ($mid === 0 && isset($archive->slug) && $archive->slug) {
-                        $row = $db->fetchRow($db->select('mid')->from('table.metas')
-                            ->where('slug = ?', $archive->slug)
-                            ->where('type = ?', 'category')
-                            ->order('mid', Typecho_Db::SORT_DESC)
-                            ->limit(1));
-                        if ($row) {
-                            $mid = $row['mid'];
-                        }
-                    }
-                    
-                    if ($mid === 0 && isset($archive->category)) {
-                        $row = $db->fetchRow($db->select('mid')->from('table.metas')
-                            ->where('name = ?', $archive->category)
-                            ->where('type = ?', 'category')
-                            ->order('mid', Typecho_Db::SORT_DESC)
-                            ->limit(1));
-                        if ($row) {
-                            $mid = $row['mid'];
-                        }
-                    }
-                }
-                
-                // 使用 SQL 查询获取该分类下的文章
-                if ($mid > 0) {
-                    $rows = $db->fetchAll($db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'u.screenName as author')
-                        ->from('table.contents AS c')
-                        ->join('table.relationships AS r', 'c.cid = r.cid', Typecho_Db::LEFT_JOIN)
-                        ->join('table.users AS u', 'c.authorId = u.uid', Typecho_Db::LEFT_JOIN)
-                        ->where('r.mid = ?', $mid)
-                        ->where('c.type = ?', 'post')
-                        ->where('c.status = ?', 'publish')
-                        ->order('c.created', Typecho_Db::SORT_DESC));
-                    
-                    foreach ($rows as $row) {
-                        // 构建摘要
-                        $text = strip_tags($row['text']);
-                        $text = preg_replace('/\s+/', ' ', $text);
-                        $text = trim($text);
-                        $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                        if (mb_strlen($text, 'UTF-8') > 200) {
-                            $excerpt .= '...';
-                        }
-                        
-                        // 构建 URL - 使用 Typecho 的 Widget 获取正确的 permalink，但不触发自动输出
-                        $articleWidget = \Widget\Contents\Post\Recent::alloc();
-                        // 手动设置 Widget 的属性，避免使用 push() 方法
-                        foreach ($row as $key => $value) {
-                            $articleWidget->row[$key] = $value;
-                        }
-                        $url = $articleWidget->permalink;
-                        
-                        $articles[] = [
-                            'cid' => $row['cid'],
-                            'title' => $row['title'],
-                            'slug' => $row['slug'],
-                            'created' => $row['created'],
-                            'modified' => $row['modified'],
-                            'authorId' => $row['authorId'],
-                            'author' => $row['author'],
-                            'text' => $row['text'],
-                            'views' => 0,
-                            'commentsNum' => $row['commentsNum'],
-                            'order' => $row['order'],
-                            'url' => $url,
-                            'excerpt' => $excerpt,
-                            'fields' => []
-                        ];
-                    }
-                }
-                $total = count($articles);
-                
-            } elseif ($archive_type === 'tag') {
-                // 标签文章 - 使用 SQL 查询
-                $db = \Typecho_Db::get();
-                
-                // 获取标签 mid
-                $mid = 0;
-                if (isset($archive->mid) && $archive->mid) {
-                    $mid = $archive->mid;
-                } elseif (isset($archive->tags) && is_array($archive->tags) && !empty($archive->tags)) {
-                    $mid = $archive->tags[0]['mid'];
-                } elseif (isset($archive->tag)) {
-                    $row = $db->fetchRow($db->select('mid')->from('table.metas')
-                        ->where('name = ?', $archive->tag)
-                        ->where('type = ?', 'tag')
-                        ->limit(1));
-                    if ($row) {
-                        $mid = $row['mid'];
-                    }
-                }
-                
-                // 使用 SQL 查询获取该标签下的文章
-                if ($mid > 0) {
-                    $rows = $db->fetchAll($db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'u.screenName as author')
-                        ->from('table.contents AS c')
-                        ->join('table.relationships AS r', 'c.cid = r.cid', Typecho_Db::LEFT_JOIN)
-                        ->join('table.users AS u', 'c.authorId = u.uid', Typecho_Db::LEFT_JOIN)
-                        ->where('r.mid = ?', $mid)
-                        ->where('c.type = ?', 'post')
-                        ->where('c.status = ?', 'publish')
-                        ->order('c.created', Typecho_Db::SORT_DESC));
-                    
-                    foreach ($rows as $row) {
-                        $text = strip_tags($row['text']);
-                        $text = preg_replace('/\s+/', ' ', $text);
-                        $text = trim($text);
-                        $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                        if (mb_strlen($text, 'UTF-8') > 200) {
-                            $excerpt .= '...';
-                        }
-                        
-                        // 构建 URL - 使用 Typecho 的 Widget 获取正确的 permalink，但不触发自动输出
-                        $articleWidget = \Widget\Contents\Post\Recent::alloc();
-                        // 手动设置 Widget 的属性，避免使用 push() 方法
-                        foreach ($row as $key => $value) {
-                            $articleWidget->row[$key] = $value;
-                        }
-                        $url = $articleWidget->permalink;
-                        
-                        $articles[] = [
-                            'cid' => $row['cid'],
-                            'title' => $row['title'],
-                            'slug' => $row['slug'],
-                            'created' => $row['created'],
-                            'modified' => $row['modified'],
-                            'authorId' => $row['authorId'],
-                            'author' => $row['author'],
-                            'text' => $row['text'],
-                            'views' => 0,
-                            'commentsNum' => $row['commentsNum'],
-                            'order' => $row['order'],
-                            'url' => $url,
-                            'excerpt' => $excerpt,
-                            'fields' => []
-                        ];
-                    }
-                }
-                $total = count($articles);
-                
-            } elseif ($archive_type === 'search') {
-                // 搜索文章 - 使用 SQL 查询
-                $keyword = '';
-                $db = \Typecho_Db::get();
-
-                // 从 URL 路径中提取关键词
-                $request_path = $_SERVER['REQUEST_URI'] ?? '';
-                echo '<!-- Search Debug: request_path = ' . htmlspecialchars($request_path) . ' -->';
-
-                if (preg_match('/\/search\/([^\/?]+)(?:\/|\?|$)/', $request_path, $matches)) {
-                    $keyword = urldecode($matches[1]);
-                    echo '<!-- Search Debug: keyword from URL path = ' . htmlspecialchars($keyword) . ' -->';
-                }
-
-                if (!empty($keyword)) {
-                    // 使用正确的 SQL 语法：使用 OR 条件组合
-                    $rows = $db->fetchAll($db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'u.screenName as author')
-                        ->from('table.contents AS c')
-                        ->join('table.users AS u', 'c.authorId = u.uid', Typecho_Db::LEFT_JOIN)
-                        ->where('c.type = ?', 'post')
-                        ->where('c.status = ?', 'publish')
-                        ->where('(c.title LIKE ? OR c.text LIKE ?)', '%' . $keyword . '%', '%' . $keyword . '%')
-                        ->order('c.created', Typecho_Db::SORT_DESC));
-
-                    echo '<!-- Search Debug: found ' . count($rows) . ' results -->';
-
-                    foreach ($rows as $row) {
-                        $text = strip_tags($row['text']);
-                        $text = preg_replace('/\s+/', ' ', $text);
-                        $text = trim($text);
-                        $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                        if (mb_strlen($text, 'UTF-8') > 200) {
-                            $excerpt .= '...';
-                        }
-
-                        // 构建 URL - 使用 Typecho 的 Widget 获取正确的 permalink，但不触发自动输出
-                        $articleWidget = \Widget\Contents\Post\Recent::alloc();
-                        // 手动设置 Widget 的属性，避免使用 push() 方法
-                        foreach ($row as $key => $value) {
-                            $articleWidget->row[$key] = $value;
-                        }
-                        $url = $articleWidget->permalink;
-
-                        $articles[] = [
-                            'cid' => $row['cid'],
-                            'title' => $row['title'],
-                            'slug' => $row['slug'],
-                            'created' => $row['created'],
-                            'modified' => $row['modified'],
-                            'authorId' => $row['authorId'],
-                            'author' => $row['author'],
-                            'text' => $row['text'],
-                            'views' => 0,
-                            'commentsNum' => $row['commentsNum'],
-                            'order' => $row['order'],
-                            'url' => $url,
-                            'excerpt' => $excerpt,
-                            'fields' => []
-                        ];
-                    }
-                } else {
-                    echo '<!-- Search Debug: keyword is empty after all attempts -->';
-                }
-                $total = count($articles);
-                echo '<!-- Search Debug: total articles = ' . $total . ' -->';
-                
-            } elseif ($archive_type === 'author') {
-                // 作者文章 - 使用 SQL 查询
-                $authorId = isset($archive->authorId) ? $archive->authorId : 0;
-                $db = \Typecho_Db::get();
-                
-                if ($authorId > 0) {
-                    $rows = $db->fetchAll($db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'u.screenName as author')
-                        ->from('table.contents AS c')
-                        ->join('table.users AS u', 'c.authorId = u.uid', Typecho_Db::LEFT_JOIN)
-                        ->where('c.authorId = ?', $authorId)
-                        ->where('c.type = ?', 'post')
-                        ->where('c.status = ?', 'publish')
-                        ->order('c.created', Typecho_Db::SORT_DESC));
-                    
-                    foreach ($rows as $row) {
-                        $text = strip_tags($row['text']);
-                        $text = preg_replace('/\s+/', ' ', $text);
-                        $text = trim($text);
-                        $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                        if (mb_strlen($text, 'UTF-8') > 200) {
-                            $excerpt .= '...';
-                        }
-                        
-                        // 构建 URL - 使用 Typecho 的 Widget 获取正确的 permalink，但不触发自动输出
-                        $articleWidget = \Widget\Contents\Post\Recent::alloc();
-                        // 手动设置 Widget 的属性，避免使用 push() 方法
-                        foreach ($row as $key => $value) {
-                            $articleWidget->row[$key] = $value;
-                        }
-                        $url = $articleWidget->permalink;
-                        
-                        $articles[] = [
-                            'cid' => $row['cid'],
-                            'title' => $row['title'],
-                            'slug' => $row['slug'],
-                            'created' => $row['created'],
-                            'modified' => $row['modified'],
-                            'authorId' => $row['authorId'],
-                            'author' => $row['author'],
-                            'text' => $row['text'],
-                            'views' => 0,
-                            'commentsNum' => $row['commentsNum'],
-                            'order' => $row['order'],
-                            'url' => $url,
-                            'excerpt' => $excerpt,
-                            'fields' => []
-                        ];
-                    }
-                }
-                $total = count($articles);
-                
-            } elseif ($archive_type === 'date') {
-                // 日期归档文章 - 使用 SQL 查询
-                $year = isset($archive->year) ? $archive->year : 0;
-                $month = isset($archive->month) ? $archive->month : 0;
-                $day = isset($archive->day) ? $archive->day : 0;
-                $db = \Typecho_Db::get();
-                
-                $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'u.screenName as author')
-                    ->from('table.contents AS c')
-                    ->join('table.users AS u', 'c.authorId = u.uid', Typecho_Db::LEFT_JOIN)
-                    ->where('c.type = ?', 'post')
-                    ->where('c.status = ?', 'publish');
-                
-                if ($day > 0) {
-                    $startDate = mktime(0, 0, 0, $month, $day, $year);
-                    $endDate = mktime(23, 59, 59, $month, $day, $year);
-                    $select->where('c.created >= ?', $startDate)
-                           ->where('c.created <= ?', $endDate);
-                } elseif ($month > 0) {
-                    $startDate = mktime(0, 0, 0, $month, 1, $year);
-                    $endDate = mktime(23, 59, 59, $month + 1, 0, $year);
-                    $select->where('c.created >= ?', $startDate)
-                           ->where('c.created <= ?', $endDate);
-                } else {
-                    $startDate = mktime(0, 0, 0, 1, 1, $year);
-                    $endDate = mktime(23, 59, 59, 12, 31, $year);
-                    $select->where('c.created >= ?', $startDate)
-                           ->where('c.created <= ?', $endDate);
-                }
-                
-                $select->order('c.created', Typecho_Db::SORT_DESC);
-                $rows = $db->fetchAll($select);
-                
-                foreach ($rows as $row) {
-                    $text = strip_tags($row['text']);
-                    $text = preg_replace('/\s+/', ' ', $text);
-                    $text = trim($text);
-                    $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                    if (mb_strlen($text, 'UTF-8') > 200) {
-                        $excerpt .= '...';
-                    }
-                    
-                    // 构建 URL - 使用 Typecho 的 Widget 获取正确的 permalink，但不触发自动输出
-                    $articleWidget = \Widget\Contents\Post\Recent::alloc();
-                    // 手动设置 Widget 的属性，避免使用 push() 方法
-                    foreach ($row as $key => $value) {
-                        $articleWidget->row[$key] = $value;
-                    }
-                    $url = $articleWidget->permalink;
-                    
-                    $articles[] = [
-                        'cid' => $row['cid'],
-                        'title' => $row['title'],
-                        'slug' => $row['slug'],
-                        'created' => $row['created'],
-                        'modified' => $row['modified'],
-                        'authorId' => $row['authorId'],
-                        'author' => $row['author'],
-                        'text' => $row['text'],
-                        'views' => 0,
-                        'commentsNum' => $row['commentsNum'],
-                        'order' => $row['order'],
-                        'url' => $url,
-                        'excerpt' => $excerpt,
-                        'fields' => []
-                    ];
-                }
-                $total = count($articles);
-                
-            } else {
-                // 默认归档（所有文章）
-                $articles = self::all(['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order', 'url', 'excerpt', 'fields'], $order, 'desc', 0, 0);
-                $total = count($articles);
+            // 使用 Typecho 原生 Widget 获取文章列表
+            $widget = self::getArchiveWidget($archive_type);
+            if (!$widget) {
+                return self::emptyResult($sort, $layout, $currentPage, $perPage);
             }
 
-            // 排序
-            $sortDir = 'DESC';
-            if (!empty($articles)) {
-                usort($articles, function($a, $b) use ($order, $sortDir) {
-                    $valA = isset($a[$order]) ? $a[$order] : 0;
-                    $valB = isset($b[$order]) ? $b[$order] : 0;
-                    
-                    if ($sortDir === 'DESC') {
-                        return $valB <=> $valA;
-                    } else {
-                        return $valA <=> $valB;
-                    }
-                });
-            }
+            // 设置分页参数
+            $widget->parameter->pageSize = $perPage;
+            $widget->setCurrentPage($currentPage);
 
-            // 计算总页数和偏移量
+            // 获取文章总数
+            $total = $widget->total ?? 0;
             $totalPages = ceil($total / $perPage);
-            $offset = ($currentPage - 1) * $perPage;
 
-            // 应用分页
-            $pagedArticles = array_slice($articles, $offset, $perPage);
-
-            // 批量获取自定义字段
-            $cids = array_column($pagedArticles, 'cid');
-            $allCustomFields = [];
-            
-            if (!empty($cids)) {
-                $db = \Typecho_Db::get();
-                $fieldRows = $db->fetchAll($db->select('cid', 'name', 'str_value', 'int_value', 'float_value')
-                    ->from('table.fields')
-                    ->where('cid IN ?', $cids));
-                
-                foreach ($fieldRows as $fieldRow) {
-                    $cid = $fieldRow['cid'];
-                    $fieldName = $fieldRow['name'];
-                    $fieldValue = null;
-                    
-                    if (!empty($fieldRow['str_value'])) {
-                        $fieldValue = $fieldRow['str_value'];
-                    } elseif (!empty($fieldRow['int_value'])) {
-                        $fieldValue = $fieldRow['int_value'];
-                    } elseif (!empty($fieldRow['float_value'])) {
-                        $fieldValue = $fieldRow['float_value'];
-                    }
-                    
-                    if ($fieldValue !== null) {
-                        if (!isset($allCustomFields[$cid])) {
-                            $allCustomFields[$cid] = [];
-                        }
-                        $allCustomFields[$cid][$fieldName] = $fieldValue;
-                    }
-                }
+            // 收集文章数据
+            $articles = [];
+            while ($widget->next()) {
+                $articles[] = self::extractArticleData($widget);
             }
 
             // 格式化文章数据
-            $formattedArticles = [];
-            foreach ($pagedArticles as &$article) {
-                $cid = $article['cid'];
-                $customFields = $allCustomFields[$cid] ?? [];
-                
-                // 添加自定义字段
-                $article['fields'] = $customFields;
-                
-                // 获取缩略图
-                $thumbnail = getArticleThumbnail($article);
-                if (empty($thumbnail)) {
-                    $thumbnail = self::firstImage($cid);
-                }
-                if (empty($thumbnail)) {
-                    $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
-                } else {
-                    $thumbnail = Get::resolveUri($thumbnail);
-                }
-                
-                // 获取摘要
-                $excerpt = getArticleExcerpt($article, 200);
-                if (empty($excerpt)) {
-                    // 从文章内容中提取摘要
-                    $text = strip_tags($article['text']);
-                    // 移除多余的空白字符
-                    $text = preg_replace('/\s+/', ' ', $text);
-                    $text = trim($text);
-                    // 截取前200个字符
-                    $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                    if (mb_strlen($text, 'UTF-8') > 200) {
-                        $excerpt .= '...';
-                    }
-                } else {
-                    // 如果有自定义摘要，也要截断
-                    $excerpt = strip_tags($excerpt);
-                    $excerpt = preg_replace('/\s+/', ' ', $excerpt);
-                    $excerpt = trim($excerpt);
-                    $excerpt = mb_substr($excerpt, 0, 200, 'UTF-8');
-                    if (mb_strlen($excerpt, 'UTF-8') >= 200) {
-                        $excerpt .= '...';
-                    }
-                }
-                
-                // 获取浏览量
-                $views = getArticleViews($article);
-                if (empty($views)) {
-                    $views = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
-                }
-                if (empty($views)) {
-                    $views = $article['views'] ?? 0;
-                }
-                
-                // 获取点赞数
-                $likes = isset($customFields['article_likes']) ? intval($customFields['article_likes']) : 0;
-                
-                // 格式化日期
-                $date = date('Y-m-d', $article['created']);
-                
-                $formattedArticles[] = [
-                    'title' => $article['title'],
-                    'excerpt' => $excerpt,
-                    'thumbnail' => $thumbnail,
-                    'views' => $views,
-                    'comments' => $article['commentsNum'] ?? 0,
-                    'likes' => $likes,
-                    'date' => $date,
-                    'url' => $article['url']
-                ];
-            }
-            
+            $formattedArticles = self::formatArticles($articles);
+
+            return [
+                'sort' => $sort,
+                'layout' => $layout,
+                'p' => $currentPage,
+                'total' => $total,
+                'total_pages' => $totalPages,
+                'per_page' => $perPage,
+                'articles' => $formattedArticles
+            ];
+
         } catch (Exception $e) {
-            // 出错时返回空数据
-            $total = 0;
-            $totalPages = 0;
-            $formattedArticles = [];
+            return self::emptyResult($sort, $layout, $currentPage, $perPage);
+        }
+    }
+
+    /**
+     * 获取归档 Widget
+     * @param string $archive_type 归档类型
+     * @return object|null Widget 对象或 null
+     */
+    private static function getArchiveWidget($archive_type)
+    {
+        // 所有归档类型都使用同一个 Widget，通过 archive 对象自动处理
+        return \Widget\Contents\Post\Recent::alloc();
+    }
+
+    /**
+     * 从 Widget 提取文章数据
+     * @param object $widget Widget 对象
+     * @return array 文章数据
+     */
+    private static function extractArticleData($widget)
+    {
+        return [
+            'cid' => $widget->cid,
+            'title' => $widget->title,
+            'slug' => $widget->slug,
+            'created' => $widget->created,
+            'modified' => $widget->modified,
+            'authorId' => $widget->authorId,
+            'author' => is_object($widget->author) ? $widget->author->name : $widget->author,
+            'text' => $widget->text,
+            'views' => isset($widget->views) ? $widget->views : 0,
+            'commentsNum' => $widget->commentsNum,
+            'likes' => 0,
+            'order' => $widget->order,
+            'url' => $widget->permalink,
+            'excerpt' => $widget->excerpt(200, '...'),
+            'fields' => self::getCustomFields($widget->cid)
+        ];
+    }
+
+    /**
+     * 格式化文章列表数据
+     * @param array $articles 原始文章数据
+     * @return array 格式化后的文章数据
+     */
+    private static function formatArticles($articles)
+    {
+        $formatted = [];
+
+        foreach ($articles as $article) {
+            $cid = $article['cid'];
+            $customFields = $article['fields'] ?? [];
+
+            // 获取缩略图
+            $thumbnail = getArticleThumbnail($article);
+            if (empty($thumbnail)) {
+                $thumbnail = self::firstImage($cid);
+            }
+            if (empty($thumbnail)) {
+                $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
+            } else {
+                $thumbnail = Get::resolveUri($thumbnail);
+            }
+
+            // 获取浏览量
+            $views = getArticleViews($article);
+            if (empty($views)) {
+                $views = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
+            }
+            if (empty($views)) {
+                $views = $article['views'] ?? 0;
+            }
+
+            // 获取点赞数
+            $likes = isset($customFields['article_likes']) ? intval($customFields['article_likes']) : 0;
+
+            // 格式化日期
+            $date = date('Y-m-d', $article['created']);
+
+            // 从摘要中移除图片语法
+            $excerpt = $article['excerpt'] ?? '';
+            $excerpt = preg_replace('/!\[.*?\]\(.*?\)/', '', $excerpt);
+            $excerpt = preg_replace('/!\[.*?\]\[.*?\]/', '', $excerpt);
+            $excerpt = strip_tags($excerpt);
+            $excerpt = preg_replace('/\s+/', ' ', $excerpt);
+            $excerpt = trim($excerpt);
+            $excerpt = mb_substr($excerpt, 0, 200, 'UTF-8');
+            if (mb_strlen($excerpt, 'UTF-8') >= 200) {
+                $excerpt .= '...';
+            }
+
+            $formatted[] = [
+                'cid' => $cid,
+                'title' => $article['title'],
+                'excerpt' => $excerpt,
+                'thumbnail' => $thumbnail,
+                'views' => $views,
+                'comments' => $article['commentsNum'] ?? 0,
+                'likes' => $likes,
+                'date' => $date,
+                'url' => $article['url']
+            ];
         }
 
+        return $formatted;
+    }
+
+    /**
+     * 返回空结果
+     * @param string $sort 排序方式
+     * @param string $layout 布局方式
+     * @param int $currentPage 当前页码
+     * @param int $perPage 每页数量
+     * @return array 空结果数组
+     */
+    private static function emptyResult($sort, $layout, $currentPage, $perPage)
+    {
         return [
             'sort' => $sort,
             'layout' => $layout,
             'p' => $currentPage,
-            'total' => $total,
+            'total' => 0,
+            'total_pages' => 0,
             'per_page' => $perPage,
-            'total_pages' => $totalPages,
-            'articles' => $formattedArticles
+            'articles' => []
         ];
     }
 
     /* ==========================
-     * 文章阅读组件数据
+     * 文章阅读数据
      * ========================== */
 
     /**
-     * 获取文章阅读组件数据
-     * @param object $archive 当前 Archive 对象
+     * 获取文章阅读器数据
+     * @param object $archive Archive 对象
      * @return array
      */
     public static function getReaderData($archive = null)
     {
-        // 引入 Markdown 解析器
         require_once dirname(__FILE__) . '/../Modules/MarkdownParser/MarkdownParser.php';
 
         // 如果没有传入 archive 对象，尝试从全局获取
