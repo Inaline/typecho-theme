@@ -768,6 +768,10 @@ body.dark-mode .topbar-divider {
     border-radius: 2px;
 }
 
+.topbar-nav-icon {
+    margin-right: 4px;
+}
+
 /* 桌面端分类容器 */
 .categories-container {
     display: none;
@@ -3312,7 +3316,7 @@ body.dark-mode .form-group textarea:focus {
 }
 
 .comment-content p {
-    margin: 0;
+    margin: 8px 0;
 }
 
 .comment-content a {

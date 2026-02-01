@@ -232,8 +232,8 @@ class GetSite
             ]
         ];
 
-        // 仅在文章页面引入 markdown.css 和 highlight.js
-        if ($body_id === 'post') {
+        // 仅在文章页面和links页面引入 markdown.css 和 highlight.js
+        if ($body_id === 'post' || $body_id === 'links') {
             $links[] = [
                 'rel'  => 'stylesheet',
                 'type' => 'text/css',
@@ -291,6 +291,34 @@ class GetSite
                     // 忽略错误
                 }
             }
+        } elseif ($body_id === 'links' && $archive && isset($archive->title)) {
+            // links 页面使用"页面名 - 站名"格式，如果没有自定义标题
+            if (empty($custom_title)) {
+                $siteName = self::title();
+                $title = $archive->title . ' - ' . $siteName;
+            }
+
+            // 尝试获取页面的 SEO 信息
+            if (isset($archive->cid) && $archive->cid) {
+                try {
+                    $db = \Typecho\Db::get();
+                    $fields = $db->fetchAll($db->select('name', 'str_value')
+                        ->from('table.fields')
+                        ->where('cid = ?', $archive->cid)
+                        ->where('name IN ?', ['seo_keywords', 'seo_description']));
+
+                    foreach ($fields as $field) {
+                        if ($field['name'] === 'seo_keywords' && !empty($field['str_value'])) {
+                            $keywords = $field['str_value'];
+                        }
+                        if ($field['name'] === 'seo_description' && !empty($field['str_value'])) {
+                            $description = $field['str_value'];
+                        }
+                    }
+                } catch (Exception $e) {
+                    // 忽略错误
+                }
+            }
         }
 
         // 获取 Typecho 头部输出（包含评论系统所需的 JavaScript）
@@ -301,9 +329,9 @@ class GetSite
             $archive->header();
             $typechoHeader = ob_get_clean();
             
-            // 检查是否是文章页面且有自定义 SEO 信息
-            $hasCustomDescription = ($body_id === 'post' && isset($archive->cid) && $archive->cid && !empty($description) && $description !== self::description());
-            $hasCustomKeywords = ($body_id === 'post' && isset($archive->cid) && $archive->cid && !empty($keywords) && $keywords !== self::keywords());
+            // 检查是否是文章页面或 links 页面且有自定义 SEO 信息
+            $hasCustomDescription = (($body_id === 'post' || $body_id === 'links') && isset($archive->cid) && $archive->cid && !empty($description) && $description !== self::description());
+            $hasCustomKeywords = (($body_id === 'post' || $body_id === 'links') && isset($archive->cid) && $archive->cid && !empty($keywords) && $keywords !== self::keywords());
             
             if ($hasCustomDescription || $hasCustomKeywords) {
                 // 移除 Typecho 输出的默认 description 和 keywords 元标签
@@ -409,8 +437,8 @@ class GetSite
             ]
         ];
 
-        // 仅在文章页面引入 highlight.js 和 article.js
-        if ($body_id === 'post') {
+        // 仅在文章页面和links页面引入 highlight.js 和 article.js
+        if ($body_id === 'post' || $body_id === 'links') {
             $scripts[] = [
                 'type' => 'text/javascript',
                 'src' => 'https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/highlight.min.js'

@@ -281,6 +281,23 @@ return [
                 'description' => '轮播图自动切换的时间间隔，单位为秒，设为0则不自动切换'
             ]
         ]
+    ],
+    [
+        'title' => '自定义语法',
+        'content' => '<h1>自定义语法说明</h1>
+        <h3>1. 卡片语法</h3>
+        <p>使用以下格式创建卡片：</p>
+        <pre><code>%%{"type":"card","data":{"title":"卡片标题","content":"卡片内容（支持Markdown）"}}%%</code></pre>
+        <h3>2. 友链语法</h3>
+        <p>使用以下格式创建友链列表（必须单行）：</p>
+        <pre><code>%%{"type":"links","data":[{"name":"网站名称","url":"https://example.com","description":"网站描述","avatar":"https://example.com/avatar.png"}]}%%</code></pre>
+        <h3>3. 友链字段说明</h3>
+        <ul>
+        <li>name: 网站名称（必填）</li>
+        <li>url: 网站链接（必填）</li>
+        <li>description: 网站描述（可选）</li>
+        <li>avatar: 网站头像（可选，留空使用默认头像）</li>
+        </ul>'
     ]
 ];
 

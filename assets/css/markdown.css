@@ -441,3 +441,168 @@
 .toc-level-3 {
     font-weight: 500;
 }
+
+/* ==========================
+ * 移动端适配
+ * ========================== */
+
+@media (max-width: 767px) {
+    /* 移动端文章页面图片高度调整为50vh */
+    .markdown-content img {
+        max-height: 50vh;
+    }
+}
+
+/* ==========================
+ * 友链卡片样式
+ * ========================== */
+
+.links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin: 16px 0;
+}
+
+/* 友链卡片 a 标签样式 - 覆盖所有 a 标签默认样式 */
+.link-card-a {
+    display: block;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all var(--transition-speed);
+    position: static;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.link-card-a::before,
+.link-card-a::after {
+    display: none;
+}
+
+.link-card-a:hover {
+    color: var(--text-color);
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    transform: none;
+}
+
+.link-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-xs);
+}
+
+.link-card-a:hover .link-card {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-color);
+}
+
+.link-card-avatar {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: var(--page-bg-color);
+    border: 2px solid var(--border-color);
+    transition: border-color var(--transition-speed);
+}
+
+.link-card-a:hover .link-card-avatar {
+    border-color: var(--primary-color);
+}
+
+.link-card-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.link-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.link-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color var(--transition-speed);
+}
+
+.link-card-a:hover .link-card-name {
+    color: var(--primary-color);
+}
+
+.link-card-description {
+    font-size: 13px;
+    color: var(--text-color-light);
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* 移动端友链卡片适配 */
+@media (max-width: 767px) {
+    .links-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .link-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .link-card-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+    }
+
+    .link-card-name {
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .link-card-description {
+        font-size: 12px;
+        -webkit-line-clamp: 2;
+    }
+}
+
+/* ==========================
+ * Markdown 内容边距修复
+ * ========================== */
+
+/* markdown-content 第一个子元素移除上边距 */
+.markdown-content > *:first-child {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* markdown-content 最后一个子元素移除下边距 */
+.markdown-content > *:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}

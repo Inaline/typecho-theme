@@ -1,7 +1,7 @@
 <?php
 /**
  * Inaline 主题 Markdown 解析器
- * 支持自定义语法: $$json$$
+ * 支持自定义语法: $$json$$, %%json%%
  * @author Inaline Studio
  */
 
@@ -11,14 +11,14 @@ class MarkdownParser
 {
     /**
      * 解析文章内容中的自定义 Markdown 语法（在 Typecho 处理之前）
-     * 匹配 $$json$$ 语法，只能有一行
+     * 匹配 $$json$$ 和 %%json%% 语法（只支持单行）
      * @param string $content 原始内容
      * @return string 解析后的内容
      */
     public static function parse($content)
     {
         // 匹配 %%json%% 语法，只匹配同一行内的内容
-        // 使用贪婪匹配，但不使用 /s 标志，这样 . 不会匹配换行符
+        // 不使用 /s 标志，这样 . 不会匹配换行符
         $pattern = '/%%(.*)%%/';
 
         return preg_replace_callback($pattern, [self::class, 'replaceJsonBlock'], $content);
@@ -48,6 +48,11 @@ class MarkdownParser
                        '</div>';
             }
             return '%%' . $jsonString . '%%';
+        }
+
+        // 如果是友链列表，直接渲染
+        if (isset($data['type']) && $data['type'] === 'links' && isset($data['data']) && is_array($data['data'])) {
+            return self::renderLinksList($data['data']);
         }
 
         // 检查是否有 type 字段
@@ -111,7 +116,7 @@ class MarkdownParser
 
     /**
      * 渲染卡片组件
-     * @param array $data 卡片数据
+     * @param array $data 卡片数据（已经是 data 字段的内容）
      * @return string HTML 字符串
      */
     private static function renderCard($data)
@@ -128,6 +133,53 @@ class MarkdownParser
             $content = self::processContent($content);
             $html .= '<div class="md-card-content markdown-content">' . $content . '</div>';
         }
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * 渲染友链列表
+     * @param array $links 友链数组
+     * @return string HTML 字符串
+     */
+    private static function renderLinksList($links)
+    {
+        if (empty($links) || !is_array($links)) {
+            return '';
+        }
+
+        $html = '<div class="links-grid">';
+
+        foreach ($links as $link) {
+            $name = $link['name'] ?? '';
+            $url = $link['url'] ?? '#';
+            $description = $link['description'] ?? '';
+            $avatar = $link['avatar'] ?? '';
+
+            // 处理头像 URI
+            if (!empty($avatar)) {
+                $avatar = Get::resolveUri($avatar);
+            } else {
+                // 使用默认头像
+                $avatar = Get::Assets('assets/images/logo/Inaline.png');
+            }
+
+            $html .= '<a href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer" class="link-card-a">';
+            $html .= '<div class="link-card">';
+            $html .= '<div class="link-card-avatar">';
+            $html .= '<img src="' . htmlspecialchars($avatar) . '" alt="' . htmlspecialchars($name) . '" />';
+            $html .= '</div>';
+            $html .= '<div class="link-card-info">';
+            $html .= '<div class="link-card-name">' . htmlspecialchars($name) . '</div>';
+            if (!empty($description)) {
+                $html .= '<div class="link-card-description">' . htmlspecialchars($description) . '</div>';
+            }
+            $html .= '</div>';
+            $html .= '</div>';
+            $html .= '</a>';
+        }
+
         $html .= '</div>';
 
         return $html;

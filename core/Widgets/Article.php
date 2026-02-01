@@ -1748,19 +1748,8 @@ class GetArticle
         $text = $archive->text ?? '';
         $created = $archive->created ?? time();
 
-        // 获取作者信息 - 使用 Typecho 自带的 Widget\User 组件
-        $author = '';
-        if (isset($archive->authorId) && $archive->authorId) {
-            try {
-                $userWidget = \Widget\User::alloc('uid=' . $archive->authorId);
-                if ($userWidget->have()) {
-                    $userWidget->next();
-                    $author = $userWidget->name;
-                }
-            } catch (Exception $e) {
-                // 忽略错误
-            }
-        }
+        // 获取作者信息 - 统一使用主题设置的侧边栏用户名
+        $author = Get::themeOption('sidebar_user_name', 'Inaline');
 
         $commentsNum = $archive->commentsNum ?? 0;
         $likes = 0;
@@ -1868,6 +1857,7 @@ class GetArticle
         return [
             'title' => $title,
             'content' => $content,
+            'raw_content' => $text,
             'date' => date('Y-m-d', $created),
             'author' => $author,
             'views' => $views,

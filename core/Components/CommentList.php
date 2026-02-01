@@ -99,7 +99,7 @@ $isLoggedIn = $user->hasLogin();
                                 </div>
                             </div>
                             <div class="comment-content">
-                                <?= $comment['text'] ?>
+                                <?= nl2br(trim($comment['text'])) ?>
                             </div>
                             <div class="comment-actions">
                                 <button class="action-btn reply-btn" data-comment-id="<?= $comment['coid'] ?>">
@@ -131,7 +131,7 @@ $isLoggedIn = $user->hasLogin();
                                                 <?php if (!empty($child['parent'])): ?>
                                                     <a href="#comment-<?= $child['coid'] ?>" class="reply-to">@<?= htmlspecialchars($child['parent']) ?></a>
                                                 <?php endif; ?>
-                                                <?= $child['text'] ?>
+                                                <?= nl2br(trim($child['text'])) ?>
                                             </div>
                                             <div class="comment-actions">
                                                 <button class="action-btn reply-btn" data-comment-id="<?= $child['coid'] ?>" data-parent-id="<?= $comment['coid'] ?>">
