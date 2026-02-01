@@ -11,11 +11,13 @@
 
 [English](docs/README.en.md) | 简体中文
 
+</div>
+
 ---
 
 <div align="left">
 
-![Screenshot](docs/images/homepage-mobile.png)
+![Screenshot](docs/images/homepage.png)
 
 </div>
 
