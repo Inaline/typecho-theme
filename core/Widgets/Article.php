@@ -26,7 +26,6 @@ class GetArticle
     {
         $result = [];
 
-        echo "<!-- [GetArticle::all] 开始执行，order={$order}, sort={$sort}, limit={$limit}, offset={$offset} -->\n";
 
         try {
             $db = \Typecho_Db::get();
@@ -44,7 +43,6 @@ class GetArticle
 
             $sortDir = strtolower($sort) === 'desc' ? \Typecho_Db::SORT_DESC : \Typecho_Db::SORT_ASC;
 
-            echo "<!-- [GetArticle::all] 排序字段: {$order}, 排序方向: {$sortDir} -->\n";
 
             // 构建基础查询
             $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'c.status')
@@ -55,7 +53,6 @@ class GetArticle
             // 如果按自定义字段排序，需要 JOIN fields 表
             if ($order === 'views' || $order === 'likes') {
                 $fieldName = $order === 'views' ? 'article_views' : 'article_likes';
-                echo "<!-- [GetArticle::all] 按自定义字段排序: {$fieldName}，使用 INNER JOIN -->\n";
                 // 使用 INNER JOIN 只查询有该字段的文章
                 $select->join('table.fields AS f', 'c.cid = f.cid AND f.name = ?', $fieldName, \Typecho_Db::INNER_JOIN);
             }
@@ -84,10 +81,8 @@ class GetArticle
                 $sql = str_replace('ORDER BY `f`.`str_value`', 'ORDER BY CAST(f.str_value AS UNSIGNED)', $sql);
             }
 
-            echo "<!-- [GetArticle::all] 执行查询: " . htmlspecialchars($sql) . " -->\n";
             $rows = $db->fetchAll($sql);
 
-            echo "<!-- [GetArticle::all] 查询返回 " . count($rows) . " 条记录 -->\n";
 
             if (empty($rows)) {
                 return [];
@@ -96,13 +91,11 @@ class GetArticle
             // 收集所有 CID
             $cids = array_column($rows, 'cid');
 
-            echo "<!-- [GetArticle::all] 收集到 CID 数量: " . count($cids) . " -->\n";
 
             // 使用批量查询方法获取自定义字段和作者信息
             $allCustomFields = self::batchGetCustomFields($cids);
             $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
 
-            echo "<!-- [GetArticle::all] 自定义字段和作者信息获取完成 -->\n";
 
             // 格式化文章数据
             $filteredCount = 0;
@@ -113,7 +106,6 @@ class GetArticle
                 // 只获取 article_type 为 article 的文章
                 $articleType = isset($customFields['article_type']) ? $customFields['article_type'] : 'article';
                 if ($articleType !== 'article') {
-                    echo "<!-- [GetArticle::all] 过滤文章 CID: {$cid}，类型: {$articleType} -->\n";
                     continue;
                 }
 
@@ -159,10 +151,8 @@ class GetArticle
                 $result[] = $item;
             }
 
-            echo "<!-- [GetArticle::all] 过滤后文章数量: {$filteredCount}，最终返回数量: " . count($result) . " -->\n";
 
         } catch (Exception $e) {
-            echo "<!-- [GetArticle::all] 异常: " . $e->getMessage() . " -->\n";
             return [];
         }
 
@@ -212,12 +202,10 @@ class GetArticle
                 if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
                 if (in_array('order', $fields)) $item['order'] = $row['order'];
                 if (in_array('url', $fields)) {
-                    echo "<!-- [get] 请求 CID: {$row['cid']} 的 URL, slug: '{$row['slug']}' -->\n";
 
                     // 直接使用 getPermalinkByCid 方法
                     $item['url'] = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
 
-                    echo "<!-- [get] 最终 URL: {$item['url']} -->\n";
                 }
                 if (in_array('excerpt', $fields)) {
                     $text = strip_tags($row['text']);
@@ -841,7 +829,6 @@ class GetArticle
      */
     public static function total()
     {
-        echo "<!-- [Article] total() 开始 -->\n";
 
         try {
             $db = \Typecho_Db::get();
@@ -852,7 +839,6 @@ class GetArticle
                 ->where('c.type = ?', 'post')
                 ->where('c.status = ?', 'publish'));
 
-            echo "<!-- [Article] total() 查询到 " . count($rows) . " 篇已发布文章 -->\n";
 
             if (empty($rows)) {
                 return 0;
@@ -866,7 +852,6 @@ class GetArticle
                 ->from('table.fields')
                 ->where('cid IN ?', $cids));
 
-            echo "<!-- [Article] total() 查询到 " . count($fieldRows) . " 条自定义字段记录 -->\n";
 
             foreach ($fieldRows as $fieldRow) {
                 $cid = $fieldRow['cid'];
@@ -899,11 +884,9 @@ class GetArticle
                 }
             }
 
-            echo "<!-- [Article] total() 最终统计: {$count} 篇有效文章 -->\n";
 
             return $count;
         } catch (Exception $e) {
-            echo "<!-- [Article] total() 异常: " . $e->getMessage() . " -->\n";
             return 0;
         }
     }
@@ -1165,7 +1148,6 @@ class GetArticle
      */
     public static function queryArticles($params = [])
     {
-        echo "<!-- [Article] queryArticles 开始，参数: " . json_encode($params, JSON_UNESCAPED_UNICODE) . " -->\n";
 
         $defaults = [
             'filter_type' => 'all',
@@ -1181,11 +1163,9 @@ class GetArticle
         $params['page'] = max(1, intval($params['page']));
         $offset = ($params['page'] - 1) * $params['per_page'];
 
-        echo "<!-- [Article] 合并后参数: " . json_encode($params, JSON_UNESCAPED_UNICODE) . " -->\n";
 
         try {
             $db = \Typecho_Db::get();
-            echo "<!-- [Article] 数据库连接成功 -->\n";
 
             // 排序映射 - 支持多种排序字段
             $orderMap = [
@@ -1206,7 +1186,6 @@ class GetArticle
                 ->where('c.type = ?', 'post')
                 ->where('c.status = ?', 'publish');
 
-            echo "<!-- [Article] 基础查询构建完成 -->\n";
 
             // 添加筛选条件
             switch ($params['filter_type']) {
@@ -1214,14 +1193,12 @@ class GetArticle
                     if ($params['filter_id'] > 0) {
                         $select->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
                             ->where('r.mid = ?', $params['filter_id']);
-                        echo "<!-- [Article] 添加分类筛选: {$params['filter_id']} -->\n";
                     }
                     break;
                 case 'tag':
                     if ($params['filter_id'] > 0) {
                         $select->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
                             ->where('r.mid = ?', $params['filter_id']);
-                        echo "<!-- [Article] 添加标签筛选: {$params['filter_id']} -->\n";
                     }
                     break;
                 case 'search':
@@ -1229,13 +1206,11 @@ class GetArticle
                         $keyword = '%' . $params['keywords'] . '%';
                         $select->where('c.title LIKE ?', $keyword)
                             ->orWhere('c.text LIKE ?', $keyword);
-                        echo "<!-- [Article] 添加搜索筛选: {$params['keywords']} -->\n";
                     }
                     break;
                 case 'author':
                     if ($params['filter_id'] > 0) {
                         $select->where('c.authorId = ?', $params['filter_id']);
-                        echo "<!-- [Article] 添加作者筛选: {$params['filter_id']} -->\n";
                     }
                     break;
                 case 'date':
@@ -1281,12 +1256,10 @@ class GetArticle
             $total = intval($countResult['count'] ?? 0);
             $totalPages = ceil($total / $params['per_page']);
 
-            echo "<!-- [Article] 总数查询结果: total={$total}, totalPages={$totalPages} -->\n";
 
             // 如果按自定义字段排序，需要 JOIN fields 表
             if ($params['order'] === 'views' || $params['order'] === 'likes') {
                 $fieldName = $params['order'] === 'views' ? 'article_views' : 'article_likes';
-                echo "<!-- [Article] 按自定义字段排序: {$fieldName} -->\n";
 
                 // 获取表前缀和适配器
                 $prefix = $db->getPrefix();
@@ -1329,7 +1302,6 @@ class GetArticle
                 // 添加 limit 和 offset
                 $sql .= " LIMIT " . intval($params['per_page']) . " OFFSET " . intval($offset);
 
-                echo "<!-- [Article] 最终查询: " . $sql . " -->\n";
 
                 // 执行查询
                 $resource = $db->query($sql, \Typecho_Db::READ);
@@ -1340,27 +1312,21 @@ class GetArticle
                 // 统一添加 limit 和 offset
                 $select->limit($params['per_page'])->offset($offset);
 
-                echo "<!-- [Article] 最终查询: " . $select->__toString() . " -->\n";
 
                 // 执行查询
                 $rows = $db->fetchAll($select);
             }
 
-            echo "<!-- [Article] 查询执行完成，返回 " . count($rows) . " 条记录 -->\n";
 
             if (empty($rows)) {
-                echo "<!-- [Article] 查询结果为空，返回空结果 -->\n";
                 return self::buildQueryResult($params, 0, 0, []);
             }
 
             // 批量获取数据
             $cids = array_column($rows, 'cid');
-            echo "<!-- [Article] 批量获取自定义字段，CID 数量: " . count($cids) . " -->\n";
             $customFields = self::batchGetCustomFields($cids);
-            echo "<!-- [Article] 自定义字段获取完成 -->\n";
 
             $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
-            echo "<!-- [Article] 作者信息获取完成 -->\n";
 
             // 格式化文章数据
             $formattedArticles = [];
@@ -1371,19 +1337,16 @@ class GetArticle
                 // 只获取 article_type 为 article 的文章
                 $articleType = isset($fields['article_type']) ? $fields['article_type'] : 'article';
                 if ($articleType !== 'article') {
-                    echo "<!-- [Article] 跳过文章 {$cid}，类型: {$articleType} -->\n";
                     continue;
                 }
 
                 $formattedArticles[] = self::formatArticleForList($row, $fields, $authors);
             }
 
-            echo "<!-- [Article] 格式化完成，最终文章数量: " . count($formattedArticles) . " -->\n";
 
             return self::buildQueryResult($params, $total, $totalPages, $formattedArticles);
 
         } catch (Exception $e) {
-            echo "<!-- [Article] 查询异常: " . $e->getMessage() . " -->\n";
             return self::buildQueryResult($params, 0, 0, []);
         }
     }
@@ -1398,11 +1361,9 @@ class GetArticle
         $result = [];
 
         if (empty($cids)) {
-            echo "<!-- [Article] batchGetCustomFields: CID 数组为空 -->\n";
             return $result;
         }
 
-        echo "<!-- [Article] batchGetCustomFields: 开始查询 " . count($cids) . " 个文章的自定义字段 -->\n";
 
         try {
             $db = \Typecho_Db::get();
@@ -1410,7 +1371,6 @@ class GetArticle
                 ->from('table.fields')
                 ->where('cid IN ?', $cids));
 
-            echo "<!-- [Article] batchGetCustomFields: 查询到 " . count($fieldRows) . " 条字段记录 -->\n";
 
             foreach ($fieldRows as $fieldRow) {
                 $cid = $fieldRow['cid'];
@@ -1433,9 +1393,7 @@ class GetArticle
                 }
             }
 
-            echo "<!-- [Article] batchGetCustomFields: 完成，" . count($result) . " 个文章有自定义字段 -->\n";
         } catch (Exception $e) {
-            echo "<!-- [Article] batchGetCustomFields 异常: " . $e->getMessage() . " -->\n";
         }
 
         return $result;
@@ -1451,11 +1409,9 @@ class GetArticle
         $result = [];
 
         if (empty($authorIds)) {
-            echo "<!-- [Article] batchGetAuthors: 作者ID数组为空 -->\n";
             return $result;
         }
 
-        echo "<!-- [Article] batchGetAuthors: 开始查询 " . count($authorIds) . " 个作者的信息 -->\n";
 
         try {
             $db = \Typecho_Db::get();
@@ -1463,13 +1419,11 @@ class GetArticle
                 ->from('table.users')
                 ->where('uid IN ?', array_unique($authorIds)));
 
-            echo "<!-- [Article] batchGetAuthors: 查询到 " . count($authorRows) . " 个作者 -->\n";
 
             foreach ($authorRows as $authorRow) {
                 $result[$authorRow['uid']] = $authorRow['screenName'];
             }
         } catch (Exception $e) {
-            echo "<!-- [Article] batchGetAuthors 异常: " . $e->getMessage() . " -->\n";
         }
 
         return $result;
@@ -1484,7 +1438,6 @@ class GetArticle
      */
     private static function formatArticleForList($row, $customFields, $authors)
     {
-        echo "<!-- [Article] formatArticleForList: 开始格式化文章 {$row['cid']} ({$row['title']}) -->\n";
 
         $articleArray = [
             'cid' => $row['cid'],
@@ -1500,7 +1453,6 @@ class GetArticle
             'fields' => $customFields
         ];
 
-        echo "<!-- [Article] formatArticleForList: 自定义字段数量: " . count($customFields) . " -->\n";
 
         // 获取缩略图
         $thumbnail = getArticleThumbnail($articleArray);
@@ -1560,7 +1512,6 @@ class GetArticle
             $url = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
         }
 
-        echo "<!-- [Article] formatArticleForList: 格式化完成，浏览量={$views}, 点赞数={$likes} -->\n";
 
         return [
             'title' => $row['title'],
@@ -1604,7 +1555,6 @@ class GetArticle
      */
     private static function getPermalinkByCid($cid, $slug = '', $created = 0)
     {
-        echo "<!-- [getPermalinkByCid] cid={$cid}, slug='{$slug}', created={$created} -->\n";
 
         try {
             // 使用 Typecho 的 Router 生成 URL
@@ -1615,10 +1565,8 @@ class GetArticle
             $options = \Typecho_Widget::widget('Widget_Options');
             $url = \Typecho\Common::url($path, $options->index);
 
-            echo "<!-- [getPermalinkByCid] 使用 Router::url 生成 URL: {$url} -->\n";
             return $url;
         } catch (Exception $e) {
-            echo "<!-- [getPermalinkByCid] 异常: " . $e->getMessage() . "，使用备用 URL -->\n";
             // 备用方案
             try {
                 $options = \Typecho_Widget::widget('Widget_Options');
@@ -1639,13 +1587,11 @@ class GetArticle
      */
     public static function getListData()
     {
-        echo "<!-- [Article] getListData 开始 -->\n";
 
         $sort = Get::queryParam('sort', 'date');
         $layout = Get::queryParam('layout', 'list');
         $currentPage = max(1, intval(Get::queryParam('p', '1')));
 
-        echo "<!-- [Article] URL参数: sort={$sort}, layout={$layout}, p={$currentPage} -->\n";
 
         // 排序映射
         $orderMap = [
@@ -1657,7 +1603,6 @@ class GetArticle
 
         $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'created';
 
-        echo "<!-- [Article] 排序字段映射: {$sort} -> {$order} -->\n";
 
         $result = self::queryArticles([
             'filter_type' => 'all',
@@ -1671,7 +1616,6 @@ class GetArticle
         $result['sort'] = $sort;
         $result['layout'] = $layout;
 
-        echo "<!-- [Article] getListData 结束，返回文章数量: " . count($result['articles']) . " -->\n";
 
         return $result;
     }
@@ -1690,13 +1634,11 @@ class GetArticle
      */
     public static function getArchiveListData($archive = null, $archive_type = 'archive', $category_mid = 0, $keywords = '')
     {
-        echo "<!-- [Article] getArchiveListData 开始，类型: {$archive_type} -->\n";
 
         $sort = Get::queryParam('sort', 'date');
         $layout = Get::queryParam('layout', 'list');
         $currentPage = max(1, intval(Get::queryParam('p', '1')));
 
-        echo "<!-- [Article] getArchiveListData 参数: sort={$sort}, layout={$layout}, p={$currentPage}, keywords={$keywords}, category_mid={$category_mid} -->\n";
 
         // 排序映射
         $orderMap = [
@@ -1716,25 +1658,20 @@ class GetArticle
             case 'category':
                 $filterId = $category_mid > 0 ? $category_mid : self::getArchiveMid($archive, 'category');
                 $filterType = 'category';
-                echo "<!-- [Article] getArchiveListData 分类筛选 ID: {$filterId} -->\n";
                 break;
             case 'tag':
                 $filterId = self::getArchiveMid($archive, 'tag');
                 $filterType = 'tag';
-                echo "<!-- [Article] getArchiveListData 标签筛选 ID: {$filterId} -->\n";
                 break;
             case 'search':
                 // 搜索使用 keywords 参数
-                echo "<!-- [Article] getArchiveListData 搜索关键词: {$keywords} -->\n";
                 break;
             case 'author':
                 $filterId = self::getArchiveMid($archive, 'author');
                 $filterType = 'author';
-                echo "<!-- [Article] getArchiveListData 作者筛选 ID: {$filterId} -->\n";
                 break;
             default:
                 $filterType = 'all';
-                echo "<!-- [Article] getArchiveListData 全部文章 -->\n";
                 break;
         }
 
@@ -1752,7 +1689,6 @@ class GetArticle
         $result['sort'] = $sort;
         $result['layout'] = $layout;
 
-        echo "<!-- [Article] getArchiveListData 结束，返回文章数量: " . count($result['articles']) . " -->\n";
 
         return $result;
     }

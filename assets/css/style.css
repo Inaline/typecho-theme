@@ -1488,7 +1488,7 @@ body.dark-mode .search-clear:hover {
 /* 选项卡 */
 .sidebar-tabs {
     display: flex;
-    background-color: #f5f5f5;
+    background-color: var(--page-bg-color);
     border-radius: var(--border-radius);
     padding: 4px;
     margin-bottom: 16px;
@@ -3179,10 +3179,19 @@ body.dark-mode .form-group textarea:focus {
 .comment-item {
     padding: 12px 0;
     border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
 }
 
 .comment-item:last-child {
     border-bottom: none;
+}
+
+/* 评论高亮效果 */
+.comment-item.comment-highlight {
+    background-color: rgba(255, 121, 0, 0.1);
+    border-radius: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
 }
 
 /* 回复评论项 */
@@ -4225,5 +4234,78 @@ body.dark-mode .archive-header::before {
         width: 100%;
         max-width: 240px;
     }
+}
+
+/* KaTeX 数学公式样式 */
+.markdown-content .katex {
+    font-size: 1.1em;
+}
+
+/* 行内公式 */
+.markdown-content .katex-display {
+    margin: 1.5em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0.5em 0;
+}
+
+/* 块级公式容器 */
+.markdown-content .katex-display > .katex {
+    text-align: center;
+    white-space: normal;
+}
+
+/* 公式字体大小调整 */
+.markdown-content .katex-display > .katex {
+    font-size: 1.2em;
+}
+
+/* 移动端公式优化 */
+@media (max-width: 768px) {
+    .markdown-content .katex {
+        font-size: 1.05em;
+    }
+    
+    .markdown-content .katex-display {
+        margin: 1em 0;
+        overflow-x: auto;
+    }
+    
+    .markdown-content .katex-display > .katex {
+        font-size: 1.1em;
+    }
+}
+
+/* 深色模式下的公式颜色 */
+body.dark-mode .markdown-content .katex {
+    color: var(--text-color);
+}
+
+body.dark-mode .markdown-content .katex .base {
+    color: var(--text-color);
+}
+
+/* 公式加载提示 */
+.katex-loading {
+    display: inline-block;
+    padding: 0.2em 0.5em;
+    background: var(--page-bg-color);
+    border-radius: 4px;
+    font-family: monospace;
+    color: var(--text-color-light);
+}
+
+/* 公式错误样式 */
+.katex-error {
+    color: #cc0000;
+    background: rgba(204, 0, 0, 0.1);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+body.dark-mode .katex-error {
+    color: #ff6666;
+    background: rgba(255, 102, 102, 0.1);
 }
 

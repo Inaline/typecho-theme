@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 初始化数学公式解析
     initMathJax();
+
+    // 处理评论锚点滚动
+    handleCommentAnchorScroll();
 });
 
 /**
@@ -51,7 +54,9 @@ function loadScript(src) {
         script.src = src;
         script.async = true;
         script.onload = resolve;
-        script.onerror = reject;
+        script.onerror = function() {
+            reject(new Error('Failed to load script: ' + src));
+        };
         document.head.appendChild(script);
     });
 }
@@ -72,7 +77,9 @@ function loadCSS(href) {
         link.rel = 'stylesheet';
         link.href = href;
         link.onload = resolve;
-        link.onerror = reject;
+        link.onerror = function() {
+            reject(new Error('Failed to load CSS: ' + href));
+        };
         document.head.appendChild(link);
     });
 }
@@ -387,14 +394,19 @@ document.addEventListener('click', function(e) {
     if (replyBtn) {
         e.preventDefault();
         const commentId = replyBtn.getAttribute('data-comment-id');
-        console.log('点击回复按钮，评论ID:', commentId);
-        console.log('TypechoComment 是否存在:', typeof TypechoComment !== 'undefined');
-        
-        if (typeof TypechoComment !== 'undefined') {
-            console.log('调用 TypechoComment.reply');
-            TypechoComment.reply('comment-' + commentId, commentId);
+        let parentId = replyBtn.getAttribute('data-parent-id');
+
+        // 如果是子评论（有 data-parent-id 属性），则使用一级评论 ID 作为父评论
+        if (parentId) {
+            parentId = parseInt(parentId);
         } else {
-            console.error('TypechoComment 对象未定义');
+            // 一级评论，使用当前评论 ID 作为父评论
+            parentId = parseInt(commentId);
+        }
+
+        if (typeof TypechoComment !== 'undefined') {
+            TypechoComment.reply('comment-' + commentId, parentId);
+        } else {
             alert('评论回复功能暂不可用，请刷新页面重试');
         }
     }
@@ -881,4 +893,151 @@ function initImageLazyLoad() {
             img.onerror = handleImageError;
         }
     });
+}
+
+/**
+ * 初始化数学公式解析
+ */
+function initMathJax() {
+    const markdownContent = document.querySelector('.markdown-content');
+    if (!markdownContent) {
+        return;
+    }
+
+    // 检查是否包含数学公式标记
+    const hasMath = checkForMath(markdownContent);
+
+    if (!hasMath) {
+        return; // 没有数学公式，不加载 KaTeX
+    }
+
+    // 异步加载 KaTeX 并渲染公式
+    loadKaTeX()
+        .then(function() {
+            renderMathInContent(markdownContent);
+        })
+        .catch(function(error) {
+            console.error('数学公式解析失败:', error);
+        });
+}
+
+/**
+ * 检查内容中是否包含数学公式标记
+ * @param {HTMLElement} content 内容元素
+ * @returns {boolean}
+ */
+function checkForMath(content) {
+    const html = content.innerHTML;
+
+    // 检查行内公式 $...$ （排除代码块中的 $）
+    // 先移除代码块内容
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    const codeBlocks = tempDiv.querySelectorAll('pre, code, kbd, samp');
+    codeBlocks.forEach(block => block.remove());
+    const textWithoutCode = tempDiv.innerHTML;
+
+    // 检查行内公式 $...$ - 需要成对出现
+    const inlineMathRegex = /\$[^$\n]+\$/g;
+    if (inlineMathRegex.test(textWithoutCode)) {
+        return true;
+    }
+
+    // 检查块级公式 $...$ 或 \[...\]
+    const displayMathRegex = /\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]/g;
+    if (displayMathRegex.test(textWithoutCode)) {
+        return true;
+    }
+
+    // 检查 LaTeX 语法 \(...\)
+    const latexInlineRegex = /\\\([^$]*?\\\)/g;
+    if (latexInlineRegex.test(textWithoutCode)) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * 在内容中渲染数学公式
+ * @param {HTMLElement} content 元素
+ */
+function renderMathInContent(content) {
+    if (!window.katex || !window.renderMathInElement) {
+        console.error('KaTeX 未正确加载');
+        return;
+    }
+
+    // 配置 auto-render
+    renderMathInElement(content, {
+        delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false },
+            { left: '\\[', right: '\\]', display: true }
+        ],
+        throwOnError: false,
+        errorColor: '#cc0000',
+        strict: false,
+        trust: false,
+        ignoredTags: [
+            'script',
+            'noscript',
+            'style',
+            'textarea',
+            'pre',
+            'code'
+        ],
+        ignoredClasses: [
+            'katex',
+            'katex-display'
+        ],
+        macros: {
+            "\\f": "#1f(#2)",
+            "\\R": "\\mathbb{R}",
+            "\\N": "\\mathbb{N}",
+            "\\Z": "\\mathbb{Z}",
+            "\\Q": "\\mathbb{Q}",
+            "\\C": "\\mathbb{C}"
+        }
+    });
+}
+
+/**
+ * 处理评论锚点滚动
+ * 当页面加载时，如果 URL 中有评论锚点，滚动到评论上方 200px 的位置
+ */
+function handleCommentAnchorScroll() {
+    // 检查 URL 中是否有评论锚点
+    if (window.location.hash && window.location.hash.startsWith('#comment-')) {
+        // 延迟执行，确保页面完全加载
+        setTimeout(function() {
+            const targetId = window.location.hash.substring(1);
+            const targetElement = document.getElementById(targetId);
+
+            if (targetElement) {
+                // 获取顶部导航栏高度
+                const topBar = document.querySelector('.topbar');
+                const topBarHeight = topBar ? topBar.offsetHeight : 88;
+                
+                // 计算滚动位置：元素顶部 - 导航栏高度 - 200px
+                const offset = 200;
+                const scrollPosition = targetElement.getBoundingClientRect().top + window.pageYOffset - topBarHeight - offset;
+
+                // 平滑滚动到目标位置
+                window.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth'
+                });
+
+                // 高亮显示该评论
+                targetElement.classList.add('comment-highlight');
+                
+                // 3秒后移除高亮
+                setTimeout(function() {
+                    targetElement.classList.remove('comment-highlight');
+                }, 3000);
+            }
+        }, 100);
+    }
 }

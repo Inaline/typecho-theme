@@ -113,7 +113,7 @@ $isLoggedIn = $user->hasLogin();
                         <?php if (!empty($comment['children'])): ?>
                             <div class="comment-replies">
                                 <?php foreach ($comment['children'] as $child): ?>
-                                    <div class="comment-item reply-item" data-comment-id="<?= $child['coid'] ?>" id="comment-<?= $child['coid'] ?>">
+                                    <div class="comment-item reply-item" data-comment-id="<?= $child['coid'] ?>" data-parent-id="<?= $comment['coid'] ?>" id="comment-<?= $child['coid'] ?>">
                                         <div class="comment-main">
                                             <div class="comment-header">
                                                 <div class="comment-avatar">
@@ -132,6 +132,12 @@ $isLoggedIn = $user->hasLogin();
                                                     <a href="#comment-<?= $child['coid'] ?>" class="reply-to">@<?= htmlspecialchars($child['parent']) ?></a>
                                                 <?php endif; ?>
                                                 <?= $child['text'] ?>
+                                            </div>
+                                            <div class="comment-actions">
+                                                <button class="action-btn reply-btn" data-comment-id="<?= $child['coid'] ?>" data-parent-id="<?= $comment['coid'] ?>">
+                                                    <i class="mdi mdi-reply"></i>
+                                                    回复
+                                                </button>
                                             </div>
                                         </div>
                                     </div>

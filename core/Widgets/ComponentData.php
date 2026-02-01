@@ -185,7 +185,6 @@ class ComponentData
         if (Get::themeOption('sidebar_widget_hot_articles', true) && $pageType !== 'post') {
             $count = intval(Get::themeOption('sidebar_widget_hot_articles_count', 5));
 
-            echo "<!-- [热门文章] 开始获取，count={$count}, pageType={$pageType} -->\n";
 
             // 直接使用原生 SQL 查询热门文章
             $db = \Typecho_Db::get();
@@ -206,21 +205,17 @@ class ComponentData
                     ORDER BY CAST(f.str_value AS UNSIGNED) DESC
                     LIMIT {$count}";
 
-            echo "<!-- [热门文章] 执行查询: " . htmlspecialchars($sql) . " -->\n";
 
             $rows = $db->fetchAll($sql);
 
-            echo "<!-- [热门文章] 查询返回 " . count($rows) . " 条记录 -->\n";
 
             // 格式化文章数据
             $formattedArticles = [];
             foreach ($rows as $row) {
-                echo "<!-- [热门文章] 处理文章 CID: {$row['cid']}, 标题: {$row['title']} -->\n";
 
                 // 获取完整的文章信息（包含URL、浏览量等）
                 $fullArticle = GetArticle::get($row['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum', 'fields']);
                 if ($fullArticle) {
-                    echo "<!-- [热门文章] 获取到完整文章信息，URL: {$fullArticle['url']}, 浏览量: " . ($fullArticle['views'] ?? 0) . " -->\n";
 
                     // 获取缩略图
                     $thumbnail = getArticleThumbnail($fullArticle);
@@ -244,11 +239,9 @@ class ComponentData
                         'comments' => $fullArticle['commentsNum'] ?? 0
                     ];
                 } else {
-                    echo "<!-- [热门文章] 获取完整文章信息失败，CID: {$row['cid']} -->\n";
                 }
             }
 
-            echo "<!-- [热门文章] 格式化完成，最终文章数量: " . count($formattedArticles) . " -->\n";
 
             $widgetList[] = [
                 'type' => 'hot_articles',
