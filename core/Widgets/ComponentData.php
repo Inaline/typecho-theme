@@ -333,4 +333,167 @@ class ComponentData
     {
         return GetArticle::getArchiveListData($archive, $archive_type, $category_mid, $keywords);
     }
+
+    /* ==========================
+     * Shuoshuo List 组件数据
+     * ========================== */
+
+    /**
+     * 获取说说列表数据
+     * @param int $page 当前页码
+     * @param int $pageSize 每页说说数量
+     * @param int|null $shuoshuoId 说说ID（用于查询单个说说）
+     * @return array
+     */
+    public static function GetShuoshuoListData($page = 1, $pageSize = 10, $shuoshuoId = null)
+    {
+        $db = \Typecho_Db::get();
+        $prefix = $db->getPrefix();
+        $adapter = $db->getAdapter();
+
+        // 如果指定了说说ID，只查询该说说
+        if ($shuoshuoId) {
+            $sql = "SELECT c.cid, c.title, c.slug, c.created, c.text, c.authorId, c.allowComment
+                    FROM {$prefix}contents AS c
+                    INNER JOIN {$prefix}fields AS f ON c.cid = f.cid AND f.name = " . $adapter->quoteValue('article_type') . "
+                    WHERE c.type = " . $adapter->quoteValue('post') . "
+                    AND c.status = " . $adapter->quoteValue('publish') . "
+                    AND f.str_value = " . $adapter->quoteValue('shuoshuo') . "
+                    AND c.cid = " . $adapter->quoteValue($shuoshuoId) . "
+                    LIMIT 1";
+
+            $rows = $db->fetchAll($sql);
+            $total = 1;
+        } else {
+            // 计算偏移量
+            $offset = ($page - 1) * $pageSize;
+
+            // 查询说说类型的文章
+            $sql = "SELECT c.cid, c.title, c.slug, c.created, c.text, c.authorId, c.allowComment
+                    FROM {$prefix}contents AS c
+                    INNER JOIN {$prefix}fields AS f ON c.cid = f.cid AND f.name = " . $adapter->quoteValue('article_type') . "
+                    WHERE c.type = " . $adapter->quoteValue('post') . "
+                    AND c.status = " . $adapter->quoteValue('publish') . "
+                    AND f.str_value = " . $adapter->quoteValue('shuoshuo') . "
+                    ORDER BY c.created DESC
+                    LIMIT {$pageSize} OFFSET {$offset}";
+
+            $rows = $db->fetchAll($sql);
+
+            // 获取总数
+            $countSql = "SELECT COUNT(*) as total
+                         FROM {$prefix}contents AS c
+                         INNER JOIN {$prefix}fields AS f ON c.cid = f.cid AND f.name = " . $adapter->quoteValue('article_type') . "
+                         WHERE c.type = " . $adapter->quoteValue('post') . "
+                         AND c.status = " . $adapter->quoteValue('publish') . "
+                         AND f.str_value = " . $adapter->quoteValue('shuoshuo');
+
+            $countResult = $db->fetchRow($countSql);
+            $total = $countResult['total'] ?? 0;
+        }
+
+        // 格式化说说数据
+        $formattedShuoshuos = [];
+        foreach ($rows as $row) {
+            // 获取完整的说说信息
+            $fullShuoshuo = GetArticle::get($row['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum', 'text', 'fields']);
+            if ($fullShuoshuo) {
+                // 获取用户信息
+                $user = $db->fetchRow($db->select('name', 'screenName')->from('table.users')->where('uid = ?', $row['authorId']));
+
+                // 解析说说内容，分离 markdown 和图片
+                $parsedContent = self::parseShuoshuoContent($fullShuoshuo['text']);
+
+                // 获取评论数据
+                $comments = [];
+                if ($row['allowComment'] == '1' && $fullShuoshuo['commentsNum'] > 0) {
+                    $comments = GetComment::getListData($row['cid'], 1, 2, 'desc');
+                    $comments = $comments['comments'] ?? [];
+                }
+
+                $formattedShuoshuos[] = [
+                    'cid' => $fullShuoshuo['cid'],
+                    'title' => $fullShuoshuo['title'] ?? '',
+                    'content' => $parsedContent['markdown'],
+                    'images' => $parsedContent['images'],
+                    'url' => $fullShuoshuo['url'],
+                    'created' => date('Y-m-d H:i:s', $fullShuoshuo['created']),
+                    'created_date' => date('Y-m-d', $fullShuoshuo['created']),
+                    'created_time' => date('H:i', $fullShuoshuo['created']),
+                    'author' => $user ? $user['screenName'] : '匿名',
+                    'comments' => $fullShuoshuo['commentsNum'] ?? 0,
+                    'allow_comment' => $row['allowComment'] == '1',
+                    'comment_list' => $comments
+                ];
+            }
+        }
+
+        return [
+            'shuoshuos' => $formattedShuoshuos,
+            'total' => $total,
+            'page' => $page,
+            'page_size' => $pageSize,
+            'total_pages' => ceil($total / $pageSize),
+            'single_mode' => $shuoshuoId !== null
+        ];
+    }
+
+    /**
+     * 解析说说内容，分离 markdown 和图片
+     * @param string $content 原始内容
+     * @return array ['markdown' => string, 'images' => array]
+     */
+    private static function parseShuoshuoContent($content)
+    {
+        $markdown = '';
+        $images = [];
+
+        // 分割内容，查找分隔线 %----------%
+        $parts = explode("%----------%", $content);
+
+        if (count($parts) >= 2) {
+            // 第一部分是 markdown 内容
+            $markdown = trim($parts[0]);
+
+            // 第二部分开始是图片列表
+            $imagePart = trim($parts[1]);
+
+            // 解析图片列表
+            $lines = explode("\n", $imagePart);
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line)) continue;
+
+                // 匹配 markdown 图片格式: ![描述][数字] 或 ![描述](url)
+                if (preg_match('/!\[([^\]]*)\]\[(\d+)\]/', $line, $matches)) {
+                    // 引用格式，需要查找对应的链接定义
+                    $refId = $matches[2];
+                    if (preg_match('/\[' . $refId . '\]:\s*(.+)/', $imagePart, $urlMatch)) {
+                        $images[] = [
+                            'url' => trim($urlMatch[1]),
+                            'alt' => $matches[1]
+                        ];
+                    }
+                } elseif (preg_match('/!\[([^\]]*)\]\(([^)]+)\)/', $line, $matches)) {
+                    // 直接链接格式
+                    $images[] = [
+                        'url' => $matches[2],
+                        'alt' => $matches[1]
+                    ];
+                }
+            }
+        } else {
+            // 没有分隔线，全部作为 markdown 内容
+            $markdown = $content;
+        }
+
+        // 从 markdown 内容中移除图片（如果有图片在 markdown 部分）
+        $markdown = preg_replace('/!\[([^\]]*)\]\[?\d*\]?\([^\)]*\)/', '', $markdown);
+        $markdown = preg_replace('/!\[([^\]]*)\]\[\d+\]/', '', $markdown);
+
+        return [
+            'markdown' => $markdown,
+            'images' => $images
+        ];
+    }
 }

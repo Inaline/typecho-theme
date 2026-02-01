@@ -613,3 +613,127 @@ const RunTime = {
 
 // 初始化运行时间
 RunTime.init();
+
+/* ========================
+ * 图片查看功能 (viewer.js)
+ * ======================== */
+
+const ImageViewer = {
+    viewerLoaded: false,
+    viewerLoading: false,
+
+    // 加载 viewer.js
+    loadViewer() {
+        if (this.viewerLoaded || this.viewerLoading) return;
+
+        this.viewerLoading = true;
+
+        // 动态加载 viewer.js 样式
+        const style = document.createElement('link');
+        style.rel = 'stylesheet';
+        style.href = 'https://cdn.bootcdn.net/ajax/libs/viewerjs/1.11.6/viewer.min.css';
+        document.head.appendChild(style);
+
+        // 动态加载 viewer.js 脚本
+        const script = document.createElement('script');
+        script.src = 'https://cdn.bootcdn.net/ajax/libs/viewerjs/1.11.6/viewer.min.js';
+        script.async = true;
+        script.onload = () => {
+            this.viewerLoaded = true;
+            this.viewerLoading = false;
+            this.initAllViewers();
+        };
+        script.onerror = () => {
+            this.viewerLoading = false;
+        };
+        document.body.appendChild(script);
+    },
+
+    // 初始化所有图片查看器
+    initAllViewers() {
+        if (typeof Viewer === 'undefined') return;
+
+        // 初始化说说图片
+        const shuoshuoImages = document.querySelectorAll('.shuoshuo-image-item img');
+        if (shuoshuoImages.length > 0) {
+            try {
+                const imagesArray = Array.from(shuoshuoImages);
+                const shuoshuoViewer = new Viewer(imagesArray[0].parentElement, {
+                    url: 'src',
+                    toolbar: {
+                        zoomIn: 1,
+                        zoomOut: 1,
+                        oneToOne: 1,
+                        reset: 1,
+                        prev: 1,
+                        play: 0,
+                        next: 1,
+                        rotateLeft: 1,
+                        rotateRight: 1,
+                        flipHorizontal: 1,
+                        flipVertical: 1,
+                    },
+                    title: false,
+                    transition: true,
+                    keyboard: true,
+                    zoomRatio: 0.2,
+                    minZoomRatio: 0.5,
+                    maxZoomRatio: 3,
+                });
+            } catch (e) {
+                // 静默失败
+            }
+        }
+
+        // 初始化文章内容图片
+        const articleImages = document.querySelectorAll('.markdown-content img');
+        if (articleImages.length > 0) {
+            try {
+                const articleViewer = new Viewer(articleImages[0].closest('.markdown-content'), {
+                    url: 'src',
+                    toolbar: {
+                        zoomIn: 1,
+                        zoomOut: 1,
+                        oneToOne: 1,
+                        reset: 1,
+                        prev: 1,
+                        play: 0,
+                        next: 1,
+                        rotateLeft: 1,
+                        rotateRight: 1,
+                        flipHorizontal: 1,
+                        flipVertical: 1,
+                    },
+                    title: false,
+                    transition: true,
+                    keyboard: true,
+                    zoomRatio: 0.2,
+                    minZoomRatio: 0.5,
+                    maxZoomRatio: 3,
+                });
+            } catch (e) {
+                // 静默失败
+            }
+        }
+    },
+
+    // 检查并初始化
+    checkAndInit() {
+        // 检查是否有图片需要查看器
+        const hasShuoshuoImages = document.querySelectorAll('.shuoshuo-image-item img').length > 0;
+        const hasArticleImages = document.querySelectorAll('.markdown-content img').length > 0;
+
+        if (hasShuoshuoImages || hasArticleImages) {
+            if (typeof Viewer === 'undefined') {
+                this.loadViewer();
+            } else {
+                this.initAllViewers();
+            }
+        }
+    }
+};
+
+// 页面加载完成后检查并初始化图片查看器
+$(document).ready(function() {
+    ImageViewer.checkAndInit();
+});
