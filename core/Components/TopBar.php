@@ -276,26 +276,24 @@ function renderSidebarItem($item, $depth = 0, $currentPage = '', $categoryPathSl
                         <span class="search-section-title">热搜</span>
                     </div>
                     <div class="search-hot-list">
-                        <div class="search-hot-item">
-                            <span class="search-hot-rank hot-rank-1">1</span>
-                            <span class="search-hot-text">Typecho主题开发</span>
-                        </div>
-                        <div class="search-hot-item">
-                            <span class="search-hot-rank hot-rank-2">2</span>
-                            <span class="search-hot-text">PHP编程技巧</span>
-                        </div>
-                        <div class="search-hot-item">
-                            <span class="search-hot-rank hot-rank-3">3</span>
-                            <span class="search-hot-text">前端框架</span>
-                        </div>
-                        <div class="search-hot-item">
-                            <span class="search-hot-rank">4</span>
-                            <span class="search-hot-text">响应式设计</span>
-                        </div>
-                        <div class="search-hot-item">
-                            <span class="search-hot-rank">5</span>
-                            <span class="search-hot-text">性能优化</span>
-                        </div>
+                        <?php
+                        // 获取热门文章（按浏览量排序，取前5篇）
+                        $hotArticles = \GetArticle::popular(5, ['cid', 'title', 'slug']);
+                        // 调试：输出热门文章标题
+                        if (!empty($hotArticles)) {
+                            foreach ($hotArticles as $index => $article) {
+                                $rank = $index + 1;
+                                $rankClass = $rank <= 3 ? "hot-rank-{$rank}" : '';
+                                $title = $article['title'] ?? '';
+                                echo '<div class="search-hot-item">';
+                                echo '<span class="search-hot-rank ' . htmlspecialchars($rankClass) . '">' . htmlspecialchars($rank) . '</span>';
+                                echo '<span class="search-hot-text">' . htmlspecialchars($title) . '</span>';
+                                echo '</div>';
+                            }
+                        } else {
+                            echo '<div class="search-hot-item"><span class="search-hot-text">暂无热门文章</span></div>';
+                        }
+                        ?>
                     </div>
                 </div>
             </div>

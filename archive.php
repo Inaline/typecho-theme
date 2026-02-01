@@ -16,84 +16,84 @@ $archive_title = '';
 $archive_description = '';
 $archive_type = '';
 $current_page = 'archive'; // 默认当前页面
+$category_mid = 0; // 初始化分类 mid
+$category_path_slugs = []; // 初始化分类路径 slugs
 
 if ($this->is('category')) {
     $archive_type = 'category';
-    // 获取分类名称和 slug
     $category_name = '';
-    $current_page = '';
-    $category_mid = 0;
     
-    // 尝试从 categories 数组获取
+    // 从 URL 中提取当前访问的分类 slug
+    $request_path = $this->request->getPathInfo();
+    $request_path = trim($request_path, '/');
+    $path_parts = explode('/', $request_path);
+    $current_slug = end($path_parts);
+    
+    // 尝试从 categories 数组获取 - 匹配当前 slug
     if (isset($this->categories) && is_array($this->categories) && !empty($this->categories)) {
-        $category_name = $this->categories[0]['name'];
-        $current_page = $this->categories[0]['slug'];
-        $category_mid = $this->categories[0]['mid'];
-    } else {
-        // 如果 categories 为空，从 Request path 中提取分类 slug
-        $request_path = $this->request->getPathInfo();
-        // 移除前后斜杠
-        $request_path = trim($request_path, '/');
-        // 分割路径
-        $path_parts = explode('/', $request_path);
-        // 获取最后一个部分作为分类 slug
-        $category_slug_from_url = end($path_parts);
-        
-        if (!empty($category_slug_from_url)) {
-            $db = \Typecho_Db::get();
-            // 添加排序，确保获取最新的分类
-            $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
-                ->where('slug = ?', $category_slug_from_url)
-                ->where('type = ?', 'category')
-                ->order('mid', Typecho_Db::SORT_DESC)
-                ->limit(1));
-            if ($row) {
-                $category_name = $row['name'];
-                $current_page = $row['slug'];
-                $category_mid = $row['mid'];
+        foreach ($this->categories as $cat) {
+            if ($cat['slug'] === $current_slug) {
+                $category_name = $cat['name'];
+                $current_page = $cat['slug'];
+                $category_mid = $cat['mid'];
+                break;
             }
         }
-        
-        // 如果通过 URL slug 查询失败，尝试通过 mid 获取
-        if (empty($category_name) && isset($this->mid) && $this->mid) {
-            $db = \Typecho_Db::get();
-            $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
-                ->where('mid = ?', $this->mid)
-                ->where('type = ?', 'category')
-                ->limit(1));
-            if ($row) {
-                $category_name = $row['name'];
-                $current_page = $row['slug'];
-                $category_mid = $row['mid'];
-            }
+    }
+    
+    // 如果没有找到，尝试通过 URL slug 从数据库查询
+    if (empty($category_mid) && !empty($current_slug)) {
+        $db = \Typecho_Db::get();
+        $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
+            ->where('slug = ?', $current_slug)
+            ->where('type = ?', 'category')
+            ->limit(1));
+        if ($row) {
+            $category_name = $row['name'];
+            $current_page = $row['slug'];
+            $category_mid = $row['mid'];
         }
-        
-        // 如果通过 mid 查询失败，尝试通过 slug 查询
-        if (empty($category_name) && isset($this->slug) && $this->slug) {
-            $db = \Typecho_Db::get();
-            $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
-                ->where('slug = ?', $this->slug)
-                ->where('type = ?', 'category')
-                ->limit(1));
-            if ($row) {
-                $category_name = $row['name'];
-                $current_page = $row['slug'];
-                $category_mid = $row['mid'];
-            }
+    }
+    
+    // 如果没有找到，尝试通过 mid 获取
+    if (empty($category_mid) && isset($this->mid) && $this->mid) {
+        $db = \Typecho_Db::get();
+        $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
+            ->where('mid = ?', $this->mid)
+            ->where('type = ?', 'category')
+            ->limit(1));
+        if ($row) {
+            $category_name = $row['name'];
+            $current_page = $row['slug'];
+            $category_mid = $row['mid'];
         }
-        
-        // 如果通过 slug 查询失败，尝试通过 name 查询
-        if (empty($category_name) && isset($this->category) && $this->category) {
-            $db = \Typecho_Db::get();
-            $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
-                ->where('name = ?', $this->category)
-                ->where('type = ?', 'category')
-                ->limit(1));
-            if ($row) {
-                $category_name = $row['name'];
-                $current_page = $row['slug'];
-                $category_mid = $row['mid'];
-            }
+    }
+    
+    // 如果通过 mid 查询失败，尝试通过 slug 查询
+    if (empty($category_name) && isset($this->slug) && $this->slug) {
+        $db = \Typecho_Db::get();
+        $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
+            ->where('slug = ?', $this->slug)
+            ->where('type = ?', 'category')
+            ->limit(1));
+        if ($row) {
+            $category_name = $row['name'];
+            $current_page = $row['slug'];
+            $category_mid = $row['mid'];
+        }
+    }
+    
+    // 如果通过 slug 查询失败，尝试通过 name 查询
+    if (empty($category_name) && isset($this->category) && $this->category) {
+        $db = \Typecho_Db::get();
+        $row = $db->fetchRow($db->select('mid', 'name', 'slug')->from('table.metas')
+            ->where('name = ?', $this->category)
+            ->where('type = ?', 'category')
+            ->limit(1));
+        if ($row) {
+            $category_name = $row['name'];
+            $current_page = $row['slug'];
+            $category_mid = $row['mid'];
         }
     }
     
@@ -137,7 +137,6 @@ if ($this->is('category')) {
     $archive_type = 'search';
     $archive_title = $this->keywords;
     $archive_description = '包含关键词 "' . $this->keywords . '" 的文章';
-    $category_path_slugs = [];
 } elseif ($this->is('author')) {
     $archive_type = 'author';
     $archive_title = $this->author->name;
@@ -213,7 +212,8 @@ Get::Component($this, 'Common', ['type' => 'wrapper-start']);
 Get::Component($this, 'Common', ['type' => 'content-column-start']);
 
 // 获取归档文章列表组件参数
-$params_article_list = ComponentData::GetArchiveListData($this, $archive_type);
+$keywords = $archive_type === 'search' ? ($this->keywords ?? '') : '';
+$params_article_list = ComponentData::GetArchiveListData($this, $archive_type, $category_mid, $keywords);
 
 // 归档页面标题展示
 echo '<div class="archive-header">';

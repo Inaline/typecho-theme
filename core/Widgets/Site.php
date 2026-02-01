@@ -401,7 +401,7 @@ class GetSite
         $scripts = [
             [
                 'type' => 'text/javascript',
-                'src' => self::adminPath() . 'js/jquery.js',
+                'src' => Helper::options()->adminUrl . 'js/jquery.js',
             ],
             [
                 'type' => 'text/javascript',

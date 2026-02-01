@@ -25,134 +25,145 @@ class GetArticle
     public static function all($fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order'], $order = 'created', $sort = 'desc', $limit = 0, $offset = 0)
     {
         $result = [];
-        $cids = [];
-        
+
+        echo "<!-- [GetArticle::all] 开始执行，order={$order}, sort={$sort}, limit={$limit}, offset={$offset} -->\n";
+
         try {
-            $widget = \Widget\Contents\Post\Recent::alloc('pageSize=' . ($limit > 0 ? $limit : 999999) . '&page=' . ceil(($offset + 1) / ($limit > 0 ? $limit : 1)));
-            
-            // 遍历文章，收集所有 CID
-            while ($widget->next()) {
+            $db = \Typecho_Db::get();
+
+            // 排序映射
+            $orderMap = [
+                'created' => 'c.created',
+                'modified' => 'c.modified',
+                'views' => 'article_views',
+                'commentsNum' => 'c.commentsNum',
+                'likes' => 'article_likes',
+                'mid' => 'c.cid',
+                'order' => 'c.order'
+            ];
+
+            $sortDir = strtolower($sort) === 'desc' ? \Typecho_Db::SORT_DESC : \Typecho_Db::SORT_ASC;
+
+            echo "<!-- [GetArticle::all] 排序字段: {$order}, 排序方向: {$sortDir} -->\n";
+
+            // 构建基础查询
+            $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'c.status')
+                ->from('table.contents AS c')
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish');
+
+            // 如果按自定义字段排序，需要 JOIN fields 表
+            if ($order === 'views' || $order === 'likes') {
+                $fieldName = $order === 'views' ? 'article_views' : 'article_likes';
+                echo "<!-- [GetArticle::all] 按自定义字段排序: {$fieldName}，使用 INNER JOIN -->\n";
+                // 使用 INNER JOIN 只查询有该字段的文章
+                $select->join('table.fields AS f', 'c.cid = f.cid AND f.name = ?', $fieldName, \Typecho_Db::INNER_JOIN);
+            }
+
+            // 应用排序
+            if ($order === 'views' || $order === 'likes') {
+                // 先添加临时排序，稍后替换
+                $select->order('f.str_value', $sortDir);
+            } else {
+                $sortField = isset($orderMap[$order]) ? $orderMap[$order] : 'c.created';
+                $select->order($sortField, $sortDir);
+            }
+
+            // 应用限制和偏移
+            if ($limit > 0) {
+                $select->limit($limit);
+            }
+            if ($offset > 0) {
+                $select->offset($offset);
+            }
+
+            // 执行查询
+            $sql = $select->__toString();
+            // 修复 CAST 被加反引号的问题
+            if ($order === 'views' || $order === 'likes') {
+                $sql = str_replace('ORDER BY `f`.`str_value`', 'ORDER BY CAST(f.str_value AS UNSIGNED)', $sql);
+            }
+
+            echo "<!-- [GetArticle::all] 执行查询: " . htmlspecialchars($sql) . " -->\n";
+            $rows = $db->fetchAll($sql);
+
+            echo "<!-- [GetArticle::all] 查询返回 " . count($rows) . " 条记录 -->\n";
+
+            if (empty($rows)) {
+                return [];
+            }
+
+            // 收集所有 CID
+            $cids = array_column($rows, 'cid');
+
+            echo "<!-- [GetArticle::all] 收集到 CID 数量: " . count($cids) . " -->\n";
+
+            // 使用批量查询方法获取自定义字段和作者信息
+            $allCustomFields = self::batchGetCustomFields($cids);
+            $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
+
+            echo "<!-- [GetArticle::all] 自定义字段和作者信息获取完成 -->\n";
+
+            // 格式化文章数据
+            $filteredCount = 0;
+            foreach ($rows as $row) {
+                $cid = $row['cid'];
+                $customFields = $allCustomFields[$cid] ?? [];
+
+                // 只获取 article_type 为 article 的文章
+                $articleType = isset($customFields['article_type']) ? $customFields['article_type'] : 'article';
+                if ($articleType !== 'article') {
+                    echo "<!-- [GetArticle::all] 过滤文章 CID: {$cid}，类型: {$articleType} -->\n";
+                    continue;
+                }
+
+                $filteredCount++;
+
                 $item = [];
-                
-                // 只返回指定字段
-                if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                if (in_array('title', $fields)) $item['title'] = $widget->title;
-                if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                if (in_array('created', $fields)) $item['created'] = $widget->created;
-                if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                if (in_array('author', $fields)) {
-                    // author 可能是对象或字符串
-                    if (is_object($widget->author)) {
-                        $item['author'] = $widget->author->name ?? '';
-                    } else {
-                        $item['author'] = $widget->author ?? '';
-                    }
+
+                if (in_array('cid', $fields)) $item['cid'] = $cid;
+                if (in_array('title', $fields)) $item['title'] = $row['title'];
+                if (in_array('slug', $fields)) $item['slug'] = $row['slug'];
+                if (in_array('created', $fields)) $item['created'] = $row['created'];
+                if (in_array('modified', $fields)) $item['modified'] = $row['modified'];
+                if (in_array('authorId', $fields)) $item['authorId'] = $row['authorId'];
+                if (in_array('author', $fields)) $item['author'] = $authors[$row['authorId']] ?? '';
+                if (in_array('text', $fields)) $item['text'] = $row['text'];
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
+                if (in_array('order', $fields)) $item['order'] = $row['order'];
+
+                // 浏览量和点赞数从自定义字段获取
+                if (in_array('views', $fields)) {
+                    $item['views'] = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
                 }
-                if (in_array('text', $fields)) $item['text'] = $widget->text;
-                if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                if (in_array('order', $fields)) $item['order'] = $widget->order;
-                
-                // 添加 URL
-                if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                
-                // 添加摘要
-                if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-                
-                // 收集 CID 用于后续批量查询自定义字段
-                $cids[] = $widget->cid;
-                
-                $result[] = $item;
-            }
-            
-            // 批量获取所有文章的自定义字段
-            $allCustomFields = [];
-            if (!empty($cids)) {
-                $db = \Typecho_Db::get();
-                $fieldRows = $db->fetchAll($db->select('cid', 'name', 'str_value', 'int_value', 'float_value')
-                    ->from('table.fields')
-                    ->where('cid IN ?', $cids));
-                
-                foreach ($fieldRows as $fieldRow) {
-                    $cid = $fieldRow['cid'];
-                    $fieldName = $fieldRow['name'];
-                    $fieldValue = null;
-                    
-                    // 根据不同的值字段判断类型并获取值
-                    if (!empty($fieldRow['str_value'])) {
-                        $fieldValue = $fieldRow['str_value'];
-                    } elseif (!empty($fieldRow['int_value'])) {
-                        $fieldValue = $fieldRow['int_value'];
-                    } elseif (!empty($fieldRow['float_value'])) {
-                        $fieldValue = $fieldRow['float_value'];
-                    }
-                    
-                    if ($fieldValue !== null) {
-                        if (!isset($allCustomFields[$cid])) {
-                            $allCustomFields[$cid] = [];
-                        }
-                        $allCustomFields[$cid][$fieldName] = $fieldValue;
-                    }
+                if (in_array('likes', $fields)) {
+                    $item['likes'] = isset($customFields['article_likes']) ? intval($customFields['article_likes']) : 0;
                 }
-            }
-            
-            // 将自定义字段添加到结果中
-            foreach ($result as &$item) {
-                $cid = $item['cid'];
-                
+
                 // 添加自定义字段
                 if (in_array('fields', $fields)) {
-                    $item['fields'] = $allCustomFields[$cid] ?? [];
+                    $item['fields'] = $customFields;
                 }
-                
-                // 添加点赞数（从自定义字段获取）
-                if (in_array('likes', $fields)) {
-                    $item['likes'] = isset($allCustomFields[$cid]['article_likes']) ? intval($allCustomFields[$cid]['article_likes']) : 0;
+
+                // 生成 URL - 使用优化后的方法
+                if (in_array('url', $fields)) {
+                    $item['url'] = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
                 }
-                
-                // 更新浏览量（从自定义字段获取，如果有的话）
-                if (in_array('views', $fields) && isset($allCustomFields[$cid]['article_views'])) {
-                    $item['views'] = intval($allCustomFields[$cid]['article_views']);
+
+                // 生成摘要
+                if (in_array('excerpt', $fields)) {
+                    $text = strip_tags($row['text']);
+                    $item['excerpt'] = mb_substr($text, 0, 200, 'UTF-8') . '...';
                 }
+
+                $result[] = $item;
             }
-            unset($item);
-            
+
+            echo "<!-- [GetArticle::all] 过滤后文章数量: {$filteredCount}，最终返回数量: " . count($result) . " -->\n";
+
         } catch (Exception $e) {
+            echo "<!-- [GetArticle::all] 异常: " . $e->getMessage() . " -->\n";
             return [];
-        }
-
-        // 排序映射
-        $orderMap = [
-            'created' => 'created',
-            'modified' => 'modified',
-            'views' => 'views',
-            'commentsNum' => 'commentsNum',
-            'likes' => 'likes',
-            'mid' => 'cid',
-            'order' => 'order'
-        ];
-        
-        $sortField = isset($orderMap[$order]) ? $orderMap[$order] : 'created';
-        $sortDir = strtolower($sort) === 'desc' ? SORT_DESC : SORT_ASC;
-
-        // 排序
-        if (!empty($result)) {
-            usort($result, function($a, $b) use ($sortField, $sortDir) {
-                $valA = isset($a[$sortField]) ? $a[$sortField] : 0;
-                $valB = isset($b[$sortField]) ? $b[$sortField] : 0;
-                
-                if ($sortDir === SORT_DESC) {
-                    return $valB <=> $valA;
-                } else {
-                    return $valA <=> $valB;
-                }
-            });
-        }
-
-        // 应用偏移量和限制
-        if ($offset > 0 || $limit > 0) {
-            $result = array_slice($result, $offset, $limit > 0 ? $limit : null);
         }
 
         return $result;
@@ -193,31 +204,20 @@ class GetArticle
                     $item['author'] = $authorRow ? $authorRow['screenName'] : '';
                 }
                 if (in_array('text', $fields)) $item['text'] = $row['text'];
-                if (in_array('views', $fields)) $item['views'] = isset($row['views']) ? $row['views'] : 0;
+                if (in_array('views', $fields)) {
+                    // 从 fields 表中获取浏览量
+                    $viewField = $db->fetchRow($db->select('str_value')->from('table.fields')->where('cid = ?', $row['cid'])->where('name = ?', 'article_views')->limit(1));
+                    $item['views'] = $viewField ? intval($viewField['str_value']) : 0;
+                }
                 if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
                 if (in_array('order', $fields)) $item['order'] = $row['order'];
                 if (in_array('url', $fields)) {
-                    // 使用 Typecho Widget 获取正确的 permalink
-                    $widget = \Widget\Contents\Post\Recent::alloc();
-                    $widget->row = $row;
-                    $widget->cid = $row['cid'];
-                    $widget->title = $row['title'];
-                    $widget->slug = $row['slug'];
-                    $widget->created = $row['created'];
-                    $widget->modified = $row['modified'];
-                    $widget->authorId = $row['authorId'];
-                    $widget->type = $row['type'];
-                    $widget->status = $row['status'];
-                    $widget->commentsNum = $row['commentsNum'];
-                    $widget->order = $row['order'];
-                    $widget->template = $row['template'];
-                    $widget->password = $row['password'];
-                    $widget->allowComment = $row['allowComment'];
-                    $widget->allowPing = $row['allowPing'];
-                    $widget->allowFeed = $row['allowFeed'];
-                    $widget->parent = $row['parent'];
-                    $widget->text = $row['text'];
-                    $item['url'] = $widget->permalink;
+                    echo "<!-- [get] 请求 CID: {$row['cid']} 的 URL, slug: '{$row['slug']}' -->\n";
+
+                    // 直接使用 getPermalinkByCid 方法
+                    $item['url'] = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
+
+                    echo "<!-- [get] 最终 URL: {$item['url']} -->\n";
                 }
                 if (in_array('excerpt', $fields)) {
                     $text = strip_tags($row['text']);
@@ -520,63 +520,97 @@ class GetArticle
     public static function byCategory($mid, $fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order'], $order = 'created', $sort = 'desc', $limit = 0)
     {
         $result = [];
-        
+
         try {
-            $widget = \Widget\Contents\Post\Category::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
-            
-            while ($widget->next()) {
-                $item = [];
-                
-                if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                if (in_array('title', $fields)) $item['title'] = $widget->title;
-                if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                if (in_array('created', $fields)) $item['created'] = $widget->created;
-                if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                if (in_array('author', $fields)) {
-                    // author 可能是对象或字符串
-                    if (is_object($widget->author)) {
-                        $item['author'] = $widget->author->name ?? '';
-                    } else {
-                        $item['author'] = $widget->author ?? '';
-                    }
+            $db = \Typecho_Db::get();
+
+            // 排序映射
+            $orderMap = [
+                'created' => 'c.created',
+                'modified' => 'c.modified',
+                'views' => 'article_views',
+                'commentsNum' => 'c.commentsNum',
+                'likes' => 'article_likes',
+                'mid' => 'c.cid'
+            ];
+
+            $sortField = isset($orderMap[$order]) ? $orderMap[$order] : 'c.created';
+            $sortDir = strtolower($sort) === 'desc' ? \Typecho_Db::SORT_DESC : \Typecho_Db::SORT_ASC;
+
+            // 构建查询 - 使用 JOIN 获取分类下的文章
+            $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'c.status')
+                ->from('table.contents AS c')
+                ->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish')
+                ->where('r.mid = ?', $mid);
+
+            // 如果按自定义字段排序，需要再次 JOIN fields 表
+            if ($order === 'views' || $order === 'likes') {
+                $fieldName = $order === 'views' ? 'article_views' : 'article_likes';
+                $select->join('table.fields AS f', 'c.cid = f.cid AND f.name = ?', $fieldName, \Typecho_Db::LEFT_JOIN)
+                    ->order(new \Typecho_Db_Expr('CAST(f.str_value AS UNSIGNED)'), $sortDir);
+            } else {
+                $select->order($sortField, $sortDir);
+            }
+
+            if ($limit > 0) {
+                $select->limit($limit);
+            }
+
+            $rows = $db->fetchAll($select);
+
+            if (empty($rows)) {
+                return [];
+            }
+
+            $cids = array_column($rows, 'cid');
+
+            // 使用批量查询方法
+            $allCustomFields = self::batchGetCustomFields($cids);
+            $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
+
+            foreach ($rows as $row) {
+                $cid = $row['cid'];
+                $customFields = $allCustomFields[$cid] ?? [];
+
+                // 只获取 article_type 为 article 的文章
+                $articleType = isset($customFields['article_type']) ? $customFields['article_type'] : 'article';
+                if ($articleType !== 'article') {
+                    continue;
                 }
-                if (in_array('text', $fields)) $item['text'] = $widget->text;
-                if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                if (in_array('order', $fields)) $item['order'] = $widget->order;
-                if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-                
+
+                $item = [];
+
+                if (in_array('cid', $fields)) $item['cid'] = $cid;
+                if (in_array('title', $fields)) $item['title'] = $row['title'];
+                if (in_array('slug', $fields)) $item['slug'] = $row['slug'];
+                if (in_array('created', $fields)) $item['created'] = $row['created'];
+                if (in_array('modified', $fields)) $item['modified'] = $row['modified'];
+                if (in_array('authorId', $fields)) $item['authorId'] = $row['authorId'];
+                if (in_array('author', $fields)) $item['author'] = $authors[$row['authorId']] ?? '';
+                if (in_array('text', $fields)) $item['text'] = $row['text'];
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
+                if (in_array('order', $fields)) $item['order'] = $row['order'];
+
+                if (in_array('views', $fields)) {
+                    $item['views'] = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
+                }
+
+                if (in_array('url', $fields)) {
+                    $item['url'] = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
+                }
+
+                if (in_array('excerpt', $fields)) {
+                    $text = strip_tags($row['text']);
+                    $item['excerpt'] = mb_substr($text, 0, 200, 'UTF-8') . '...';
+                }
+
                 $result[] = $item;
             }
+
         } catch (Exception $e) {
             return [];
-        }
-
-        // 排序
-        $orderMap = [
-            'created' => 'created',
-            'modified' => 'modified',
-            'views' => 'views',
-            'commentsNum' => 'commentsNum',
-            'mid' => 'cid'
-        ];
-        
-        $sortField = isset($orderMap[$order]) ? $orderMap[$order] : 'created';
-        $sortDir = strtolower($sort) === 'desc' ? SORT_DESC : SORT_ASC;
-
-        if (!empty($result)) {
-            usort($result, function($a, $b) use ($sortField, $sortDir) {
-                $valA = isset($a[$sortField]) ? $a[$sortField] : 0;
-                $valB = isset($b[$sortField]) ? $b[$sortField] : 0;
-                
-                if ($sortDir === SORT_DESC) {
-                    return $valB <=> $valA;
-                } else {
-                    return $valA <=> $valB;
-                }
-            });
         }
 
         return $result;
@@ -598,63 +632,97 @@ class GetArticle
     public static function byTag($mid, $fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order'], $order = 'created', $sort = 'desc', $limit = 0)
     {
         $result = [];
-        
+
         try {
-            $widget = \Widget\Contents\Post\Tag::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
-            
-            while ($widget->next()) {
-                $item = [];
-                
-                if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                if (in_array('title', $fields)) $item['title'] = $widget->title;
-                if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                if (in_array('created', $fields)) $item['created'] = $widget->created;
-                if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                if (in_array('author', $fields)) {
-                    // author 可能是对象或字符串
-                    if (is_object($widget->author)) {
-                        $item['author'] = $widget->author->name ?? '';
-                    } else {
-                        $item['author'] = $widget->author ?? '';
-                    }
+            $db = \Typecho_Db::get();
+
+            // 排序映射
+            $orderMap = [
+                'created' => 'c.created',
+                'modified' => 'c.modified',
+                'views' => 'article_views',
+                'commentsNum' => 'c.commentsNum',
+                'likes' => 'article_likes',
+                'mid' => 'c.cid'
+            ];
+
+            $sortField = isset($orderMap[$order]) ? $orderMap[$order] : 'c.created';
+            $sortDir = strtolower($sort) === 'desc' ? \Typecho_Db::SORT_DESC : \Typecho_Db::SORT_ASC;
+
+            // 构建查询 - 使用 JOIN 获取标签下的文章
+            $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'c.status')
+                ->from('table.contents AS c')
+                ->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish')
+                ->where('r.mid = ?', $mid);
+
+            // 如果按自定义字段排序，需要再次 JOIN fields 表
+            if ($order === 'views' || $order === 'likes') {
+                $fieldName = $order === 'views' ? 'article_views' : 'article_likes';
+                $select->join('table.fields AS f', 'c.cid = f.cid AND f.name = ?', $fieldName, \Typecho_Db::LEFT_JOIN)
+                    ->order(new \Typecho_Db_Expr('CAST(f.str_value AS UNSIGNED)'), $sortDir);
+            } else {
+                $select->order($sortField, $sortDir);
+            }
+
+            if ($limit > 0) {
+                $select->limit($limit);
+            }
+
+            $rows = $db->fetchAll($select);
+
+            if (empty($rows)) {
+                return [];
+            }
+
+            $cids = array_column($rows, 'cid');
+
+            // 使用批量查询方法
+            $allCustomFields = self::batchGetCustomFields($cids);
+            $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
+
+            foreach ($rows as $row) {
+                $cid = $row['cid'];
+                $customFields = $allCustomFields[$cid] ?? [];
+
+                // 只获取 article_type 为 article 的文章
+                $articleType = isset($customFields['article_type']) ? $customFields['article_type'] : 'article';
+                if ($articleType !== 'article') {
+                    continue;
                 }
-                if (in_array('text', $fields)) $item['text'] = $widget->text;
-                if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                if (in_array('order', $fields)) $item['order'] = $widget->order;
-                if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-                
+
+                $item = [];
+
+                if (in_array('cid', $fields)) $item['cid'] = $cid;
+                if (in_array('title', $fields)) $item['title'] = $row['title'];
+                if (in_array('slug', $fields)) $item['slug'] = $row['slug'];
+                if (in_array('created', $fields)) $item['created'] = $row['created'];
+                if (in_array('modified', $fields)) $item['modified'] = $row['modified'];
+                if (in_array('authorId', $fields)) $item['authorId'] = $row['authorId'];
+                if (in_array('author', $fields)) $item['author'] = $authors[$row['authorId']] ?? '';
+                if (in_array('text', $fields)) $item['text'] = $row['text'];
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
+                if (in_array('order', $fields)) $item['order'] = $row['order'];
+
+                if (in_array('views', $fields)) {
+                    $item['views'] = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
+                }
+
+                if (in_array('url', $fields)) {
+                    $item['url'] = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
+                }
+
+                if (in_array('excerpt', $fields)) {
+                    $text = strip_tags($row['text']);
+                    $item['excerpt'] = mb_substr($text, 0, 200, 'UTF-8') . '...';
+                }
+
                 $result[] = $item;
             }
+
         } catch (Exception $e) {
             return [];
-        }
-
-        // 排序
-        $orderMap = [
-            'created' => 'created',
-            'modified' => 'modified',
-            'views' => 'views',
-            'commentsNum' => 'commentsNum',
-            'mid' => 'cid'
-        ];
-        
-        $sortField = isset($orderMap[$order]) ? $orderMap[$order] : 'created';
-        $sortDir = strtolower($sort) === 'desc' ? SORT_DESC : SORT_ASC;
-
-        if (!empty($result)) {
-            usort($result, function($a, $b) use ($sortField, $sortDir) {
-                $valA = isset($a[$sortField]) ? $a[$sortField] : 0;
-                $valB = isset($b[$sortField]) ? $b[$sortField] : 0;
-                
-                if ($sortDir === SORT_DESC) {
-                    return $valB <=> $valA;
-                } else {
-                    return $valA <=> $valB;
-                }
-            });
         }
 
         return $result;
@@ -758,43 +826,6 @@ class GetArticle
      * ========================== */
 
     /**
-     * 通过 CID 获取文章永久链接
-     * @param int $cid 文章 ID
-     * @return string 文章 URL
-     */
-    private static function getPermalinkByCid($cid)
-    {
-        try {
-            $db = \Typecho_Db::get();
-            $row = $db->fetchRow($db->select('cid', 'slug', 'created')
-                ->from('table.contents')
-                ->where('cid = ?', $cid)
-                ->where('type = ?', 'post')
-                ->limit(1));
-            
-            if ($row) {
-                $options = \Typecho_Widget::widget('Widget_Options');
-                $slug = $row['slug'];
-                
-                if (!empty($slug)) {
-                    // 使用 slug 生成 URL
-                    $permalink = $options->siteUrl . $slug . '/';
-                } else {
-                    // 使用 cid 生成 URL
-                    $permalink = $options->siteUrl . 'archives/' . $cid . '/';
-                }
-                
-                return $permalink;
-            }
-        } catch (Exception $e) {
-            // 出错时返回默认 URL
-            return '/archives/' . $cid . '/';
-        }
-        
-        return '/archives/' . $cid . '/';
-    }
-
-    /**
      * 检查文章是否存在
      * @param int|string $cid 文章 ID 或缩略名
      * @return bool
@@ -810,16 +841,69 @@ class GetArticle
      */
     public static function total()
     {
+        echo "<!-- [Article] total() 开始 -->\n";
+
         try {
-            $widget = \Widget\Contents\Post\Recent::alloc('pageSize=999999');
-            $count = 0;
-            
-            while ($widget->next()) {
-                $count++;
+            $db = \Typecho_Db::get();
+
+            // 获取所有文章的 CID
+            $rows = $db->fetchAll($db->select('c.cid')
+                ->from('table.contents AS c')
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish'));
+
+            echo "<!-- [Article] total() 查询到 " . count($rows) . " 篇已发布文章 -->\n";
+
+            if (empty($rows)) {
+                return 0;
             }
-            
+
+            $cids = array_column($rows, 'cid');
+
+            // 批量获取自定义字段
+            $allCustomFields = [];
+            $fieldRows = $db->fetchAll($db->select('cid', 'name', 'str_value', 'int_value', 'float_value')
+                ->from('table.fields')
+                ->where('cid IN ?', $cids));
+
+            echo "<!-- [Article] total() 查询到 " . count($fieldRows) . " 条自定义字段记录 -->\n";
+
+            foreach ($fieldRows as $fieldRow) {
+                $cid = $fieldRow['cid'];
+                $fieldName = $fieldRow['name'];
+                $fieldValue = null;
+
+                if (!empty($fieldRow['str_value'])) {
+                    $fieldValue = $fieldRow['str_value'];
+                } elseif (!empty($fieldRow['int_value'])) {
+                    $fieldValue = $fieldRow['int_value'];
+                } elseif (!empty($fieldRow['float_value'])) {
+                    $fieldValue = $fieldRow['float_value'];
+                }
+
+                if ($fieldValue !== null) {
+                    if (!isset($allCustomFields[$cid])) {
+                        $allCustomFields[$cid] = [];
+                    }
+                    $allCustomFields[$cid][$fieldName] = $fieldValue;
+                }
+            }
+
+            // 统计 article_type 为 article 的文章数量
+            $count = 0;
+            foreach ($cids as $cid) {
+                $customFields = $allCustomFields[$cid] ?? [];
+                $articleType = isset($customFields['article_type']) ? $customFields['article_type'] : 'article';
+                if ($articleType === 'article') {
+                    $count++;
+                }
+            }
+
+            echo "<!-- [Article] total() 最终统计: {$count} 篇有效文章 -->\n";
+
             return $count;
         } catch (Exception $e) {
+            echo "<!-- [Article] total() 异常: " . $e->getMessage() . " -->\n";
             return 0;
         }
     }
@@ -877,42 +961,74 @@ class GetArticle
     public static function search($keyword, $fields = ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'order'], $limit = 0)
     {
         $result = [];
-        
+
         try {
-            $widget = \Widget\Contents\Post\Search::alloc('pageSize=' . ($limit > 0 ? $limit : 999999));
-            
-            while ($widget->next()) {
-                $title = $widget->title;
-                $text = strip_tags($widget->text);
-                
-                // 在标题和内容中搜索关键词
-                if (stripos($title, $keyword) !== false || stripos($text, $keyword) !== false) {
-                    $item = [];
-                    
-                    if (in_array('cid', $fields)) $item['cid'] = $widget->cid;
-                    if (in_array('title', $fields)) $item['title'] = $widget->title;
-                    if (in_array('slug', $fields)) $item['slug'] = $widget->slug;
-                    if (in_array('created', $fields)) $item['created'] = $widget->created;
-                    if (in_array('modified', $fields)) $item['modified'] = $widget->modified;
-                    if (in_array('authorId', $fields)) $item['authorId'] = $widget->authorId;
-                    if (in_array('author', $fields)) {
-                        // author 可能是对象或字符串
-                        if (is_object($widget->author)) {
-                            $item['author'] = $widget->author->name ?? '';
-                        } else {
-                            $item['author'] = $widget->author ?? '';
-                        }
-                    }
-                    if (in_array('text', $fields)) $item['text'] = $widget->text;
-                    if (in_array('views', $fields)) $item['views'] = isset($widget->views) ? $widget->views : 0;
-                    if (in_array('commentsNum', $fields)) $item['commentsNum'] = $widget->commentsNum;
-                    if (in_array('order', $fields)) $item['order'] = $widget->order;
-                    if (in_array('url', $fields)) $item['url'] = $widget->permalink;
-                    if (in_array('excerpt', $fields)) $item['excerpt'] = $widget->excerpt(200, '...');
-                    
-                    $result[] = $item;
-                }
+            $db = \Typecho_Db::get();
+
+            // 构建搜索查询
+            $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'c.status')
+                ->from('table.contents AS c')
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish')
+                ->where('c.title LIKE ?', '%' . $keyword . '%')
+                ->orWhere('c.text LIKE ?', '%' . $keyword . '%')
+                ->order('c.created', \Typecho_Db::SORT_DESC);
+
+            if ($limit > 0) {
+                $select->limit($limit);
             }
+
+            $rows = $db->fetchAll($select);
+
+            if (empty($rows)) {
+                return [];
+            }
+
+            $cids = array_column($rows, 'cid');
+
+            // 使用批量查询方法
+            $allCustomFields = self::batchGetCustomFields($cids);
+            $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
+
+            foreach ($rows as $row) {
+                $cid = $row['cid'];
+                $customFields = $allCustomFields[$cid] ?? [];
+
+                // 只获取 article_type 为 article 的文章
+                $articleType = isset($customFields['article_type']) ? $customFields['article_type'] : 'article';
+                if ($articleType !== 'article') {
+                    continue;
+                }
+
+                $item = [];
+
+                if (in_array('cid', $fields)) $item['cid'] = $cid;
+                if (in_array('title', $fields)) $item['title'] = $row['title'];
+                if (in_array('slug', $fields)) $item['slug'] = $row['slug'];
+                if (in_array('created', $fields)) $item['created'] = $row['created'];
+                if (in_array('modified', $fields)) $item['modified'] = $row['modified'];
+                if (in_array('authorId', $fields)) $item['authorId'] = $row['authorId'];
+                if (in_array('author', $fields)) $item['author'] = $authors[$row['authorId']] ?? '';
+                if (in_array('text', $fields)) $item['text'] = $row['text'];
+                if (in_array('commentsNum', $fields)) $item['commentsNum'] = $row['commentsNum'];
+                if (in_array('order', $fields)) $item['order'] = $row['order'];
+
+                if (in_array('views', $fields)) {
+                    $item['views'] = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
+                }
+
+                if (in_array('url', $fields)) {
+                    $item['url'] = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
+                }
+
+                if (in_array('excerpt', $fields)) {
+                    $text = strip_tags($row['text']);
+                    $item['excerpt'] = mb_substr($text, 0, 200, 'UTF-8') . '...';
+                }
+
+                $result[] = $item;
+            }
+
         } catch (Exception $e) {
             return [];
         }
@@ -1032,6 +1148,488 @@ class GetArticle
     }
 
     /* ==========================
+     * 统一文章查询系统
+     * ========================== */
+
+    /**
+     * 统一的文章查询方法
+     * @param array $params 查询参数
+     *   - filter_type: 筛选类型 ('all', 'category', 'tag', 'search', 'author', 'date')
+     *   - filter_id: 筛选 ID (分类/标签 ID)
+     *   - keywords: 搜索关键词
+     *   - order: 排序字段 ('created', 'modified', 'views', 'commentsNum', 'likes')
+     *   - sort: 排序方向 ('asc', 'desc')
+     *   - page: 当前页码
+     *   - per_page: 每页数量
+     * @return array 查询结果
+     */
+    public static function queryArticles($params = [])
+    {
+        echo "<!-- [Article] queryArticles 开始，参数: " . json_encode($params, JSON_UNESCAPED_UNICODE) . " -->\n";
+
+        $defaults = [
+            'filter_type' => 'all',
+            'filter_id' => 0,
+            'keywords' => '',
+            'order' => 'created',
+            'sort' => 'desc',
+            'page' => 1,
+            'per_page' => 10
+        ];
+
+        $params = array_merge($defaults, $params);
+        $params['page'] = max(1, intval($params['page']));
+        $offset = ($params['page'] - 1) * $params['per_page'];
+
+        echo "<!-- [Article] 合并后参数: " . json_encode($params, JSON_UNESCAPED_UNICODE) . " -->\n";
+
+        try {
+            $db = \Typecho_Db::get();
+            echo "<!-- [Article] 数据库连接成功 -->\n";
+
+            // 排序映射 - 支持多种排序字段
+            $orderMap = [
+                'created' => 'c.created',
+                'modified' => 'c.modified',
+                'views' => 'article_views',
+                'commentsNum' => 'c.commentsNum',
+                'comments' => 'c.commentsNum',
+                'likes' => 'article_likes'
+            ];
+
+            $sortField = isset($orderMap[$params['order']]) ? $orderMap[$params['order']] : 'c.created';
+            $sortDir = strtolower($params['sort']) === 'desc' ? \Typecho_Db::SORT_DESC : \Typecho_Db::SORT_ASC;
+
+            // 构建基础查询
+            $select = $db->select('c.cid', 'c.title', 'c.slug', 'c.created', 'c.modified', 'c.authorId', 'c.text', 'c.commentsNum', 'c.order', 'c.type', 'c.status')
+                ->from('table.contents AS c')
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish');
+
+            echo "<!-- [Article] 基础查询构建完成 -->\n";
+
+            // 添加筛选条件
+            switch ($params['filter_type']) {
+                case 'category':
+                    if ($params['filter_id'] > 0) {
+                        $select->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
+                            ->where('r.mid = ?', $params['filter_id']);
+                        echo "<!-- [Article] 添加分类筛选: {$params['filter_id']} -->\n";
+                    }
+                    break;
+                case 'tag':
+                    if ($params['filter_id'] > 0) {
+                        $select->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
+                            ->where('r.mid = ?', $params['filter_id']);
+                        echo "<!-- [Article] 添加标签筛选: {$params['filter_id']} -->\n";
+                    }
+                    break;
+                case 'search':
+                    if (!empty($params['keywords'])) {
+                        $keyword = '%' . $params['keywords'] . '%';
+                        $select->where('c.title LIKE ?', $keyword)
+                            ->orWhere('c.text LIKE ?', $keyword);
+                        echo "<!-- [Article] 添加搜索筛选: {$params['keywords']} -->\n";
+                    }
+                    break;
+                case 'author':
+                    if ($params['filter_id'] > 0) {
+                        $select->where('c.authorId = ?', $params['filter_id']);
+                        echo "<!-- [Article] 添加作者筛选: {$params['filter_id']} -->\n";
+                    }
+                    break;
+                case 'date':
+                    // 日期筛选逻辑可以根据需要扩展
+                    break;
+            }
+
+            // 获取总数 - 重新构建查询而不是克隆
+            $totalSelect = $db->select('COUNT(DISTINCT c.cid) as count')
+                ->from('table.contents AS c')
+                ->where('c.type = ?', 'post')
+                ->where('c.status = ?', 'publish');
+
+            // 添加相同的筛选条件
+            switch ($params['filter_type']) {
+                case 'category':
+                    if ($params['filter_id'] > 0) {
+                        $totalSelect->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
+                            ->where('r.mid = ?', $params['filter_id']);
+                    }
+                    break;
+                case 'tag':
+                    if ($params['filter_id'] > 0) {
+                        $totalSelect->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
+                            ->where('r.mid = ?', $params['filter_id']);
+                    }
+                    break;
+                case 'search':
+                    if (!empty($params['keywords'])) {
+                        $keyword = '%' . $params['keywords'] . '%';
+                        $totalSelect->where('c.title LIKE ?', $keyword)
+                            ->orWhere('c.text LIKE ?', $keyword);
+                    }
+                    break;
+                case 'author':
+                    if ($params['filter_id'] > 0) {
+                        $totalSelect->where('c.authorId = ?', $params['filter_id']);
+                    }
+                    break;
+            }
+
+            $countResult = $db->fetchRow($totalSelect);
+            $total = intval($countResult['count'] ?? 0);
+            $totalPages = ceil($total / $params['per_page']);
+
+            echo "<!-- [Article] 总数查询结果: total={$total}, totalPages={$totalPages} -->\n";
+
+            // 如果按自定义字段排序，需要 JOIN fields 表
+            if ($params['order'] === 'views' || $params['order'] === 'likes') {
+                $fieldName = $params['order'] === 'views' ? 'article_views' : 'article_likes';
+                echo "<!-- [Article] 按自定义字段排序: {$fieldName} -->\n";
+
+                // 获取表前缀和适配器
+                $prefix = $db->getPrefix();
+                $adapter = $db->getAdapter();
+
+                // 构建原生 SQL 查询，手动转义参数
+                $sql = "SELECT c.cid, c.title, c.slug, c.created, c.modified, c.authorId, c.text, c.commentsNum, c.order, c.type, c.status
+                        FROM {$prefix}contents AS c
+                        LEFT JOIN {$prefix}fields AS f ON c.cid = f.cid AND f.name = " . $adapter->quoteValue($fieldName) . "
+                        WHERE c.type = " . $adapter->quoteValue('post') . " AND c.status = " . $adapter->quoteValue('publish');
+
+                // 添加筛选条件
+                switch ($params['filter_type']) {
+                    case 'category':
+                        if ($params['filter_id'] > 0) {
+                            $sql .= " AND EXISTS (SELECT 1 FROM {$prefix}relationships AS r WHERE r.cid = c.cid AND r.mid = " . $adapter->quoteValue($params['filter_id']) . ")";
+                        }
+                        break;
+                    case 'tag':
+                        if ($params['filter_id'] > 0) {
+                            $sql .= " AND EXISTS (SELECT 1 FROM {$prefix}relationships AS r WHERE r.cid = c.cid AND r.mid = " . $adapter->quoteValue($params['filter_id']) . ")";
+                        }
+                        break;
+                    case 'search':
+                        if (!empty($params['keywords'])) {
+                            $keyword = '%' . $params['keywords'] . '%';
+                            $sql .= " AND (c.title LIKE " . $adapter->quoteValue($keyword) . " OR c.text LIKE " . $adapter->quoteValue($keyword) . ")";
+                        }
+                        break;
+                    case 'author':
+                        if ($params['filter_id'] > 0) {
+                            $sql .= " AND c.authorId = " . $adapter->quoteValue($params['filter_id']);
+                        }
+                        break;
+                }
+
+                // 添加排序
+                $sql .= " ORDER BY CAST(f.str_value AS UNSIGNED) {$sortDir}";
+
+                // 添加 limit 和 offset
+                $sql .= " LIMIT " . intval($params['per_page']) . " OFFSET " . intval($offset);
+
+                echo "<!-- [Article] 最终查询: " . $sql . " -->\n";
+
+                // 执行查询
+                $resource = $db->query($sql, \Typecho_Db::READ);
+                $rows = $db->fetchAll($resource);
+            } else {
+                $select->order($sortField, $sortDir);
+
+                // 统一添加 limit 和 offset
+                $select->limit($params['per_page'])->offset($offset);
+
+                echo "<!-- [Article] 最终查询: " . $select->__toString() . " -->\n";
+
+                // 执行查询
+                $rows = $db->fetchAll($select);
+            }
+
+            echo "<!-- [Article] 查询执行完成，返回 " . count($rows) . " 条记录 -->\n";
+
+            if (empty($rows)) {
+                echo "<!-- [Article] 查询结果为空，返回空结果 -->\n";
+                return self::buildQueryResult($params, 0, 0, []);
+            }
+
+            // 批量获取数据
+            $cids = array_column($rows, 'cid');
+            echo "<!-- [Article] 批量获取自定义字段，CID 数量: " . count($cids) . " -->\n";
+            $customFields = self::batchGetCustomFields($cids);
+            echo "<!-- [Article] 自定义字段获取完成 -->\n";
+
+            $authors = self::batchGetAuthors(array_column($rows, 'authorId'));
+            echo "<!-- [Article] 作者信息获取完成 -->\n";
+
+            // 格式化文章数据
+            $formattedArticles = [];
+            foreach ($rows as $row) {
+                $cid = $row['cid'];
+                $fields = $customFields[$cid] ?? [];
+
+                // 只获取 article_type 为 article 的文章
+                $articleType = isset($fields['article_type']) ? $fields['article_type'] : 'article';
+                if ($articleType !== 'article') {
+                    echo "<!-- [Article] 跳过文章 {$cid}，类型: {$articleType} -->\n";
+                    continue;
+                }
+
+                $formattedArticles[] = self::formatArticleForList($row, $fields, $authors);
+            }
+
+            echo "<!-- [Article] 格式化完成，最终文章数量: " . count($formattedArticles) . " -->\n";
+
+            return self::buildQueryResult($params, $total, $totalPages, $formattedArticles);
+
+        } catch (Exception $e) {
+            echo "<!-- [Article] 查询异常: " . $e->getMessage() . " -->\n";
+            return self::buildQueryResult($params, 0, 0, []);
+        }
+    }
+
+    /**
+     * 批量获取自定义字段
+     * @param array $cids 文章 ID 数组
+     * @return array 自定义字段数组
+     */
+    private static function batchGetCustomFields($cids)
+    {
+        $result = [];
+
+        if (empty($cids)) {
+            echo "<!-- [Article] batchGetCustomFields: CID 数组为空 -->\n";
+            return $result;
+        }
+
+        echo "<!-- [Article] batchGetCustomFields: 开始查询 " . count($cids) . " 个文章的自定义字段 -->\n";
+
+        try {
+            $db = \Typecho_Db::get();
+            $fieldRows = $db->fetchAll($db->select('cid', 'name', 'str_value', 'int_value', 'float_value')
+                ->from('table.fields')
+                ->where('cid IN ?', $cids));
+
+            echo "<!-- [Article] batchGetCustomFields: 查询到 " . count($fieldRows) . " 条字段记录 -->\n";
+
+            foreach ($fieldRows as $fieldRow) {
+                $cid = $fieldRow['cid'];
+                $fieldName = $fieldRow['name'];
+                $fieldValue = null;
+
+                if (!empty($fieldRow['str_value'])) {
+                    $fieldValue = $fieldRow['str_value'];
+                } elseif (!empty($fieldRow['int_value'])) {
+                    $fieldValue = $fieldRow['int_value'];
+                } elseif (!empty($fieldRow['float_value'])) {
+                    $fieldValue = $fieldRow['float_value'];
+                }
+
+                if ($fieldValue !== null) {
+                    if (!isset($result[$cid])) {
+                        $result[$cid] = [];
+                    }
+                    $result[$cid][$fieldName] = $fieldValue;
+                }
+            }
+
+            echo "<!-- [Article] batchGetCustomFields: 完成，" . count($result) . " 个文章有自定义字段 -->\n";
+        } catch (Exception $e) {
+            echo "<!-- [Article] batchGetCustomFields 异常: " . $e->getMessage() . " -->\n";
+        }
+
+        return $result;
+    }
+
+    /**
+     * 批量获取作者信息
+     * @param array $authorIds 作者 ID 数组
+     * @return array 作者信息数组
+     */
+    private static function batchGetAuthors($authorIds)
+    {
+        $result = [];
+
+        if (empty($authorIds)) {
+            echo "<!-- [Article] batchGetAuthors: 作者ID数组为空 -->\n";
+            return $result;
+        }
+
+        echo "<!-- [Article] batchGetAuthors: 开始查询 " . count($authorIds) . " 个作者的信息 -->\n";
+
+        try {
+            $db = \Typecho_Db::get();
+            $authorRows = $db->fetchAll($db->select('uid', 'screenName')
+                ->from('table.users')
+                ->where('uid IN ?', array_unique($authorIds)));
+
+            echo "<!-- [Article] batchGetAuthors: 查询到 " . count($authorRows) . " 个作者 -->\n";
+
+            foreach ($authorRows as $authorRow) {
+                $result[$authorRow['uid']] = $authorRow['screenName'];
+            }
+        } catch (Exception $e) {
+            echo "<!-- [Article] batchGetAuthors 异常: " . $e->getMessage() . " -->\n";
+        }
+
+        return $result;
+    }
+
+    /**
+     * 格式化文章数据（用于列表展示）
+     * @param array $row 数据库行
+     * @param array $customFields 自定义字段
+     * @param array $authors 作者信息
+     * @return array 格式化后的文章数据
+     */
+    private static function formatArticleForList($row, $customFields, $authors)
+    {
+        echo "<!-- [Article] formatArticleForList: 开始格式化文章 {$row['cid']} ({$row['title']}) -->\n";
+
+        $articleArray = [
+            'cid' => $row['cid'],
+            'title' => $row['title'],
+            'slug' => $row['slug'],
+            'created' => $row['created'],
+            'modified' => $row['modified'],
+            'authorId' => $row['authorId'],
+            'author' => $authors[$row['authorId']] ?? '',
+            'text' => $row['text'],
+            'commentsNum' => $row['commentsNum'],
+            'order' => $row['order'],
+            'fields' => $customFields
+        ];
+
+        echo "<!-- [Article] formatArticleForList: 自定义字段数量: " . count($customFields) . " -->\n";
+
+        // 获取缩略图
+        $thumbnail = getArticleThumbnail($articleArray);
+        if (empty($thumbnail)) {
+            $thumbnail = self::firstImage($row['cid']);
+        }
+        if (empty($thumbnail)) {
+            $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
+        } else {
+            $thumbnail = Get::resolveUri($thumbnail);
+        }
+
+        // 获取浏览量
+        $views = getArticleViews($articleArray);
+        if (empty($views)) {
+            $views = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
+        }
+
+        // 获取点赞数
+        $likes = isset($customFields['article_likes']) ? intval($customFields['article_likes']) : 0;
+
+        // 获取摘要
+        $excerpt = getArticleExcerpt($articleArray, 200);
+        if (empty($excerpt)) {
+            $text = strip_tags($row['text']);
+            $excerpt = mb_substr($text, 0, 200, 'UTF-8');
+            if (mb_strlen($text, 'UTF-8') > 200) {
+                $excerpt .= '...';
+            }
+        }
+
+        // 生成 URL - 使用 Typecho Widget 获取正确的 permalink
+        try {
+            $widget = \Widget\Contents\Post\Recent::alloc('permalink_' . $row['cid']);
+            // 使用 push 方法初始化 Widget
+            $widget->push([
+                'cid' => $row['cid'],
+                'title' => $row['title'],
+                'slug' => $row['slug'],
+                'created' => $row['created'],
+                'modified' => $row['modified'],
+                'authorId' => $row['authorId'],
+                'type' => $row['type'],
+                'status' => $row['status'],
+                'commentsNum' => $row['commentsNum'],
+                'order' => $row['order'],
+                'text' => $row['text'],
+                'password' => '',
+                'allowComment' => '1',
+                'allowPing' => '1',
+                'allowFeed' => '1',
+                'parent' => '0'
+            ]);
+            $url = $widget->permalink;
+        } catch (Exception $e) {
+            // 如果 Widget 失败，使用备用方法
+            $url = self::getPermalinkByCid($row['cid'], $row['slug'], $row['created']);
+        }
+
+        echo "<!-- [Article] formatArticleForList: 格式化完成，浏览量={$views}, 点赞数={$likes} -->\n";
+
+        return [
+            'title' => $row['title'],
+            'excerpt' => $excerpt,
+            'thumbnail' => $thumbnail,
+            'views' => $views,
+            'comments' => $row['commentsNum'] ?? 0,
+            'likes' => $likes,
+            'date' => date('Y-m-d', $row['created']),
+            'url' => $url
+        ];
+    }
+
+    /**
+     * 构建查询结果
+     * @param array $params 查询参数
+     * @param int $total 总数
+     * @param int $totalPages 总页数
+     * @param array $articles 文章列表
+     * @return array 查询结果
+     */
+    private static function buildQueryResult($params, $total, $totalPages, $articles)
+    {
+        return [
+            'sort' => $params['order'],
+            'layout' => 'list',
+            'p' => $params['page'],
+            'total' => $total,
+            'per_page' => $params['per_page'],
+            'total_pages' => $totalPages,
+            'articles' => $articles
+        ];
+    }
+
+    /**
+     * 通过 CID 获取文章永久链接（优化版本）
+     * @param int $cid 文章 ID
+     * @param string $slug 文章缩略名
+     * @param int $created 创建时间
+     * @return string 文章 URL
+     */
+    private static function getPermalinkByCid($cid, $slug = '', $created = 0)
+    {
+        echo "<!-- [getPermalinkByCid] cid={$cid}, slug='{$slug}', created={$created} -->\n";
+
+        try {
+            // 使用 Typecho 的 Router 生成 URL
+            $path = \Typecho\Router::url('post', [
+                'cid' => $cid
+            ]);
+
+            $options = \Typecho_Widget::widget('Widget_Options');
+            $url = \Typecho\Common::url($path, $options->index);
+
+            echo "<!-- [getPermalinkByCid] 使用 Router::url 生成 URL: {$url} -->\n";
+            return $url;
+        } catch (Exception $e) {
+            echo "<!-- [getPermalinkByCid] 异常: " . $e->getMessage() . "，使用备用 URL -->\n";
+            // 备用方案
+            try {
+                $options = \Typecho_Widget::widget('Widget_Options');
+                return $options->siteUrl . '/archives/' . $cid . '/';
+            } catch (Exception $e2) {
+                return '/archives/' . $cid . '/';
+            }
+        }
+    }
+
+    /* ==========================
      * 文章列表组件数据
      * ========================== */
 
@@ -1041,10 +1639,13 @@ class GetArticle
      */
     public static function getListData()
     {
+        echo "<!-- [Article] getListData 开始 -->\n";
+
         $sort = Get::queryParam('sort', 'date');
         $layout = Get::queryParam('layout', 'list');
         $currentPage = max(1, intval(Get::queryParam('p', '1')));
-        $perPage = 10;
+
+        echo "<!-- [Article] URL参数: sort={$sort}, layout={$layout}, p={$currentPage} -->\n";
 
         // 排序映射
         $orderMap = [
@@ -1056,75 +1657,23 @@ class GetArticle
 
         $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'created';
 
-        // 获取文章总数
-        $total = self::total();
-        $totalPages = ceil($total / $perPage);
+        echo "<!-- [Article] 排序字段映射: {$sort} -> {$order} -->\n";
 
-        // 计算偏移量
-        $offset = ($currentPage - 1) * $perPage;
+        $result = self::queryArticles([
+            'filter_type' => 'all',
+            'order' => $order,
+            'sort' => 'desc',
+            'page' => $currentPage,
+            'per_page' => 10
+        ]);
 
-        // 获取文章列表
-        $articles = self::all(
-            ['cid', 'title', 'slug', 'created', 'modified', 'authorId', 'author', 'text', 'views', 'commentsNum', 'likes', 'order', 'url', 'fields'],
-            $order,
-            'desc',
-            $perPage,
-            $offset
-        );
+        // 返回原始的 sort 参数，用于标签页高亮
+        $result['sort'] = $sort;
+        $result['layout'] = $layout;
 
-        // 格式化文章数据
-        $formattedArticles = [];
-        foreach ($articles as $article) {
-            // 获取自定义字段
-            $thumbnail = getArticleThumbnail($article);
-            $excerpt = getArticleExcerpt($article, 200);
-            $articleViews = getArticleViews($article);
+        echo "<!-- [Article] getListData 结束，返回文章数量: " . count($result['articles']) . " -->\n";
 
-            // 如果没有自定义缩略图，尝试从文章内容中提取
-            if (empty($thumbnail)) {
-                $thumbnail = self::firstImage($article['cid']);
-            }
-
-            // 如果没有缩略图，使用默认缩略图
-            if (empty($thumbnail)) {
-                $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
-            } else {
-                $thumbnail = Get::resolveUri($thumbnail);
-            }
-
-            // 如果没有自定义摘要，使用文章前200字作为摘要
-            if (empty($excerpt)) {
-                $text = strip_tags($article['text']);
-                $excerpt = mb_substr($text, 0, 200, 'UTF-8');
-                if (mb_strlen($text, 'UTF-8') > 200) {
-                    $excerpt .= '...';
-                }
-            }
-
-            // 格式化日期
-            $date = date('Y-m-d', $article['created']);
-
-            $formattedArticles[] = [
-                'title' => $article['title'],
-                'excerpt' => $excerpt,
-                'thumbnail' => $thumbnail,
-                'views' => $articleViews > 0 ? $articleViews : ($article['views'] ?? 0),
-                'comments' => $article['commentsNum'] ?? 0,
-                'likes' => $article['likes'] ?? 0,
-                'date' => $date,
-                'url' => $article['url']
-            ];
-        }
-
-        return [
-            'sort' => $sort,
-            'layout' => $layout,
-            'p' => $currentPage,
-            'total' => $total,
-            'per_page' => $perPage,
-            'total_pages' => $totalPages,
-            'articles' => $formattedArticles
-        ];
+        return $result;
     }
 
     /* ==========================
@@ -1135,178 +1684,106 @@ class GetArticle
      * 获取归档页面文章列表数据
      * @param object $archive 当前 Archive 对象
      * @param string $archive_type 归档类型 ('category', 'tag', 'search', 'author', 'date', 'archive')
+     * @param int $category_mid 分类 ID
+     * @param string $keywords 搜索关键词
      * @return array
      */
-    public static function getArchiveListData($archive = null, $archive_type = 'archive')
+    public static function getArchiveListData($archive = null, $archive_type = 'archive', $category_mid = 0, $keywords = '')
     {
-        // 获取分页和排序参数
+        echo "<!-- [Article] getArchiveListData 开始，类型: {$archive_type} -->\n";
+
         $sort = Get::queryParam('sort', 'date');
         $layout = Get::queryParam('layout', 'list');
         $currentPage = max(1, intval(Get::queryParam('p', '1')));
-        $perPage = 10;
 
-        try {
-            // 使用 Typecho 原生 Widget 获取文章列表
-            $widget = self::getArchiveWidget($archive_type);
-            if (!$widget) {
-                return self::emptyResult($sort, $layout, $currentPage, $perPage);
-            }
+        echo "<!-- [Article] getArchiveListData 参数: sort={$sort}, layout={$layout}, p={$currentPage}, keywords={$keywords}, category_mid={$category_mid} -->\n";
 
-            // 设置分页参数
-            $widget->parameter->pageSize = $perPage;
-            $widget->setCurrentPage($currentPage);
-
-            // 获取文章总数
-            $total = $widget->total ?? 0;
-            $totalPages = ceil($total / $perPage);
-
-            // 收集文章数据
-            $articles = [];
-            while ($widget->next()) {
-                $articles[] = self::extractArticleData($widget);
-            }
-
-            // 格式化文章数据
-            $formattedArticles = self::formatArticles($articles);
-
-            return [
-                'sort' => $sort,
-                'layout' => $layout,
-                'p' => $currentPage,
-                'total' => $total,
-                'total_pages' => $totalPages,
-                'per_page' => $perPage,
-                'articles' => $formattedArticles
-            ];
-
-        } catch (Exception $e) {
-            return self::emptyResult($sort, $layout, $currentPage, $perPage);
-        }
-    }
-
-    /**
-     * 获取归档 Widget
-     * @param string $archive_type 归档类型
-     * @return object|null Widget 对象或 null
-     */
-    private static function getArchiveWidget($archive_type)
-    {
-        // 所有归档类型都使用同一个 Widget，通过 archive 对象自动处理
-        return \Widget\Contents\Post\Recent::alloc();
-    }
-
-    /**
-     * 从 Widget 提取文章数据
-     * @param object $widget Widget 对象
-     * @return array 文章数据
-     */
-    private static function extractArticleData($widget)
-    {
-        return [
-            'cid' => $widget->cid,
-            'title' => $widget->title,
-            'slug' => $widget->slug,
-            'created' => $widget->created,
-            'modified' => $widget->modified,
-            'authorId' => $widget->authorId,
-            'author' => is_object($widget->author) ? $widget->author->name : $widget->author,
-            'text' => $widget->text,
-            'views' => isset($widget->views) ? $widget->views : 0,
-            'commentsNum' => $widget->commentsNum,
-            'likes' => 0,
-            'order' => $widget->order,
-            'url' => $widget->permalink,
-            'excerpt' => $widget->excerpt(200, '...'),
-            'fields' => self::getCustomFields($widget->cid)
+        // 排序映射
+        $orderMap = [
+            'date' => 'created',
+            'views' => 'views',
+            'comments' => 'commentsNum',
+            'likes' => 'likes'
         ];
-    }
 
-    /**
-     * 格式化文章列表数据
-     * @param array $articles 原始文章数据
-     * @return array 格式化后的文章数据
-     */
-    private static function formatArticles($articles)
-    {
-        $formatted = [];
+        $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'created';
 
-        foreach ($articles as $article) {
-            $cid = $article['cid'];
-            $customFields = $article['fields'] ?? [];
+        // 确定筛选类型和 ID
+        $filterType = $archive_type;
+        $filterId = 0;
 
-            // 获取缩略图
-            $thumbnail = getArticleThumbnail($article);
-            if (empty($thumbnail)) {
-                $thumbnail = self::firstImage($cid);
-            }
-            if (empty($thumbnail)) {
-                $thumbnail = Get::Assets('assets/images/cover/cover1.jpg');
-            } else {
-                $thumbnail = Get::resolveUri($thumbnail);
-            }
-
-            // 获取浏览量
-            $views = getArticleViews($article);
-            if (empty($views)) {
-                $views = isset($customFields['article_views']) ? intval($customFields['article_views']) : 0;
-            }
-            if (empty($views)) {
-                $views = $article['views'] ?? 0;
-            }
-
-            // 获取点赞数
-            $likes = isset($customFields['article_likes']) ? intval($customFields['article_likes']) : 0;
-
-            // 格式化日期
-            $date = date('Y-m-d', $article['created']);
-
-            // 从摘要中移除图片语法
-            $excerpt = $article['excerpt'] ?? '';
-            $excerpt = preg_replace('/!\[.*?\]\(.*?\)/', '', $excerpt);
-            $excerpt = preg_replace('/!\[.*?\]\[.*?\]/', '', $excerpt);
-            $excerpt = strip_tags($excerpt);
-            $excerpt = preg_replace('/\s+/', ' ', $excerpt);
-            $excerpt = trim($excerpt);
-            $excerpt = mb_substr($excerpt, 0, 200, 'UTF-8');
-            if (mb_strlen($excerpt, 'UTF-8') >= 200) {
-                $excerpt .= '...';
-            }
-
-            $formatted[] = [
-                'cid' => $cid,
-                'title' => $article['title'],
-                'excerpt' => $excerpt,
-                'thumbnail' => $thumbnail,
-                'views' => $views,
-                'comments' => $article['commentsNum'] ?? 0,
-                'likes' => $likes,
-                'date' => $date,
-                'url' => $article['url']
-            ];
+        switch ($archive_type) {
+            case 'category':
+                $filterId = $category_mid > 0 ? $category_mid : self::getArchiveMid($archive, 'category');
+                $filterType = 'category';
+                echo "<!-- [Article] getArchiveListData 分类筛选 ID: {$filterId} -->\n";
+                break;
+            case 'tag':
+                $filterId = self::getArchiveMid($archive, 'tag');
+                $filterType = 'tag';
+                echo "<!-- [Article] getArchiveListData 标签筛选 ID: {$filterId} -->\n";
+                break;
+            case 'search':
+                // 搜索使用 keywords 参数
+                echo "<!-- [Article] getArchiveListData 搜索关键词: {$keywords} -->\n";
+                break;
+            case 'author':
+                $filterId = self::getArchiveMid($archive, 'author');
+                $filterType = 'author';
+                echo "<!-- [Article] getArchiveListData 作者筛选 ID: {$filterId} -->\n";
+                break;
+            default:
+                $filterType = 'all';
+                echo "<!-- [Article] getArchiveListData 全部文章 -->\n";
+                break;
         }
 
-        return $formatted;
+        $result = self::queryArticles([
+            'filter_type' => $filterType,
+            'filter_id' => $filterId,
+            'keywords' => $keywords,
+            'order' => $order,
+            'sort' => 'desc',
+            'page' => $currentPage,
+            'per_page' => 10
+        ]);
+
+        // 返回原始的 sort 参数，用于标签页高亮
+        $result['sort'] = $sort;
+        $result['layout'] = $layout;
+
+        echo "<!-- [Article] getArchiveListData 结束，返回文章数量: " . count($result['articles']) . " -->\n";
+
+        return $result;
     }
 
     /**
-     * 返回空结果
-     * @param string $sort 排序方式
-     * @param string $layout 布局方式
-     * @param int $currentPage 当前页码
-     * @param int $perPage 每页数量
-     * @return array 空结果数组
+     * 从 Archive 对象获取 mid
+     * @param object $archive Archive 对象
+     * @param string $type 类型 ('category', 'tag', 'author')
+     * @return int
      */
-    private static function emptyResult($sort, $layout, $currentPage, $perPage)
+    private static function getArchiveMid($archive, $type)
     {
-        return [
-            'sort' => $sort,
-            'layout' => $layout,
-            'p' => $currentPage,
-            'total' => 0,
-            'total_pages' => 0,
-            'per_page' => $perPage,
-            'articles' => []
-        ];
+        if (!$archive) {
+            return 0;
+        }
+
+        // 直接从属性获取
+        if (property_exists($archive, 'mid') && $archive->mid) {
+            return intval($archive->mid);
+        }
+
+        // 从数组获取
+        if ($type === 'category' && isset($archive->categories) && is_array($archive->categories) && !empty($archive->categories)) {
+            return intval($archive->categories[0]['mid']);
+        }
+
+        if ($type === 'author' && property_exists($archive, 'authorId') && $archive->authorId) {
+            return intval($archive->authorId);
+        }
+
+        return 0;
     }
 
     /* ==========================

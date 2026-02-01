@@ -17,7 +17,7 @@ $params_sidebar = ComponentData::GetSidebarData('post');
 Get::Component($this, 'Header', $params_head);
 Get::Component($this, 'TopBar', $params_top_bar);
 
-// 获取文章数据
+// 获取文章数据（只获取一次，避免重复增加阅读量）
 $params_article = ComponentData::GetArticleData($this);
 
 // 渲染文章头部
@@ -26,9 +26,6 @@ Get::Component($this, 'ArticleHeader', $params_article);
 Get::Component($this, 'Common', ['type' => 'main-start']);
 Get::Component($this, 'Common', ['type' => 'wrapper-start']);
 Get::Component($this, 'Common', ['type' => 'content-column-start']);
-
-// 获取文章数据
-$params_article = ComponentData::GetArticleData($this);
 
 // 渲染文章阅读器组件
 Get::Component($this, 'ArticleReader', $params_article);

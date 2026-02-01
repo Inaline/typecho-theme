@@ -3,6 +3,88 @@
  * @author Inaline Studio
  */
 
+/* ========================
+ * 搜索历史管理
+ * ======================== */
+const SearchHistory = {
+    STORAGE_KEY: 'search_history',
+    MAX_HISTORY: 10,
+
+    // 获取搜索历史
+    getHistory() {
+        try {
+            const history = localStorage.getItem(this.STORAGE_KEY);
+            return history ? JSON.parse(history) : [];
+        } catch (e) {
+            return [];
+        }
+    },
+
+    // 保存搜索历史
+    saveHistory(keyword) {
+        if (!keyword || keyword.trim() === '') return;
+
+        let history = this.getHistory();
+
+        // 移除已存在的相同关键词（如果有的话）
+        history = history.filter(item => item !== keyword);
+
+        // 将新关键词添加到开头
+        history.unshift(keyword);
+
+        // 限制历史记录数量
+        if (history.length > this.MAX_HISTORY) {
+            history = history.slice(0, this.MAX_HISTORY);
+        }
+
+        try {
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
+        } catch (e) {
+            // 静默失败
+        }
+    },
+
+    // 清空所有历史记录
+    clearAllHistory() {
+        try {
+            localStorage.removeItem(this.STORAGE_KEY);
+            this.renderHistory();
+        } catch (e) {
+            // 静默失败
+        }
+    },
+
+    // 渲染搜索历史
+    renderHistory() {
+        const history = this.getHistory();
+        const $historyList = $('#historyList');
+        const $searchHistory = $('#searchHistory');
+
+        if (history.length === 0) {
+            $searchHistory.hide();
+            return;
+        }
+
+        $searchHistory.show();
+        $historyList.empty();
+
+        history.forEach(keyword => {
+            const $item = $('<div class="search-history-item"></div>');
+            $item.html(`
+                <span class="search-history-text">${this.escapeHtml(keyword)}</span>
+            `);
+            $historyList.append($item);
+        });
+    },
+
+    // HTML 转义
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+};
+
 $(document).ready(function() {
     // 获取元素
     const $menuBtn = $('#menuBtn');
@@ -76,11 +158,12 @@ $(document).ready(function() {
         }
     });
 
-    // 阻止搜索框和菜单的点击冒泡
+    // 阻止搜索框内的点击冒泡到 document（避免关闭搜索框）
     $searchBox.on('click', function(e) {
         e.stopPropagation();
     });
 
+    // 阻止菜单的点击冒泡
     $moreMenu.on('click', function(e) {
         e.stopPropagation();
     });
@@ -283,13 +366,15 @@ $(document).ready(function() {
     });
 
     // 点击搜索历史项
-    $(document).on('click', '.search-history-item', function(e) {
+    $searchBox.on('click', '.search-history-item', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         const keyword = $(this).find('.search-history-text').text();
         $searchInput.val(keyword);
         SearchHistory.saveHistory(keyword);
         SearchHistory.renderHistory();
-        // 跳转到搜索页面
-        window.location.href = '/search/' + encodeURIComponent(keyword) + '/';
+        // 触发搜索按钮点击
+        $searchSubmit.trigger('click');
     });
 
     // 清空所有搜索历史
@@ -300,13 +385,13 @@ $(document).ready(function() {
     });
 
     // 点击热搜项
-    $(document).on('click', '.search-hot-item', function() {
+    $searchBox.on('click', '.search-hot-item', function() {
         const keyword = $(this).find('.search-hot-text').text();
         $searchInput.val(keyword);
         SearchHistory.saveHistory(keyword);
         SearchHistory.renderHistory();
-        // 跳转到搜索页面
-        window.location.href = '/search/' + encodeURIComponent(keyword) + '/';
+        // 触发搜索按钮点击
+        $searchSubmit.trigger('click');
     });
 
     // 打开搜索框时渲染搜索历史
@@ -336,90 +421,8 @@ if (typeof fontPath !== 'undefined' && typeof fontFormat !== 'undefined') {
 }
 
 /* ========================
- * 搜索功能
+ * 轮播图功能
  * ======================== */
-
-// 搜索历史管理
-const SearchHistory = {
-    STORAGE_KEY: 'search_history',
-    MAX_HISTORY: 10,
-
-    // 获取搜索历史
-    getHistory() {
-        try {
-            const history = localStorage.getItem(this.STORAGE_KEY);
-            return history ? JSON.parse(history) : [];
-        } catch (e) {
-            return [];
-        }
-    },
-
-    // 保存搜索历史
-    saveHistory(keyword) {
-        if (!keyword || keyword.trim() === '') return;
-
-        let history = this.getHistory();
-
-        // 移除已存在的相同关键词（如果有的话）
-        history = history.filter(item => item !== keyword);
-
-        // 将新关键词添加到开头
-        history.unshift(keyword);
-
-        // 限制历史记录数量
-        if (history.length > this.MAX_HISTORY) {
-            history = history.slice(0, this.MAX_HISTORY);
-        }
-
-        try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(history));
-        } catch (e) {
-            // 静默失败
-        }
-    },
-
-    // 清空所有历史记录
-    clearAllHistory() {
-        try {
-            localStorage.removeItem(this.STORAGE_KEY);
-            this.renderHistory();
-        } catch (e) {
-            // 静默失败
-        }
-    },
-
-    // 渲染搜索历史
-    renderHistory() {
-        const history = this.getHistory();
-        const $historyList = $('#historyList');
-        const $searchHistory = $('#searchHistory');
-
-        if (history.length === 0) {
-            $searchHistory.hide();
-            return;
-        }
-
-        $searchHistory.show();
-        $historyList.empty();
-
-        history.forEach(keyword => {
-            const $item = $('<div class="search-history-item"></div>');
-            $item.html(`
-                <span class="search-history-text">${this.escapeHtml(keyword)}</span>
-            `);
-            $historyList.append($item);
-        });
-    },
-
-    // HTML 转义
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-};
-
-// 轮播图功能
 const Carousel = {
     currentIndex: 0,
     interval: null,

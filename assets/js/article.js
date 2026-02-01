@@ -3,6 +3,10 @@
  * @author Inaline Studio
  */
 
+// 全局变量，用于跟踪 KaTeX 加载状态
+window.katexLoaded = false;
+window.katexLoading = false;
+
 document.addEventListener('DOMContentLoaded', function() {
     // 为代码块添加行号（函数内部会处理高亮逻辑）
     if (typeof hljs !== 'undefined') {
@@ -26,7 +30,98 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 初始化图片懒加载和加载失败处理
     initImageLazyLoad();
+
+    // 初始化数学公式解析
+    initMathJax();
 });
+
+/**
+ * 异步加载脚本
+ * @param {string} src 脚本 URL
+ * @returns {Promise}
+ */
+function loadScript(src) {
+    return new Promise(function(resolve, reject) {
+        if (document.querySelector('script[src="' + src + '"]')) {
+            resolve();
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+/**
+ * 异步加载 CSS
+ * @param {string} href CSS URL
+ * @returns {Promise}
+ */
+function loadCSS(href) {
+    return new Promise(function(resolve, reject) {
+        if (document.querySelector('link[href="' + href + '"]')) {
+            resolve();
+            return;
+        }
+
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        link.onload = resolve;
+        link.onerror = reject;
+        document.head.appendChild(link);
+    });
+}
+
+/**
+ * 异步加载 KaTeX 库
+ * @returns {Promise}
+ */
+function loadKaTeX() {
+    if (window.katexLoaded) {
+        return Promise.resolve();
+    }
+
+    if (window.katexLoading) {
+        return new Promise(function(resolve) {
+            const checkInterval = setInterval(function() {
+                if (window.katexLoaded) {
+                    clearInterval(checkInterval);
+                    resolve();
+                }
+            }, 100);
+        });
+    }
+
+    window.katexLoading = true;
+
+    // 使用 BootCDN 加载 KaTeX
+    const katexVersion = '0.16.9';
+    const cssUrl = 'https://cdn.bootcdn.net/ajax/libs/KaTeX/' + katexVersion + '/katex.min.css';
+    const jsUrl = 'https://cdn.bootcdn.net/ajax/libs/KaTeX/' + katexVersion + '/katex.min.js';
+    const autoRenderUrl = 'https://cdn.bootcdn.net/ajax/libs/KaTeX/' + katexVersion + '/contrib/auto-render.min.js';
+
+    return loadCSS(cssUrl)
+        .then(function() {
+            return loadScript(jsUrl);
+        })
+        .then(function() {
+            return loadScript(autoRenderUrl);
+        })
+        .then(function() {
+            window.katexLoaded = true;
+            window.katexLoading = false;
+        })
+        .catch(function(error) {
+            console.error('加载 KaTeX 失败:', error);
+            window.katexLoading = false;
+            throw error;
+        });
+}
 
 /**
  * 为代码块添加行号

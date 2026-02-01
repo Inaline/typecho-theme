@@ -184,32 +184,44 @@ class ComponentData
         // 2. 热门文章（文章页面不显示）
         if (Get::themeOption('sidebar_widget_hot_articles', true) && $pageType !== 'post') {
             $count = intval(Get::themeOption('sidebar_widget_hot_articles_count', 5));
-            $sort = Get::themeOption('sidebar_widget_hot_articles_sort', 'views');
 
-            // 排序映射
-            $orderMap = [
-                'views' => 'views',
-                'comments' => 'commentsNum',
-                'likes' => 'likes'
-            ];
+            echo "<!-- [热门文章] 开始获取，count={$count}, pageType={$pageType} -->\n";
 
-            $order = isset($orderMap[$sort]) ? $orderMap[$sort] : 'views';
+            // 直接使用原生 SQL 查询热门文章
+            $db = \Typecho_Db::get();
+            $prefix = $db->getPrefix();
+            $adapter = $db->getAdapter();
 
-            // 获取热门文章
-            $articles = GetArticle::all(
-                ['cid', 'title', 'slug', 'created', 'views', 'commentsNum'],
-                $order,
-                'desc',
-                $count,
-                0
-            );
+            $sql = "SELECT c.cid, c.title, c.slug, c.created
+                    FROM {$prefix}contents AS c
+                    INNER JOIN {$prefix}fields AS f ON c.cid = f.cid AND f.name = " . $adapter->quoteValue('article_views') . "
+                    WHERE c.type = " . $adapter->quoteValue('post') . "
+                    AND c.status = " . $adapter->quoteValue('publish') . "
+                    AND c.cid IN (
+                        SELECT DISTINCT f2.cid
+                        FROM {$prefix}fields AS f2
+                        WHERE f2.name = " . $adapter->quoteValue('article_type') . "
+                        AND f2.str_value = " . $adapter->quoteValue('article') . "
+                    )
+                    ORDER BY CAST(f.str_value AS UNSIGNED) DESC
+                    LIMIT {$count}";
+
+            echo "<!-- [热门文章] 执行查询: " . htmlspecialchars($sql) . " -->\n";
+
+            $rows = $db->fetchAll($sql);
+
+            echo "<!-- [热门文章] 查询返回 " . count($rows) . " 条记录 -->\n";
 
             // 格式化文章数据
             $formattedArticles = [];
-            foreach ($articles as $article) {
-                // 获取完整的文章信息（包含URL）
-                $fullArticle = GetArticle::get($article['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum', 'fields']);
+            foreach ($rows as $row) {
+                echo "<!-- [热门文章] 处理文章 CID: {$row['cid']}, 标题: {$row['title']} -->\n";
+
+                // 获取完整的文章信息（包含URL、浏览量等）
+                $fullArticle = GetArticle::get($row['cid'], ['cid', 'title', 'url', 'created', 'views', 'commentsNum', 'fields']);
                 if ($fullArticle) {
+                    echo "<!-- [热门文章] 获取到完整文章信息，URL: {$fullArticle['url']}, 浏览量: " . ($fullArticle['views'] ?? 0) . " -->\n";
+
                     // 获取缩略图
                     $thumbnail = getArticleThumbnail($fullArticle);
 
@@ -231,14 +243,17 @@ class ComponentData
                         'views' => $fullArticle['views'] ?? 0,
                         'comments' => $fullArticle['commentsNum'] ?? 0
                     ];
+                } else {
+                    echo "<!-- [热门文章] 获取完整文章信息失败，CID: {$row['cid']} -->\n";
                 }
             }
+
+            echo "<!-- [热门文章] 格式化完成，最终文章数量: " . count($formattedArticles) . " -->\n";
 
             $widgetList[] = [
                 'type' => 'hot_articles',
                 'data' => [
-                    'articles' => $formattedArticles,
-                    'sort' => $sort
+                    'articles' => $formattedArticles
                 ]
             ];
         }
@@ -317,10 +332,12 @@ class ComponentData
      * 获取归档页面文章列表数据
      * @param object $archive 当前 Archive 对象
      * @param string $archive_type 归档类型 ('category', 'tag', 'search', 'author', 'date', 'archive')
+     * @param int $category_mid 分类 ID（可选）
+     * @param string $keywords 搜索关键词（可选）
      * @return array
      */
-    public static function GetArchiveListData($archive = null, $archive_type = 'archive')
+    public static function GetArchiveListData($archive = null, $archive_type = 'archive', $category_mid = 0, $keywords = '')
     {
-        return GetArticle::getArchiveListData($archive, $archive_type);
+        return GetArticle::getArchiveListData($archive, $archive_type, $category_mid, $keywords);
     }
 }
