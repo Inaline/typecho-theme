@@ -1,0 +1,174 @@
+/**
+ * Inaline Typecho 主题 - 编辑器样式
+ */
+
+/* 修改工具栏布局，让其能够自动撑开高度 */
+#wmd-button-row {
+    position: relative !important;
+    height: auto !important;
+    min-height: 30px;
+    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    padding-bottom: 5px;
+}
+
+/* 工具栏内的按钮定位改为相对 */
+#wmd-button-row .wmd-button {
+    position: relative !important;
+    left: auto !important;
+    margin-right: 2px;
+}
+
+/* 分隔线样式 */
+#wmd-button-row .wmd-spacer {
+    position: relative !important;
+    left: auto !important;
+    flex-shrink: 0;
+}
+
+/* 扩展按钮 */
+.inaline-button {
+    cursor: pointer;
+}
+
+.inaline-button:hover {
+    background: #f0f0f0;
+}
+
+.inaline-button svg {
+    display: block;
+}
+
+/* MDI 图标样式 */
+.inaline-button .mdi {
+    font-size: 18px;
+    color: #9b9b9b;
+}
+
+/* 对话框遮罩层 */
+.inaline-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    display: none;
+}
+
+/* 对话框容器 */
+.inaline-dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    min-width: 400px;
+    max-width: 600px;
+}
+
+/* 对话框标题栏 */
+.inaline-dialog-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.inaline-dialog-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.inaline-dialog-close {
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.inaline-dialog-close:hover {
+    color: #666;
+}
+
+/* 对话框内容区 */
+.inaline-dialog-body {
+    padding: 20px;
+}
+
+/* 表单字段组 */
+.inaline-field-group {
+    margin-bottom: 15px;
+}
+
+.inaline-field-group:last-child {
+    margin-bottom: 0;
+}
+
+.inaline-field-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #666;
+}
+
+.inaline-field-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.inaline-field-input:focus {
+    outline: none;
+    border-color: #467b96;
+}
+
+.inaline-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* 对话框按钮区 */
+.inaline-dialog-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    text-align: right;
+}
+
+.inaline-btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.inaline-btn-cancel {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.inaline-btn-cancel:hover {
+    background: #e8e8e8;
+}
+
+.inaline-btn-confirm {
+    background: #467b96;
+    color: #fff;
+}
+
+.inaline-btn-confirm:hover {
+    background: #3a6a82;
+}
