@@ -243,13 +243,29 @@ function fallbackCopy(text, copyBtn) {
     const textarea = document.createElement('textarea');
     textarea.value = text;
     textarea.style.position = 'fixed';
-    textarea.style.opacity = '0';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    textarea.style.width = '2em';
+    textarea.style.height = '2em';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
     document.body.appendChild(textarea);
+
+    // 选中文本
+    textarea.focus();
     textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length); // 对于移动设备
 
     try {
-        document.execCommand('copy');
-        showCopySuccess(copyBtn);
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess(copyBtn);
+        } else {
+            throw new Error('execCommand copy failed');
+        }
     } catch (err) {
         console.error('复制失败:', err);
         copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';

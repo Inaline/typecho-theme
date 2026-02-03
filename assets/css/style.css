@@ -2732,6 +2732,11 @@ body.dark-mode .search-clear:hover {
     padding: 5.21px 16px;
 }
 
+/* 友链页面内容样式 */
+.link-content {
+    padding: 5.21px 16px;
+}
+
 /* 文章标签 */
 .article-tags {
     padding: 8px 16px;
@@ -3937,17 +3942,7 @@ body#post main {
     overflow: hidden;
 }
 
-.archive-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 60%);
-    opacity: 0.05;
-    pointer-events: none;
-}
+
 
 .archive-header-icon {
     display: inline-flex;
@@ -4078,9 +4073,7 @@ body.dark-mode .archive-header {
     border-left-color: var(--primary-color);
 }
 
-body.dark-mode .archive-header::before {
-    background: linear-gradient(135deg, var(--primary-color) 0%, transparent 60%);
-}
+
 
 @media (max-width: 768px) {
     .archive-header {
@@ -4755,6 +4748,259 @@ body.dark-mode .shuoshuo-avatar {
         height: 48px;
         margin-bottom: -8px;
     }
+}
+
+/* ==========================
+ * 说说阅读器样式
+ * ========================== */
+
+.shuoshuo-reader {
+    scroll-margin-top: 100px;
+}
+
+.shuoshuo-reader-content {
+    background-color: var(--bg-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--transition-speed);
+    padding: 24px;
+}
+
+.shuoshuo-reader-content:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+/* 说说阅读器主体 */
+.shuoshuo-reader-main {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* 说说阅读器头像 */
+.shuoshuo-reader-avatar {
+    flex-shrink: 0;
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--page-bg-color);
+}
+
+.shuoshuo-reader-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 说说阅读器主体内容（右侧） */
+.shuoshuo-reader-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 说说阅读器头部 */
+.shuoshuo-reader-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.shuoshuo-reader-author {
+    display: flex;
+    align-items: center;
+}
+
+.shuoshuo-reader-author .author-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--shuoshuo-primary);
+}
+
+.shuoshuo-reader-date {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-color-light);
+}
+
+.shuoshuo-reader-date .mdi {
+    font-size: 14px;
+}
+
+/* 说说阅读器内容 */
+.shuoshuo-reader-content {
+    font-size: 15px;
+    color: var(--text-color);
+    line-height: 1.8;
+}
+
+.shuoshuo-reader-content .markdown-content {
+    padding: 0;
+}
+
+/* 说说阅读器图片 */
+.shuoshuo-reader-images {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.shuoshuo-reader-image-item {
+    aspect-ratio: 1;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: var(--page-bg-color);
+}
+
+.shuoshuo-reader-image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-speed);
+}
+
+.shuoshuo-reader-image-item:hover img {
+    transform: scale(1.05);
+}
+
+/* 说说阅读器元信息 */
+.shuoshuo-reader-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.shuoshuo-reader-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.shuoshuo-reader-stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--text-color-light);
+}
+
+.shuoshuo-reader-stat .mdi {
+    font-size: 16px;
+}
+
+.shuoshuo-reader-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.shuoshuo-reader-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--page-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    color: var(--text-color);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+
+.shuoshuo-reader-action-btn:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.shuoshuo-reader-action-btn .mdi {
+    font-size: 16px;
+}
+
+/* 深色模式适配 */
+body.dark-mode .shuoshuo-reader-content {
+    background-color: var(--bg-color);
+}
+
+body.dark-mode .shuoshuo-reader-avatar {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .shuoshuo-reader-image-item {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .shuoshuo-reader-meta {
+    border-top-color: var(--border-color);
+}
+
+body.dark-mode .shuoshuo-reader-action-btn {
+    background: var(--border-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .shuoshuo-reader-action-btn:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .shuoshuo-reader-content {
+        padding: 16px;
+    }
+
+    .shuoshuo-reader-main {
+        gap: 12px;
+    }
+
+    .shuoshuo-reader-avatar {
+        width: 48px;
+        height: 48px;
+    }
+
+    .shuoshuo-reader-author .author-name {
+        font-size: 14px;
+    }
+
+    .shuoshuo-reader-date {
+        font-size: 12px;
+    }
+
+    .shuoshuo-reader-content {
+        font-size: 14px;
+    }
+
+    .shuoshuo-reader-images {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 8px;
+    }
+
+    .shuoshuo-reader-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .shuoshuo-reader-action-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
 
     .shuoshuo-cover-username {
         font-size: 18px;

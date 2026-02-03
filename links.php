@@ -25,7 +25,7 @@ $params_article = ComponentData::GetArticleData($this);
 // 输出页面内容
 echo '<div class="card">';
 echo '<div class="card-content">';
-echo '<div class="markdown-content">';
+echo '<div class="markdown-content link-content">';
 echo $params_article['content'];
 echo '</div>';
 echo '</div>';

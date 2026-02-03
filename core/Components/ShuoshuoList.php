@@ -86,12 +86,12 @@ $userBio = Get::themeOption('sidebar_user_bio', '');
                                     <span class="shuoshuo-date-full"><?= $shuoshuo['created_date'] . ' ' . $shuoshuo['created_time'] ?></span>
                                     <div class="shuoshuo-actions">
                                         <?php if ($shuoshuo['allow_comment']): ?>
-                                            <a href="<?= $currentPath ?>?id=<?= $shuoshuo['cid'] ?>#comments" class="action-btn">
+                                            <a href="<?= $shuoshuo['url'] ?>#comments" class="action-btn">
                                                 <i class="mdi mdi-comment-outline"></i>
                                                 <?= $shuoshuo['comments'] > 0 ? $shuoshuo['comments'] : '评论' ?>
                                             </a>
                                         <?php endif; ?>
-                                        <a href="<?= $currentPath ?>?id=<?= $shuoshuo['cid'] ?>" class="action-btn">
+                                        <a href="<?= $shuoshuo['url'] ?>" class="action-btn">
                                             <i class="mdi mdi-link-variant"></i>
                                             详情
                                         </a>
@@ -106,7 +106,7 @@ $userBio = Get::themeOption('sidebar_user_bio', '');
                                             </div>
                                         <?php endforeach; ?>
                                         <?php if ($shuoshuo['comments'] > 2): ?>
-                                            <a href="<?= $currentPath ?>?id=<?= $shuoshuo['cid'] ?>#comments" class="comment-more">查看全部 <?= $shuoshuo['comments'] ?> 条评论</a>
+                                            <a href="<?= $shuoshuo['url'] ?>#comments" class="comment-more">查看全部 <?= $shuoshuo['comments'] ?> 条评论</a>
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; ?>

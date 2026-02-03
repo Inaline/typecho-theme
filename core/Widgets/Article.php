@@ -1854,6 +1854,36 @@ class GetArticle
             }
         }
 
+        // 获取所有自定义字段
+        $fields = [];
+        if (isset($archive->cid) && $archive->cid) {
+            try {
+                $db = \Typecho_Db::get();
+                $fieldRows = $db->fetchAll($db->select('name', 'str_value', 'int_value', 'float_value')
+                    ->from('table.fields')
+                    ->where('cid = ?', $archive->cid));
+
+                foreach ($fieldRows as $fieldRow) {
+                    $fieldName = $fieldRow['name'];
+                    $fieldValue = null;
+
+                    if (!empty($fieldRow['str_value'])) {
+                        $fieldValue = $fieldRow['str_value'];
+                    } elseif (!empty($fieldRow['int_value'])) {
+                        $fieldValue = $fieldRow['int_value'];
+                    } elseif (!empty($fieldRow['float_value'])) {
+                        $fieldValue = $fieldRow['float_value'];
+                    }
+
+                    if ($fieldValue !== null) {
+                        $fields[$fieldName] = $fieldValue;
+                    }
+                }
+            } catch (Exception $e) {
+                // 忽略错误
+            }
+        }
+
         return [
             'title' => $title,
             'content' => $content,
@@ -1867,7 +1897,8 @@ class GetArticle
             'categories' => $categories,
             'url' => $archive->permalink,
             'cid' => $archive->cid,
-            'thumbnail' => $thumbnail
+            'thumbnail' => $thumbnail,
+            'fields' => $fields
         ];
     }
 }
