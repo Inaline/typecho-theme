@@ -6,7 +6,36 @@
  * @version 1.0.0
  */
 
-if (!defined('__TYPECHO_ROOT_DIR__')) exit;
+use Utils\Helper;
+
+// 如果直接访问此文件，需要初始化 Typecho 环境
+if (!defined('__TYPECHO_ROOT_DIR__')) {
+    // 尝试从上级目录查找 Typecho 根目录
+    $theme_dir = dirname(dirname(__FILE__));
+    $possible_paths = [
+        dirname(dirname(dirname($theme_dir))),  // /opt/1panel/apps/typecho/typecho/data
+        dirname(dirname(dirname(dirname($theme_dir)))),  // /opt/1panel/apps/typecho/typecho
+    ];
+
+    foreach ($possible_paths as $path) {
+        if (file_exists($path . '/config.inc.php')) {
+            define('__TYPECHO_ROOT_DIR__', $path);
+            require_once($path . '/config.inc.php');
+
+            // 手动加载 Helper 类
+            if (file_exists(__TYPECHO_ROOT_DIR__ . '/var/Utils/Helper.php')) {
+                require_once(__TYPECHO_ROOT_DIR__ . '/var/Utils/Helper.php');
+            }
+
+            break;
+        }
+    }
+
+    // 如果还是找不到，抛出错误
+    if (!defined('__TYPECHO_ROOT_DIR__')) {
+        throw new RuntimeException('Cannot find Typecho configuration file');
+    }
+}
 
 class Sitemap
 {
@@ -16,37 +45,72 @@ class Sitemap
      */
     public static function generate()
     {
-        // 获取数据库对象
-        $db = Typecho_Db::get();
-        $options = Typecho_Widget::widget('Widget_Options');
+        try {
+            // 获取数据库对象
+            $db = Typecho_Db::get();
+            $options = Helper::options();
 
-        // 设置 XML 头部
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+            // 设置 XML 头部
+            $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+            $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-        // 添加首页
-        $xml .= self::createUrl(
-            $options->siteUrl,
-            date('c'),
-            'daily',
-            1.0
-        );
+            // 添加首页
+            $xml .= self::createUrl(
+                $options->siteUrl,
+                date('c'),
+                'daily',
+                1.0
+            );
 
-        // 添加文章页面
-        $xml .= self::addPosts($db, $options);
+            // 添加文章页面
+            try {
+                $xml .= self::addPosts($db, $options);
+            } catch (Exception $e) {
+                // 文章查询失败，继续处理其他内容
+            }
 
-        // 添加独立页面
-        $xml .= self::addPages($db, $options);
+            // 添加独立页面
+            try {
+                $xml .= self::addPages($db, $options);
+            } catch (Exception $e) {
+                // 页面查询失败，继续处理其他内容
+            }
 
-        // 添加分类页面
-        $xml .= self::addCategories($db, $options);
+            // 添加分类页面
+            try {
+                $xml .= self::addCategories($db, $options);
+            } catch (Exception $e) {
+                // 分类查询失败，继续处理其他内容
+            }
 
-        // 添加标签页面
-        $xml .= self::addTags($db, $options);
+            // 添加标签页面
+            try {
+                $xml .= self::addTags($db, $options);
+            } catch (Exception $e) {
+                // 标签查询失败，继续处理其他内容
+            }
 
-        $xml .= '</urlset>';
+            $xml .= '</urlset>';
 
-        return $xml;
+            return $xml;
+        } catch (Exception $e) {
+            // 如果整个生成过程失败，返回基本的 sitemap
+            $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+            $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+            try {
+                $options = Helper::options();
+                $xml .= self::createUrl(
+                    $options->siteUrl,
+                    date('c'),
+                    'daily',
+                    1.0
+                );
+            } catch (Exception $e2) {
+                // 如果连选项都获取不到，返回空 sitemap
+            }
+            $xml .= '</urlset>';
+            return $xml;
+        }
     }
 
     /**
@@ -216,6 +280,14 @@ class Sitemap
 }
 
 // 如果直接访问此文件，则输出 Sitemap
-if (basename($_SERVER['PHP_SELF']) === 'sitemap.php') {
-    Sitemap::output();
+if (basename($_SERVER['PHP_SELF']) === 'sitemap.php' ||
+    (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'sitemap.php') !== false)) {
+    try {
+        Sitemap::output();
+    } catch (Exception $e) {
+        header('HTTP/1.1 500 Internal Server Error');
+        header('Content-Type: application/xml; charset=UTF-8');
+        echo '<?xml version="1.0" encoding="UTF-8"?>';
+        echo '<error>Failed to generate sitemap</error>';
+    }
 }

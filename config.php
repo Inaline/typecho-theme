@@ -29,7 +29,7 @@ return [
                 'access_control_allow_origin' => '*', // 跨域配置
             ]
         ],
-        'stiemap' => [          // 站点地图设置
+        'sitemap' => [          // 站点地图设置
             'enabled' => true,  // 是否开启站点地图功能
             'modes' => [        // 展示方法
                 'txt' => true,  // TXT 纯文本
