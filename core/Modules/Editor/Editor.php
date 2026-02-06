@@ -12,7 +12,7 @@ class Editor
     public static function edit()
     {
         // 引入 MDI 图标库
-        echo '<link href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" rel="stylesheet">';
+        echo '<link href="https://cdn.bootcdn.net/ajax/libs/MaterialDesign-Webfont/7.4.47/css/materialdesignicons.min.css" rel="stylesheet">';
         // 引入编辑器样式
         echo '<link rel="stylesheet" href="' . GetSite::themeUrl("assets/css/editor.css") . '">';
         // 引入编辑器脚本

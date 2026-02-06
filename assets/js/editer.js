@@ -107,6 +107,9 @@
             
             if (field.type === 'textarea') {
                 var input = $('<textarea class="inaline-field-input inaline-textarea" rows="5"></textarea>');
+            } else if (field.type === 'checkbox') {
+                var input = $('<input type="checkbox" class="inaline-field-input inaline-checkbox" />');
+                fieldGroup.addClass('inaline-field-group-checkbox');
             } else {
                 var input = $('<input type="text" class="inaline-field-input" />');
             }
@@ -116,7 +119,11 @@
             }
             
             if (field.value !== undefined) {
-                input.val(field.value);
+                if (field.type === 'checkbox') {
+                    input.prop('checked', field.value);
+                } else {
+                    input.val(field.value);
+                }
             }
             
             fieldGroup.append(label).append(input);
@@ -164,7 +171,12 @@
         this.confirmBtn.on('click', function() {
             var values = [];
             self.form.find('.inaline-field-input').each(function() {
-                values.push($(this).val());
+                var input = $(this);
+                if (input.attr('type') === 'checkbox') {
+                    values.push(input.prop('checked'));
+                } else {
+                    values.push(input.val());
+                }
             });
             
             if (self.options.onConfirm) {
@@ -332,6 +344,29 @@
             suffix: '" controls></audio>\n'
         },
         {
+            title: 'Bilibili',
+            id: 'wmd-bilibili-button',
+            svg: '<svg height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>bilibili</title><path clip-rule="evenodd" d="M4.977 3.561a1.31 1.31 0 111.818-1.884l2.828 2.728c.08.078.149.163.205.254h4.277a1.32 1.32 0 01.205-.254l2.828-2.728a1.31 1.31 0 011.818 1.884L17.82 4.66h.848A5.333 5.333 0 0124 9.992v7.34a5.333 5.333 0 01-5.333 5.334H5.333A5.333 5.333 0 010 17.333V9.992a5.333 5.333 0 015.333-5.333h.781L4.977 3.56zm.356 3.67a2.667 2.667 0 00-2.666 2.667v7.529a2.667 2.667 0 002.666 2.666h13.334a2.667 2.667 0 002.666-2.666v-7.53a2.667 2.667 0 00-2.666-2.666H5.333zm1.334 5.192a1.333 1.333 0 112.666 0v1.192a1.333 1.333 0 11-2.666 0v-1.192zM16 11.09c-.736 0-1.333.597-1.333 1.333v1.192a1.333 1.333 0 102.666 0v-1.192c0-.736-.597-1.333-1.333-1.333z" fill="#FB7299" fill-rule="evenodd"></path></svg>',
+            dialog: true,
+            dialogTitle: '插入 Bilibili 视频',
+            dialogFields: [
+                { type: 'input', label: 'BV 号', placeholder: '请输入 BV 号（如 BV1B7411m7LV）' },
+                { type: 'checkbox', label: '显示弹幕', value: true }
+            ],
+            onConfirm: function(values) {
+                var bvid = values[0] || '';
+                var danmaku = values[1] !== false;
+                
+                // 处理 BV 号：如果没有 BV 前缀则自动添加
+                if (bvid && !bvid.toUpperCase().startsWith('BV')) {
+                    bvid = 'BV' + bvid;
+                }
+                
+                var videoSyntax = '\n%%{"type": "bilibili_video", "data": {"bvid": "' + bvid + '", "danmaku": ' + danmaku + '}}%%\n';
+                $('#text').insertContent(videoSyntax);
+            }
+        },
+        {
             title: '视频',
             id: 'wmd-video-button',
             mdi: 'mdi-video',
@@ -405,9 +440,127 @@
         console.log('[Inaline Editor] 工具栏初始化完成');
     }
 
+    // 初始化行号功能
+    function initLineNumbers() {
+        console.log('[Inaline Editor] 初始化行号');
+        var textarea = $('#text');
+        if (textarea.length === 0) return;
+
+        // 创建行号容器
+        var numbers = $('<div class="inaline-numbers"></div>');
+        
+        // 创建包装容器
+        var wrapper = $('<div class="inaline-container"></div>');
+        textarea.wrap(wrapper);
+        textarea.before(numbers);
+
+        // 获取 textarea 的样式
+        var textareaStyles = window.getComputedStyle(textarea[0]);
+        
+        // 同步样式到行号容器
+        ['fontFamily', 'fontSize', 'fontWeight', 'letterSpacing', 'lineHeight', 'padding'].forEach(function(property) {
+            numbers.css(property, textareaStyles[property]);
+        });
+
+        // 创建 canvas 用于计算文本宽度
+        var canvas = document.createElement('canvas');
+        var context = canvas.getContext('2d');
+        var font = textareaStyles.fontSize + ' ' + textareaStyles.fontFamily;
+        context.font = font;
+
+        // 计算一个句子占据多少行
+        function calcStringLines(sentence, width) {
+            if (!width) return 0;
+            var words = sentence.split('');
+            var lineCount = 0;
+            var currentLine = '';
+            
+            for (var i = 0; i < words.length; i++) {
+                var wordWidth = context.measureText(words[i]).width;
+                var lineWidth = context.measureText(currentLine).width;
+                if (lineWidth + wordWidth > width) {
+                    lineCount++;
+                    currentLine = words[i];
+                } else {
+                    currentLine += words[i];
+                }
+            }
+            if (currentLine.trim() !== '') lineCount++;
+            return lineCount;
+        }
+
+        // 计算所有行号
+        function calcLines() {
+            var lines = textarea.val().split('\n');
+            var textareaWidth = textarea[0].getBoundingClientRect().width;
+            var textareaScrollWidth = textareaWidth - textarea[0].clientWidth;
+            
+            // 解析 px 值
+            var parseNumber = function(v) {
+                return v.endsWith('px') ? parseInt(v.slice(0, -2), 10) : 0;
+            };
+            
+            var textareaPaddingLeft = parseNumber(textareaStyles.paddingLeft);
+            var textareaPaddingRight = parseNumber(textareaStyles.paddingRight);
+            var textareaContentWidth = textareaWidth - textareaPaddingLeft - textareaPaddingRight - textareaScrollWidth;
+            
+            var numLines = lines.map(function(lineString) {
+                return calcStringLines(lineString, textareaContentWidth);
+            });
+            
+            var lineNumbers = [];
+            var i = 1;
+            while (numLines.length > 0) {
+                var numLinesOfSentence = numLines.shift();
+                lineNumbers.push(i);
+                if (numLinesOfSentence > 1) {
+                    Array(numLinesOfSentence - 1).fill('').forEach(function() {
+                        lineNumbers.push('');
+                    });
+                }
+                i++;
+            }
+            return lineNumbers;
+        }
+
+        // 更新行号显示
+        function updateLineNumbers() {
+            var lines = calcLines();
+            var lineDoms = lines.map(function(line, i) {
+                return '<div>' + (line || '&nbsp;') + '</div>';
+            }).join('');
+            numbers.html(lineDoms);
+        }
+
+        // 监听滚动
+        textarea.on('scroll', function() {
+            numbers.scrollTop(textarea.scrollTop());
+        });
+
+        // 监听输入
+        textarea.on('input', function() {
+            updateLineNumbers();
+        });
+
+        // 监听尺寸变化
+        var ro = new ResizeObserver(function() {
+            var rect = textarea[0].getBoundingClientRect();
+            // 行号容器高度等于 textarea 高度
+            numbers.height(rect.height);
+            updateLineNumbers();
+        });
+        ro.observe(textarea[0]);
+
+        // 初始化
+        updateLineNumbers();
+        
+        console.log('[Inaline Editor] 行号初始化完成');
+    }
+
     // 页面加载完成后初始化
     $(document).ready(function() {
         setTimeout(initEditorToolbar, 100);
+        setTimeout(initLineNumbers, 200);
     });
 
 })(jQuery);

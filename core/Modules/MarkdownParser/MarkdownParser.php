@@ -109,6 +109,8 @@ class MarkdownParser
         switch ($data['type']) {
             case 'card':
                 return self::renderCard($data['data'] ?? []);
+            case 'bilibili_video':
+                return self::renderBilibiliVideo($data['data'] ?? []);
             default:
                 return '';
         }
@@ -180,6 +182,37 @@ class MarkdownParser
             $html .= '</a>';
         }
 
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * 渲染 Bilibili 视频
+     * @param array $data 视频数据
+     * @return string HTML 字符串
+     */
+    private static function renderBilibiliVideo($data)
+    {
+        $bvid = $data['bvid'] ?? '';
+        $danmaku = isset($data['danmaku']) && $data['danmaku'] ? 1 : 0;
+
+        if (empty($bvid)) {
+            return '';
+        }
+
+        // 处理 BV 号：如果没有 BV 前缀则自动添加
+        if (!preg_match('/^BV/i', $bvid)) {
+            $bvid = 'BV' . $bvid;
+        }
+
+        // 构建 iframe URL
+        // 参数：不开启自动播放, 不静音，展示封面，弹幕根据设置，高清播放，宽屏模式
+        $iframeUrl = 'https://player.bilibili.com/player.html?bvid=' . $bvid . '&autoplay=0&muted=0&poster=1&danmaku=' . $danmaku . '&high_quality=1&as_wide=1';
+
+        $html = '<div class="bilibili-video-container">';
+        $html .= '<iframe class="bilibili-video-iframe" src="' . htmlspecialchars($iframeUrl) . '" ';
+        $html .= 'scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>';
         $html .= '</div>';
 
         return $html;

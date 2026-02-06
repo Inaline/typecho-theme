@@ -46,6 +46,36 @@
     color: #9b9b9b;
 }
 
+/* 编辑器容器 */
+.inaline-container {
+    display: flex;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* 行号容器 */
+.inaline-numbers {
+    flex-shrink: 0;
+    width: 40px;
+    border-right: 1px solid #ddd;
+    overflow: hidden;
+    text-align: center;
+    background: #f8f9fa;
+    color: #999;
+    box-sizing: border-box;
+}
+
+/* 文本框样式调整 */
+.inaline-container #text {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    resize: vertical;
+    overflow-x: hidden;
+    box-sizing: border-box;
+}
+
 /* 对话框遮罩层 */
 .inaline-dialog-overlay {
     position: fixed;
@@ -112,6 +142,16 @@
     margin-bottom: 0;
 }
 
+.inaline-field-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.inaline-field-group-checkbox .inaline-field-label {
+    margin-bottom: 0;
+}
+
 .inaline-field-label {
     display: block;
     margin-bottom: 8px;
@@ -137,6 +177,11 @@
 .inaline-textarea {
     resize: vertical;
     min-height: 80px;
+}
+
+.inaline-checkbox {
+    width: auto;
+    cursor: pointer;
 }
 
 /* 对话框按钮区 */

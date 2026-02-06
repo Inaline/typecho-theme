@@ -337,6 +337,21 @@
     top: calc(var(--topbar-height) + var(--categories-height) + 20px);
 }
 
+.toc-card .card-title {
+    position: relative;
+    padding-right: 50px;
+}
+
+.toc-progress {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
 .article-toc {
     max-height: 500px;
     overflow-y: auto;
@@ -357,67 +372,23 @@
 
 .toc-sub-list {
     list-style: none;
-    padding-left: 20px;
-    margin: 5px 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
-    opacity: 0;
-}
-
-.toc-sub-list.expanded {
-    max-height: 500px;
-    opacity: 1;
-    transition: max-height 0.3s ease-in, opacity 0.3s ease-in;
+    padding-left: 16px;
+    margin: 2px 0;
 }
 
 .toc-item {
-    margin: 5px 0;
-}
-
-/* 目录项折叠按钮 */
-.toc-item-toggle {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    margin-right: 4px;
-    vertical-align: middle;
-    cursor: pointer;
-    transition: transform 0.2s;
-    color: var(--text-color-light);
-    font-size: 12px;
-    line-height: 16px;
-    text-align: center;
-}
-
-.toc-item-toggle:hover {
-    color: var(--primary-color);
-}
-
-.toc-item-toggle.collapsed {
-    transform: rotate(-90deg);
-}
-
-.toc-item-content {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-/* 有子项的目录项添加特殊样式 */
-.toc-item.has-children > .toc-link {
-    display: inline-flex;
-    align-items: center;
+    margin: 2px 0;
 }
 
 .toc-link {
     display: block;
-    padding: 6px 10px;
+    padding: 4px 8px;
     color: var(--text-color);
     text-decoration: none;
     border-radius: 4px;
     transition: all 0.2s;
-    font-size: 14px;
-    line-height: 1.5;
+    font-size: 13px;
+    line-height: 1.4;
 }
 
 .toc-link:hover {
@@ -588,6 +559,38 @@
     .link-card-description {
         font-size: 12px;
         -webkit-line-clamp: 2;
+    }
+}
+
+/* ==========================
+ * Bilibili 视频样式
+ * ========================== */
+
+.bilibili-video-container {
+    margin: 16px 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background: #000;
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 比例 */
+}
+
+.bilibili-video-iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* 移动端 Bilibili 视频适配 */
+@media (max-width: 767px) {
+    .bilibili-video-container {
+        margin: 12px 0;
+        border-radius: var(--border-radius);
     }
 }
 
