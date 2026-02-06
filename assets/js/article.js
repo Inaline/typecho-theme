@@ -547,8 +547,16 @@ function initTOC() {
 
         currentLevel = level;
 
+        // 检查是否有子标题
+        const hasChildren = index < headings.length - 1 && parseInt(headings[index + 1].tagName.charAt(1)) > level;
+
         // 添加目录项
-        tocHtml += '<li class="toc-item toc-level-' + level + '" data-index="' + index + '" data-level="' + level + '">';
+        tocHtml += '<li class="toc-item toc-level-' + level + (hasChildren ? ' has-children' : '') + '" data-index="' + index + '" data-level="' + level + '">';
+
+        // 如果有子标题，添加折叠按钮
+        if (hasChildren) {
+            tocHtml += '<span class="mdi mdi-chevron-down toc-item-toggle" data-target-index="' + index + '"></span>';
+        }
 
         tocHtml += '<a href="#' + id + '" class="toc-link" data-target="' + id + '" data-index="' + index + '">';
         tocHtml += text;
@@ -566,6 +574,9 @@ function initTOC() {
     // 渲染目录
     tocContainer.innerHTML = tocHtml;
 
+    // 初始化折叠状态
+    initTOCFoldState();
+
     // 添加点击事件
     const tocLinks = tocContainer.querySelectorAll('.toc-link');
     tocLinks.forEach(function(link) {
@@ -579,14 +590,226 @@ function initTOC() {
 
                 // 更新 URL hash
                 history.pushState(null, null, '#' + targetId);
+
+                // 展开当前项及其父级
+                expandTOCItem(parseInt(this.getAttribute('data-index')));
             }
         });
     });
 
-    // 监听滚动，高亮当前目录项并自动滚动目录
+    // 添加折叠按钮点击事件
+    const toggleButtons = tocContainer.querySelectorAll('.toc-item-toggle');
+    toggleButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const targetIndex = parseInt(this.getAttribute('data-target-index'));
+            toggleTOCItem(targetIndex);
+        });
+    });
+
+    // 监听滚动，高亮当前目录项、自动展开/折叠并自动滚动
     window.addEventListener('scroll', function() {
         updateActiveTOCItem(headings, tocLinks);
+        autoExpandCollapseTOC(headings);
         autoScrollTOC(headings);
+    });
+}
+
+/**
+ * 初始化目录折叠状态（默认展开所有）
+ */
+function initTOCFoldState() {
+    const subLists = document.querySelectorAll('.toc-sub-list');
+    subLists.forEach(function(list) {
+        list.classList.add('expanded');
+    });
+
+    const toggleButtons = document.querySelectorAll('.toc-item-toggle');
+    toggleButtons.forEach(function(btn) {
+        btn.classList.remove('collapsed');
+    });
+}
+
+/**
+ * 切换目录项的折叠/展开状态
+ * @param {number} index 目录项索引
+ */
+function toggleTOCItem(index) {
+    const tocItem = document.querySelector('.toc-item[data-index="' + index + '"]');
+    if (!tocItem) return;
+
+    const toggleBtn = tocItem.querySelector('.toc-item-toggle');
+    if (!toggleBtn) return;
+
+    // 查找子列表
+    let nextElement = tocItem.nextElementSibling;
+    while (nextElement && nextElement.tagName !== 'UL') {
+        nextElement = nextElement.nextElementSibling;
+    }
+
+    if (nextElement && nextElement.classList.contains('toc-sub-list')) {
+        // 切换展开/折叠状态
+        nextElement.classList.toggle('expanded');
+        toggleBtn.classList.toggle('collapsed');
+    }
+}
+
+/**
+ * 展开指定目录项及其所有父级
+ * @param {number} index 目录项索引
+ */
+function expandTOCItem(index) {
+    const tocItem = document.querySelector('.toc-item[data-index="' + index + '"]');
+    if (!tocItem) return;
+
+    // 展开当前项
+    const toggleBtn = tocItem.querySelector('.toc-item-toggle');
+    if (toggleBtn) {
+        toggleBtn.classList.remove('collapsed');
+    }
+
+    // 展开子列表
+    let nextElement = tocItem.nextElementSibling;
+    while (nextElement && nextElement.tagName !== 'UL') {
+        nextElement = nextElement.nextElementSibling;
+    }
+    if (nextElement && nextElement.classList.contains('toc-sub-list')) {
+        nextElement.classList.add('expanded');
+    }
+
+    // 递归展开父级
+    let parentItem = tocItem.parentElement.closest('.toc-item');
+    while (parentItem) {
+        const parentIndex = parseInt(parentItem.getAttribute('data-index'));
+        expandTOCItem(parentIndex);
+        parentItem = parentItem.parentElement.closest('.toc-item');
+    }
+}
+
+/**
+ * 自动展开/折叠目录（根据滚动位置）
+ * @param {NodeList} headings 标题列表
+ */
+function autoExpandCollapseTOC(headings) {
+    const topBar = document.querySelector('.topbar');
+    const topBarHeight = topBar ? topBar.offsetHeight : 88;
+    const offset = topBarHeight + 20;
+
+    // 获取标题层级
+    const headingLevels = Array.from(headings).map(h => parseInt(h.tagName.charAt(1)));
+
+    // 辅助函数：获取一个标题的范围（结束索引）
+    function getHeadingRange(headingIndex) {
+        const currentLevel = headingLevels[headingIndex];
+        
+        for (let i = headingIndex + 1; i < headingLevels.length; i++) {
+            if (headingLevels[i] <= currentLevel) {
+                return i;
+            }
+        }
+        return headingLevels.length;
+    }
+
+    // 辅助函数：检查视口参考点是否在某个标题的范围内
+    function isViewportInHeadingRange(headingIndex) {
+        const heading = headings[headingIndex];
+        const rangeEndIndex = getHeadingRange(headingIndex);
+        
+        if (rangeEndIndex === headingLevels.length) {
+            // 最后一个标题，检查其顶部是否在视口上方
+            const rect = heading.getBoundingClientRect();
+            return rect.top <= offset;
+        }
+        
+        const nextHeading = headings[rangeEndIndex];
+        const rect = heading.getBoundingClientRect();
+        const nextRect = nextHeading.getBoundingClientRect();
+        
+        // 视口参考点在标题范围之间
+        const viewportRef = window.scrollY + offset;
+        const headingTop = window.scrollY + rect.top;
+        const nextHeadingTop = window.scrollY + nextRect.top;
+        
+        return viewportRef >= headingTop && viewportRef < nextHeadingTop;
+    }
+
+    // 找到当前激活的标题（视口参考点落在其范围内的标题）
+    let currentHeadingIndex = -1;
+    let maxLevel = 0;
+
+    for (let i = 0; i < headings.length; i++) {
+        if (isViewportInHeadingRange(i)) {
+            const level = headingLevels[i];
+            // 选择层级最深的标题
+            if (level > maxLevel) {
+                maxLevel = level;
+                currentHeadingIndex = i;
+            }
+        }
+    }
+
+    // 如果没有找到，使用最接近视口顶部的标题
+    if (currentHeadingIndex === -1) {
+        let minDistance = Infinity;
+        for (let i = 0; i < headings.length; i++) {
+            const rect = headings[i].getBoundingClientRect();
+            const distance = Math.abs(rect.top - offset);
+            if (distance < minDistance) {
+                minDistance = distance;
+                currentHeadingIndex = i;
+            }
+        }
+    }
+
+    if (currentHeadingIndex === -1) return;
+
+    // 构建"应该展开的标题索引集合"
+    const shouldExpand = new Set();
+    
+    // 添加当前标题本身
+    shouldExpand.add(currentHeadingIndex);
+    
+    // 添加当前标题的所有直接祖先（父级、祖父级等）
+    // 从当前标题往前找，找到最近的层级更小的标题作为父级，然后再找父级的父级，以此类推
+    let searchIndex = currentHeadingIndex - 1;
+    let targetLevel = headingLevels[currentHeadingIndex];
+    
+    while (searchIndex >= 0 && targetLevel > 1) {
+        // 找到第一个层级小于目标层级的标题
+        while (searchIndex >= 0 && headingLevels[searchIndex] >= targetLevel) {
+            searchIndex--;
+        }
+        
+        if (searchIndex >= 0) {
+            shouldExpand.add(searchIndex);
+            targetLevel = headingLevels[searchIndex];
+            searchIndex--;
+        }
+    }
+
+    // 遍历所有有子元素的目录项，根据集合展开或折叠
+    const tocItems = document.querySelectorAll('.toc-item.has-children');
+    tocItems.forEach(function(item) {
+        const index = parseInt(item.getAttribute('data-index'));
+        const toggleBtn = item.querySelector('.toc-item-toggle');
+        
+        // 查找子列表
+        let nextElement = item.nextElementSibling;
+        while (nextElement && nextElement.tagName !== 'UL') {
+            nextElement = nextElement.nextElementSibling;
+        }
+        
+        if (nextElement && nextElement.classList.contains('toc-sub-list')) {
+            if (shouldExpand.has(index)) {
+                // 展开
+                nextElement.classList.add('expanded');
+                if (toggleBtn) toggleBtn.classList.remove('collapsed');
+            } else {
+                // 折叠
+                nextElement.classList.remove('expanded');
+                if (toggleBtn) toggleBtn.classList.add('collapsed');
+            }
+        }
     });
 }
 
