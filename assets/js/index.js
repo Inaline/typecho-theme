@@ -747,74 +747,46 @@ $(document).ready(function() {
  * 开发者工具检测
  * ========================== */
 (function() {
+    // 显示提示消息的函数
+    function showDevToolsWarning() {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '哎呀！',
+                text: '别偷偷看我的代码欸，人家也是会害羞的嘛. ￣へ￣',
+                icon: 'warning',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: '#fff',
+                customClass: {
+                    popup: 'swal2-popup-custom'
+                }
+            });
+        }
+    }
+
     // 检测 F12 键
     document.addEventListener('keydown', function(e) {
         // F12 键 (keyCode: 123)
         if (e.keyCode === 123) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: '哎呀！',
-                    text: '不要在我的网站乱搞欸 🙈',
-                    icon: 'warning',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    background: '#fff',
-                    customClass: {
-                        popup: 'swal2-popup-custom'
-                    }
-                });
-            }
+            showDevToolsWarning();
         }
 
         // Ctrl+Shift+I (Chrome/Edge 开发者工具)
         if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: '哎呀！',
-                    text: '不要在我的网站乱搞欸 🙈',
-                    icon: 'warning',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            }
+            showDevToolsWarning();
         }
 
         // Ctrl+Shift+J (Chrome 控制台)
         if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: '哎呀！',
-                    text: '不要在我的网站乱搞欸 🙈',
-                    icon: 'warning',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            }
+            showDevToolsWarning();
         }
 
         // Ctrl+U (查看源代码)
         if (e.ctrlKey && e.keyCode === 85) {
-            if (typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: '哎呀！',
-                    text: '不要在我的网站乱搞欸 🙈',
-                    icon: 'warning',
-                    toast: true,
-                    position: 'top-end',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            }
+            showDevToolsWarning();
         }
     });
 })();

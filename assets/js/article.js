@@ -223,7 +223,6 @@ function copyCode(codeBlock, copyBtn) {
         navigator.clipboard.writeText(codeText).then(function() {
             showCopySuccess(copyBtn);
         }).catch(function(err) {
-            console.error('复制失败:', err);
             fallbackCopy(codeText, copyBtn);
         });
     } else {
@@ -276,7 +275,6 @@ function fallbackCopy(text, copyBtn) {
             throw new Error('execCommand copy failed');
         }
     } catch (err) {
-        console.error('复制失败:', err);
         copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
     }
 
@@ -344,7 +342,6 @@ function initShareButton() {
                     text: description,
                     url: url
                 }).catch(function(err) {
-                    console.log('分享失败:', err);
                     // 如果原生分享失败，显示备用分享方式
                     showShareDialog(title, url);
                 });
@@ -365,7 +362,6 @@ function showShareDialog(title, url) {
         navigator.clipboard.writeText(url).then(function() {
             alert('链接已复制到剪贴板！');
         }).catch(function(err) {
-            console.log('复制失败:', err);
             prompt('请复制以下链接：', url);
         });
     } else {
@@ -381,7 +377,6 @@ function showShareDialog(title, url) {
  */
 function updateLikes(articleId, isLiked) {
     // TODO: 实现后端 API 调用
-    console.log('更新点赞数:', articleId, isLiked);
 }
 
 /**
@@ -1256,17 +1251,13 @@ function initMusicPlayer() {
         return; // 没有音乐播放器，不加载资源
     }
 
-    console.log('[Inaline Music] 检测到 ' + musicContainers.length + ' 个音乐播放器，开始加载资源...');
-
     // 动态加载 Aplayer CSS
     loadCSS('https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css')
         .then(function() {
-            console.log('[Inaline Music] Aplayer CSS 加载完成');
             // 加载 Aplayer JS
             return loadScript('https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js');
         })
         .then(function() {
-            console.log('[Inaline Music] Aplayer JS 加载完成');
             
             // 初始化所有 Aplayer 实例
             const aplayerContainers = document.querySelectorAll('.aplayer[data-audio]');
@@ -1293,8 +1284,6 @@ function initMusicPlayer() {
                         listMaxHeight: listMaxHeight,
                         audio: audioData
                     });
-                    
-                    console.log('[Inaline Music] Aplayer 实例初始化成功:', container.id);
                 } catch (error) {
                     console.error('[Inaline Music] Aplayer 实例初始化失败:', error);
                 }
@@ -1310,9 +1299,8 @@ function initMusicPlayer() {
         })
         .then(function() {
             if (document.querySelector('meting-js')) {
-                console.log('[Inaline Music] MetingJS 加载完成');
+                // MetingJS 加载完成
             }
-            console.log('[Inaline Music] 所有音乐播放器资源加载完成');
         })
         .catch(function(error) {
             console.error('[Inaline Music] 音乐播放器资源加载失败:', error);
@@ -1335,7 +1323,6 @@ function initNetdiskCopy() {
                 navigator.clipboard.writeText(code).then(function() {
                     showCopySuccess(btn);
                 }).catch(function(err) {
-                    console.error('复制失败:', err);
                     fallbackCopyCode(code, btn);
                 });
             } else {
@@ -1392,7 +1379,6 @@ function fallbackCopyCode(text, btn) {
             throw new Error('execCommand copy failed');
         }
     } catch (err) {
-        console.error('复制失败:', err);
         btn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
         setTimeout(function() {
             btn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';

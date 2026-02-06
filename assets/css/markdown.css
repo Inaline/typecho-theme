@@ -719,18 +719,26 @@
  * Aplayer 暗色模式样式
  * ========================== */
 
+/* 播放器主体背景 */
 body.dark-mode .aplayer {
     background-color: #1a1a1a !important;
 }
 
+/* 边框颜色 */
 body.dark-mode .aplayer .aplayer-info {
     border-top: 1px solid #333 !important;
 }
 
-body.dark-mode .aplayer .aplayer-pic {
-    background-color: #1a1a1a !important;
+/* 歌词颜色 */
+body.dark-mode .aplayer .aplayer-lrc p {
+    color: #b0b0b0 !important;
 }
 
+body.dark-mode .aplayer .aplayer-lrc .aplayer-lrc-current {
+    color: #ffffff !important;
+}
+
+/* 音乐信息颜色 */
 body.dark-mode .aplayer .aplayer-music .aplayer-title {
     color: #e0e0e0 !important;
 }
@@ -739,60 +747,69 @@ body.dark-mode .aplayer .aplayer-music .aplayer-author {
     color: #b0b0b0 !important;
 }
 
-body.dark-mode .aplayer .aplayer-lrc p {
+/* 时间显示颜色 */
+body.dark-mode .aplayer .aplayer-time {
     color: #b0b0b0 !important;
 }
 
-body.dark-mode .aplayer .aplayer-lrc .aplayer-lrc-current {
-    color: #ffffff !important;
-    font-size: 15px !important;
-}
-
-body.dark-mode .aplayer .aplayer-lrc-contents {
+body.dark-mode .aplayer .aplayer-time-inner {
     color: #b0b0b0 !important;
 }
 
-body.dark-mode .aplayer .aplayer-lrc-contents p {
+/* 图标颜色 */
+body.dark-mode .aplayer .aplayer-icon {
     color: #b0b0b0 !important;
 }
 
-body.dark-mode .aplayer .aplayer-lrc-contents .aplayer-lrc-current {
-    color: #ffffff !important;
+body.dark-mode .aplayer .aplayer-icon:hover {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .aplayer .aplayer-icon path {
+    fill: currentColor;
+}
+
+/* 播放列表颜色 */
+body.dark-mode .aplayer .aplayer-list {
+    background: #1a1a1a !important;
+}
+
+body.dark-mode .aplayer .aplayer-list ol {
+    background: #1a1a1a !important;
+}
+
+body.dark-mode .aplayer .aplayer-list li {
+    border-top: 1px solid #333 !important;
+}
+
+body.dark-mode .aplayer .aplayer-list li:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark-mode .aplayer .aplayer-list-light {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .aplayer .aplayer-list-index {
+    color: #b0b0b0 !important;
+}
+
+body.dark-mode .aplayer .aplayer-list-title {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .aplayer .aplayer-list-author {
+    color: #b0b0b0 !important;
+}
+
+body.dark-mode .aplayer .aplayer-list-cur {
+    background-color: var(--primary-color) !important;
 }
 
 /* 隐藏歌词区域的伪元素 */
 body.dark-mode .aplayer .aplayer-lrc::before,
 body.dark-mode .aplayer .aplayer-lrc::after {
     display: none !important;
-}
-
-/* 隐藏歌词区域前几行的加载日志信息 */
-.aplayer .aplayer-lrc-contents p:nth-child(1),
-.aplayer .aplayer-lrc-contents p:nth-child(2),
-.aplayer .aplayer-lrc-contents p:nth-child(3),
-.aplayer .aplayer-lrc-contents p:nth-child(4),
-.aplayer .aplayer-lrc-contents p:nth-child(5),
-.aplayer .aplayer-lrc-contents p:nth-child(6),
-.aplayer .aplayer-lrc-contents p:nth-child(7),
-.aplayer .aplayer-lrc-contents p:nth-child(8),
-.aplayer .aplayer-lrc-contents p:nth-child(9) {
-    display: none;
-}
-
-body.dark-mode .aplayer .aplayer-bar {
-    background: rgba(255, 255, 255, 0.1) !important;
-}
-
-body.dark-mode .aplayer .aplayer-loaded {
-    background: rgba(255, 255, 255, 0.2) !important;
-}
-
-body.dark-mode .aplayer .aplayer-played .aplayer-thumb {
-    background: var(--primary-color) !important;
-}
-
-body.dark-mode .aplayer .aplayer-thumb {
-    background: var(--primary-color) !important;
 }
 
 body.dark-mode .aplayer .aplayer-time {
