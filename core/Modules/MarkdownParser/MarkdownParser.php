@@ -111,6 +111,12 @@ class MarkdownParser
                 return self::renderCard($data['data'] ?? []);
             case 'bilibili_video':
                 return self::renderBilibiliVideo($data['data'] ?? []);
+            case 'music':
+                return self::renderMusic($data['data'] ?? []);
+            case 'netease_playlist':
+                return self::renderNeteasePlaylist($data['data'] ?? []);
+            case 'netdisk':
+                return self::renderNetdisk($data['data'] ?? []);
             default:
                 return '';
         }
@@ -256,5 +262,149 @@ class MarkdownParser
         }
 
         return $content;
+    }
+
+    /**
+     * 渲染单个音乐
+     * @param array $data 音乐数据
+     * @return string HTML 字符串
+     */
+    private static function renderMusic($data)
+    {
+        $name = $data['name'] ?? '';
+        $artist = $data['artist'] ?? '';
+        $url = $data['url'] ?? '';
+        $cover = $data['cover'] ?? '';
+        $lrc = $data['lrc'] ?? '';
+
+        if (empty($name) || empty($url)) {
+            return '';
+        }
+
+        $uniqueId = uniqid('aplayer-');
+
+        // 构建 Aplayer 配置
+        $audioData = [
+            'name' => $name,
+            'artist' => $artist,
+            'url' => $url
+        ];
+
+        if (!empty($cover)) {
+            $audioData['cover'] = $cover;
+        }
+
+        if (!empty($lrc)) {
+            $audioData['lrc'] = $lrc;
+        }
+
+        $audioJson = json_encode([$audioData], JSON_UNESCAPED_UNICODE);
+
+        $html = '<div class="music-player-container">';
+        $html .= '<div id="' . $uniqueId . '" class="aplayer" ';
+        $html .= 'data-audio="' . htmlspecialchars($audioJson, ENT_QUOTES, 'UTF-8') . '" ';
+        $html .= 'data-theme="#C20C0C" ';
+        $html .= 'data-loop="all" ';
+        $html .= 'data-preload="auto" ';
+        $html .= 'data-volume="0.7" ';
+        $html .= 'data-mutex="true" ';
+        $html .= 'data-list-folded="false" ';
+        $html .= 'data-list-max-height="250px"';
+        $html .= '></div>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * 渲染网易云歌单
+     * @param array $data 歌单数据
+     * @return string HTML 字符串
+     */
+    private static function renderNeteasePlaylist($data)
+    {
+        $playlistId = $data['id'] ?? '';
+
+        if (empty($playlistId)) {
+            return '';
+        }
+
+        $uniqueId = uniqid('meting-');
+
+        $html = '<div class="music-player-container">';
+        $html .= '<meting-js ';
+        $html .= 'id="' . htmlspecialchars($playlistId) . '" ';
+        $html .= 'server="netease" ';
+        $html .= 'type="playlist" ';
+        $html .= 'theme="#C20C0C" ';
+        $html .= 'preload="auto" ';
+        $html .= 'mutex="true" ';
+        $html .= 'listFolded="false" ';
+        $html .= 'listMaxHeight="250px"';
+        $html .= '></meting-js>';
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * 渲染网盘卡片
+     * @param array $data 网盘数据
+     * @return string HTML 字符串
+     */
+    private static function renderNetdisk($data)
+    {
+        $type = $data['type'] ?? 'baidu';
+        $filename = $data['filename'] ?? '';
+        $url = $data['url'] ?? '';
+        $code = $data['code'] ?? '';
+
+        if (empty($filename) || empty($url)) {
+            return '';
+        }
+
+        // 网盘类型图标映射
+        $iconMap = [
+            'baidu' => 'baiducould.svg',
+            'quark' => 'quarkpan.svg',
+            '123pan' => '123pan.png',
+            'lanzou' => 'lanzoucloud.webp',
+            'openlist' => 'openlist.svg',
+            'local' => 'server.svg'
+        ];
+
+        $iconFile = $iconMap[$type] ?? 'baiducould.svg';
+        $iconUrl = Get::Assets('assets/images/icons/' . $iconFile);
+
+        $html = '<div class="netdisk-card">';
+        $html .= '<div class="netdisk-icon">';
+        $html .= '<img src="' . htmlspecialchars($iconUrl) . '" alt="' . htmlspecialchars($type) . '">';
+        $html .= '</div>';
+        $html .= '<div class="netdisk-info">';
+        $html .= '<div class="netdisk-header">';
+        $html .= '<div class="netdisk-filename">' . htmlspecialchars($filename) . '</div>';
+        if (!empty($code)) {
+            $html .= '<div class="netdisk-code">';
+            $html .= '<span class="code-label">提取码：</span>';
+            $html .= '<span class="code-value">' . htmlspecialchars($code) . '</span>';
+            $html .= '</div>';
+        }
+        $html .= '</div>';
+        $html .= '<div class="netdisk-actions">';
+        $html .= '<a href="' . htmlspecialchars($url) . '" target="_blank" rel="noopener noreferrer" class="netdisk-btn netdisk-btn-download">';
+        $html .= '<span class="mdi mdi-download"></span>';
+        $html .= '下载';
+        $html .= '</a>';
+        if (!empty($code)) {
+            $html .= '<button type="button" class="netdisk-btn netdisk-btn-copy" data-code="' . htmlspecialchars($code) . '">';
+            $html .= '<span class="mdi mdi-content-copy"></span>';
+            $html .= '复制提取码';
+            $html .= '</button>';
+        }
+        $html .= '</div>';
+        $html .= '</div>';
+        $html .= '</div>';
+
+        return $html;
     }
 }

@@ -19,6 +19,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // 初始化阅读进度
     initReadingProgress();
 
+    // 初始化音乐播放器
+    initMusicPlayer();
+
     // 初始化评论功能
     initComments();
 
@@ -39,6 +42,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 处理评论锚点滚动
     handleCommentAnchorScroll();
+
+    // 初始化网盘卡片复制功能
+    initNetdiskCopy();
 });
 
 /**
@@ -1237,4 +1243,161 @@ function updateReadingProgress(progressElement) {
 
     // 更新显示
     progressElement.textContent = percentage + '%';
+}
+
+/**
+ * 初始化音乐播放器
+ */
+function initMusicPlayer() {
+    // 检查页面中是否有音乐播放器容器
+    const musicContainers = document.querySelectorAll('.music-player-container');
+    
+    if (musicContainers.length === 0) {
+        return; // 没有音乐播放器，不加载资源
+    }
+
+    console.log('[Inaline Music] 检测到 ' + musicContainers.length + ' 个音乐播放器，开始加载资源...');
+
+    // 动态加载 Aplayer CSS
+    loadCSS('https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css')
+        .then(function() {
+            console.log('[Inaline Music] Aplayer CSS 加载完成');
+            // 加载 Aplayer JS
+            return loadScript('https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js');
+        })
+        .then(function() {
+            console.log('[Inaline Music] Aplayer JS 加载完成');
+            
+            // 初始化所有 Aplayer 实例
+            const aplayerContainers = document.querySelectorAll('.aplayer[data-audio]');
+            aplayerContainers.forEach(function(container) {
+                try {
+                    const audioData = JSON.parse(container.getAttribute('data-audio'));
+                    const theme = container.getAttribute('data-theme') || '#C20C0C';
+                    const loop = container.getAttribute('data-loop') || 'all';
+                    const preload = container.getAttribute('data-preload') || 'auto';
+                    const volume = parseFloat(container.getAttribute('data-volume')) || 0.7;
+                    const mutex = container.getAttribute('data-mutex') === 'true';
+                    const listFolded = container.getAttribute('data-list-folded') === 'true';
+                    const listMaxHeight = container.getAttribute('data-list-max-height') || '250px';
+
+                    new APlayer({
+                        container: container,
+                        autoplay: false,
+                        theme: theme,
+                        loop: loop,
+                        preload: preload,
+                        volume: volume,
+                        mutex: mutex,
+                        listFolded: listFolded,
+                        listMaxHeight: listMaxHeight,
+                        audio: audioData
+                    });
+                    
+                    console.log('[Inaline Music] Aplayer 实例初始化成功:', container.id);
+                } catch (error) {
+                    console.error('[Inaline Music] Aplayer 实例初始化失败:', error);
+                }
+            });
+            
+            // 检查是否有网易云歌单
+            const hasMeting = document.querySelector('meting-js');
+            if (hasMeting) {
+                // 加载 MetingJS
+                return loadScript('https://cdn.bootcdn.net/ajax/libs/meting/2.0.1/Meting.min.js');
+            }
+            return Promise.resolve();
+        })
+        .then(function() {
+            if (document.querySelector('meting-js')) {
+                console.log('[Inaline Music] MetingJS 加载完成');
+            }
+            console.log('[Inaline Music] 所有音乐播放器资源加载完成');
+        })
+        .catch(function(error) {
+            console.error('[Inaline Music] 音乐播放器资源加载失败:', error);
+        });
+}
+
+/**
+ * 初始化网盘卡片复制功能
+ */
+function initNetdiskCopy() {
+    const copyButtons = document.querySelectorAll('.netdisk-btn-copy');
+
+    copyButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const code = this.getAttribute('data-code');
+            if (!code) return;
+
+            // 复制到剪贴板
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(function() {
+                    showCopySuccess(btn);
+                }).catch(function(err) {
+                    console.error('复制失败:', err);
+                    fallbackCopyCode(code, btn);
+                });
+            } else {
+                fallbackCopyCode(code, btn);
+            }
+        });
+    });
+}
+
+/**
+ * 显示复制成功状态
+ * @param {HTMLElement} btn 复制按钮元素
+ */
+function showCopySuccess(btn) {
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<span class="mdi mdi-check"></span> 已复制';
+    btn.classList.add('copied');
+
+    setTimeout(function() {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('copied');
+    }, 2000);
+}
+
+/**
+ * 降级复制方案
+ * @param {string} text 要复制的文本
+ * @param {HTMLElement} btn 复制按钮元素
+ */
+function fallbackCopyCode(text, btn) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    textarea.style.width = '2em';
+    textarea.style.height = '2em';
+    textarea.style.padding = '0';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.boxShadow = 'none';
+    textarea.style.background = 'transparent';
+    document.body.appendChild(textarea);
+
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showCopySuccess(btn);
+        } else {
+            throw new Error('execCommand copy failed');
+        }
+    } catch (err) {
+        console.error('复制失败:', err);
+        btn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
+        setTimeout(function() {
+            btn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
+        }, 2000);
+    }
+
+    document.body.removeChild(textarea);
 }

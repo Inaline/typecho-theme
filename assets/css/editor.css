@@ -131,6 +131,8 @@
 /* 对话框内容区 */
 .inaline-dialog-body {
     padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
 }
 
 /* 表单字段组 */
@@ -177,6 +179,10 @@
 .inaline-textarea {
     resize: vertical;
     min-height: 80px;
+}
+
+.inaline-select {
+    cursor: pointer;
 }
 
 .inaline-checkbox {

@@ -653,37 +653,42 @@ const ImageViewer = {
     initAllViewers() {
         if (typeof Viewer === 'undefined') return;
 
-        // 初始化说说图片
-        const shuoshuoImages = document.querySelectorAll('.shuoshuo-image-item img');
-        if (shuoshuoImages.length > 0) {
-            try {
-                const imagesArray = Array.from(shuoshuoImages);
-                const shuoshuoViewer = new Viewer(imagesArray[0].parentElement, {
-                    url: 'src',
-                    toolbar: {
-                        zoomIn: 1,
-                        zoomOut: 1,
-                        oneToOne: 1,
-                        reset: 1,
-                        prev: 1,
-                        play: 0,
-                        next: 1,
-                        rotateLeft: 1,
-                        rotateRight: 1,
-                        flipHorizontal: 1,
-                        flipVertical: 1,
-                    },
-                    title: false,
-                    transition: true,
-                    keyboard: true,
-                    zoomRatio: 0.2,
-                    minZoomRatio: 0.5,
-                    maxZoomRatio: 3,
-                });
-            } catch (e) {
-                // 静默失败
+        // 初始化说说图片 - 为每个说说的图片容器分别初始化
+        const shuoshuoItems = document.querySelectorAll('.shuoshuo-item');
+        shuoshuoItems.forEach(function(item) {
+            const images = item.querySelectorAll('.shuoshuo-image-item img');
+            if (images.length > 0) {
+                try {
+                    const imagesContainer = item.querySelector('.shuoshuo-images');
+                    if (imagesContainer) {
+                        new Viewer(imagesContainer, {
+                            url: 'src',
+                            toolbar: {
+                                zoomIn: 1,
+                                zoomOut: 1,
+                                oneToOne: 1,
+                                reset: 1,
+                                prev: 1,
+                                play: 0,
+                                next: 1,
+                                rotateLeft: 1,
+                                rotateRight: 1,
+                                flipHorizontal: 1,
+                                flipVertical: 1,
+                            },
+                            title: false,
+                            transition: true,
+                            keyboard: true,
+                            zoomRatio: 0.2,
+                            minZoomRatio: 0.5,
+                            maxZoomRatio: 3,
+                        });
+                    }
+                } catch (e) {
+                    // 静默失败
+                }
             }
-        }
+        });
 
         // 初始化文章内容图片
         const articleImages = document.querySelectorAll('.markdown-content img');

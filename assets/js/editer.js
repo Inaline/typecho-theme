@@ -110,6 +110,14 @@
             } else if (field.type === 'checkbox') {
                 var input = $('<input type="checkbox" class="inaline-field-input inaline-checkbox" />');
                 fieldGroup.addClass('inaline-field-group-checkbox');
+            } else if (field.type === 'select') {
+                var input = $('<select class="inaline-field-input inaline-select"></select>');
+                if (field.options && Array.isArray(field.options)) {
+                    field.options.forEach(function(option) {
+                        var optionEl = $('<option value="' + option + '">' + option + '</option>');
+                        input.append(optionEl);
+                    });
+                }
             } else {
                 var input = $('<input type="text" class="inaline-field-input" />');
             }
@@ -339,9 +347,71 @@
             title: '音乐',
             id: 'wmd-music-button',
             mdi: 'mdi-music-note',
-            prompt: '请输入音乐地址：',
-            prefix: '<audio src="',
-            suffix: '" controls></audio>\n'
+            dialog: true,
+            dialogTitle: '插入单个音乐',
+            dialogFields: [
+                { type: 'input', label: '歌曲名称', placeholder: '请输入歌曲名称' },
+                { type: 'input', label: '艺术家', placeholder: '请输入艺术家名称（可选）' },
+                { type: 'input', label: '音乐链接', placeholder: '请输入音乐链接（MP3 等）' },
+                { type: 'input', label: '封面链接', placeholder: '请输入封面图片链接（可选）' },
+                { type: 'textarea', label: '歌词内容', placeholder: '请输入歌词内容（LRC 格式，可选）', rows: 5 },
+                { type: 'input', label: '歌词链接', placeholder: '请输入歌词文件链接（LRC 格式，可选）' }
+            ],
+            onConfirm: function(values) {
+                var name = values[0] || '';
+                var artist = values[1] || '';
+                var url = values[2] || '';
+                var cover = values[3] || '';
+                var lrcText = values[4] || '';
+                var lrcUrl = values[5] || '';
+
+                if (!name || !url) {
+                    alert('请输入歌曲名称和音乐链接');
+                    return;
+                }
+
+                var musicData = {
+                    name: name,
+                    artist: artist,
+                    url: url
+                };
+
+                if (cover) {
+                    musicData.cover = cover;
+                }
+
+                if (lrcText) {
+                    // 处理歌词文本，替换换行符
+                    var lrcProcessed = lrcText.replace(/\n/g, '\\n');
+                    musicData.lrc = lrcProcessed;
+                } else if (lrcUrl) {
+                    musicData.lrc = lrcUrl;
+                }
+
+                var musicSyntax = '\n%%{"type": "music", "data": ' + JSON.stringify(musicData) + '}%%\n';
+                $('#text').insertContent(musicSyntax);
+            }
+        },
+        {
+            title: '网易云',
+            id: 'wmd-netease-button',
+            svg: '<svg height="1em" style="flex:none;line-height:1" viewBox="0 0 24 24" width="1em" xmlns="http://www.w3.org/2000/svg"><title>netease</title><g><path fill="none" d="M0 0h24v24H0z"/><path fill="#C20C0C" d="M10.421 11.375c-.294 1.028.012 2.064.784 2.653 1.061.81 2.565.3 2.874-.995.08-.337.103-.722.027-1.056-.23-1.001-.52-1.988-.792-2.996-1.33.154-2.543 1.172-2.893 2.394zm5.548-.287c.273 1.012.285 2.017-.127 3-1.128 2.69-4.721 3.14-6.573.826-1.302-1.627-1.28-3.961.06-5.734.78-1.032 1.804-1.707 3.048-2.054l.379-.104c-.084-.415-.188-.816-.243-1.224-.176-1.317.512-2.503 1.744-3.04 1.226-.535 2.708-.216 3.53.76.406.479.395 1.08-.025 1.464-.412.377-.996.346-1.435-.09-.247-.246-.51-.44-.877-.436-.525.006-.987.418-.945.937.037.468.173.93.3 1.386.022.078.216.135.338.153 1.334.197 2.504.731 3.472 1.676 2.558 2.493 2.861 6.531.672 9.44-1.529 2.032-3.61 3.168-6.127 3.409-4.621.44-8.664-2.53-9.7-7.058C2.515 10.255 4.84 5.831 8.795 4.25c.586-.234 1.143-.031 1.371.498.232.537-.019 1.086-.61 1.35-2.368 1.06-3.817 2.855-4.215 5.424-.533 3.433 1.656 6.776 5 7.72 2.723.77 5.658-.166 7.308-2.33 1.586-2.08 1.4-5.099-.427-6.873a3.979 3.979 0 0 0-1.823-1.013c.198.716.389 1.388.57 2.062z"/></g></svg>',
+            dialog: true,
+            dialogTitle: '插入网易云歌单',
+            dialogFields: [
+                { type: 'input', label: '歌单 ID', placeholder: '请输入网易云歌单 ID' }
+            ],
+            onConfirm: function(values) {
+                var playlistId = values[0] || '';
+
+                if (!playlistId) {
+                    alert('请输入网易云歌单 ID');
+                    return;
+                }
+
+                var playlistSyntax = '\n%%{"type": "netease_playlist", "data": {"id": "' + playlistId + '"}}%%\n';
+                $('#text').insertContent(playlistSyntax);
+            }
         },
         {
             title: 'Bilibili',
@@ -373,6 +443,53 @@
             prompt: '请输入视频地址：',
             prefix: '<video src="',
             suffix: '" controls></video>\n'
+        },
+        {
+            title: '网盘',
+            id: 'wmd-netdisk-button',
+            mdi: 'mdi-cloud-download-outline',
+            dialog: true,
+            dialogTitle: '插入网盘外链',
+            dialogFields: [
+                { type: 'select', label: '网盘类型', options: ['百度网盘', '夸克网盘', '123云盘', '蓝奏云', 'OpenList', '本地服务器'] },
+                { type: 'input', label: '文件名', placeholder: '请输入文件名' },
+                { type: 'input', label: '下载链接', placeholder: '请输入下载链接' },
+                { type: 'input', label: '提取码', placeholder: '请输入提取码（可选）' }
+            ],
+            onConfirm: function(values) {
+                var type = values[0] || '';
+                var filename = values[1] || '';
+                var url = values[2] || '';
+                var code = values[3] || '';
+
+                if (!filename || !url) {
+                    alert('请输入文件名和下载链接');
+                    return;
+                }
+
+                // 网盘类型映射
+                var typeMap = {
+                    '百度网盘': 'baidu',
+                    '夸克网盘': 'quark',
+                    '123云盘': '123pan',
+                    '蓝奏云': 'lanzou',
+                    'OpenList': 'openlist',
+                    '本地服务器': 'local'
+                };
+
+                var netdiskData = {
+                    type: typeMap[type] || 'baidu',
+                    filename: filename,
+                    url: url
+                };
+
+                if (code) {
+                    netdiskData.code = code;
+                }
+
+                var netdiskSyntax = '\n%%{"type": "netdisk", "data": ' + JSON.stringify(netdiskData) + '}%%\n';
+                $('#text').insertContent(netdiskSyntax);
+            }
         }
     ];
 
