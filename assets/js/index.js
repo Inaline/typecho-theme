@@ -742,3 +742,79 @@ const ImageViewer = {
 $(document).ready(function() {
     ImageViewer.checkAndInit();
 });
+
+/* ==========================
+ * 开发者工具检测
+ * ========================== */
+(function() {
+    // 检测 F12 键
+    document.addEventListener('keydown', function(e) {
+        // F12 键 (keyCode: 123)
+        if (e.keyCode === 123) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '哎呀！',
+                    text: '不要在我的网站乱搞欸 🙈',
+                    icon: 'warning',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: '#fff',
+                    customClass: {
+                        popup: 'swal2-popup-custom'
+                    }
+                });
+            }
+        }
+
+        // Ctrl+Shift+I (Chrome/Edge 开发者工具)
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '哎呀！',
+                    text: '不要在我的网站乱搞欸 🙈',
+                    icon: 'warning',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+        }
+
+        // Ctrl+Shift+J (Chrome 控制台)
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '哎呀！',
+                    text: '不要在我的网站乱搞欸 🙈',
+                    icon: 'warning',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+        }
+
+        // Ctrl+U (查看源代码)
+        if (e.ctrlKey && e.keyCode === 85) {
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: '哎呀！',
+                    text: '不要在我的网站乱搞欸 🙈',
+                    icon: 'warning',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            }
+        }
+    });
+})();

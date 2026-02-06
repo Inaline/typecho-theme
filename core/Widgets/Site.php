@@ -433,6 +433,10 @@ class GetSite
             ],
             [
                 'type' => 'text/javascript',
+                'src' => 'https://cdn.bootcdn.net/ajax/libs/sweetalert2/11.10.0/sweetalert2.all.min.js'
+            ],
+            [
+                'type' => 'text/javascript',
                 'src' => Get::Assets('assets/js/index.js')
             ]
         ];
