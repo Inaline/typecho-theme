@@ -2,14 +2,14 @@
 
 # Inaline Typecho Theme
 
-### 功能强大、美观、简洁的 Typecho 主题
+### A powerful, beautiful, and simple Typecho theme
 
 [![Typecho Version](https://img.shields.io/badge/Typecho-1.2.1-blue.svg)](https://typecho.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Gitee](https://img.shields.io/badge/Gitee-inaline%2Ftypecho--theme-red.svg)](https://gitee.com/inaline/typecho-theme)
-[![Version](https://img.shields.io/badge/Version-1.0.1-orange.svg)](https://gitee.com/inaline/typecho-theme)
+[![GitHub](https://img.shields.io/badge/GitHub-Inaline%2Ftypecho--theme-black.svg)](https://github.com/Inaline/typecho-theme)
+[![Version](https://img.shields.io/badge/Version-1.0.1-orange.svg)](https://github.com/Inaline/typecho-theme)
 
-[English](docs/README.en.md) | 简体中文
+English | [简体中文](docs/README.en.md)
 
 </div>
 
@@ -23,93 +23,93 @@
 
 ---
 
-## ✨ 特性
+## ✨ Features
 
-- 🎨 **现代化设计** - 简洁美观的界面，支持深色模式
-- 📱 **响应式布局** - 完美适配桌面端和移动端
-- 🚀 **高性能** - 服务端渲染，快速加载
-- 🔍 **内置搜索** - 支持文章搜索和搜索历史
-- 📝 **Markdown 支持** - 完整支持 Markdown 语法
-- 🧮 **数学公式** - 支持 KaTeX 数学公式渲染
-- 💬 **评论系统** - 支持二级评论和回复功能
-- 🏷️ **分类标签** - 多级分类和标签管理
-- 📊 **数据统计** - 文章浏览量、点赞数等统计
-- 🎯 **SEO 优化** - 内置 SEO 优化功能
-- 🌐 **多语言** - 支持中英文界面
+- 🎨 **Modern Design** - Clean and beautiful interface with dark mode support
+- 📱 **Responsive Layout** - Perfectly adapted for desktop and mobile
+- 🚀 **High Performance** - Server-side rendering for fast loading
+- 🔍 **Built-in Search** - Article search with search history
+- 📝 **Markdown Support** - Full Markdown syntax support
+- 🧮 **Math Formula** - KaTeX math formula rendering
+- 💬 **Comment System** - Nested comments and reply functionality
+- 🏷️ **Categories & Tags** - Multi-level categories and tags management
+- 📊 **Statistics** - Article views, likes, and other statistics
+- 🎯 **SEO Optimized** - Built-in SEO optimization features
+- 🌐 **Multi-language** - Chinese and English interface support
 
-## 📸 截图
+## 📸 Screenshots
 
-### 首页
+### Homepage
 ![Home](docs/images/homepage.png)
 
-### 文章页
+### Article Page
 ![Article](docs/images/artical.png)
 
-### 深色模式
+### Dark Mode
 ![Dark Mode](docs/images/homepage-dark.png)
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Requirements
 
 - PHP >= 7.4
 - Typecho >= 1.2.0
 - MySQL >= 5.7
 - Apache/Nginx
 
-### 安装步骤
+### Installation
 
-1. **下载主题**
+1. **Download Theme**
 
    ```bash
-   git clone https://gitee.com/inaline/typecho-theme.git
+   git clone https://github.com/Inaline/typecho-theme.git
    ```
 
-   或访问 [Gitee Releases](https://gitee.com/inaline/typecho-theme/releases) 下载最新版本
+   Or visit [GitHub Releases](https://github.com/Inaline/typecho-theme/releases) to download the latest version
 
-2. **安装主题**
+2. **Install Theme**
 
-   - 将 `inaline` 文件夹上传到 Typecho 的 `/usr/themes/` 目录
-   - 登录 Typecho 后台
-   - 进入 `控制台` -> `外观` -> `启用主题`
+   - Upload the `inaline` folder to Typecho's `/usr/themes/` directory
+   - Log in to Typecho dashboard
+   - Go to `Dashboard` -> `Appearance` -> `Enable Theme`
 
-3. **配置主题**
+3. **Configure Theme**
 
-   - 进入 `控制台` -> `外观` -> `设置外观`
-   - 根据需要配置主题选项
+   - Go to `Dashboard` -> `Appearance` -> `Theme Settings`
+   - Configure theme options as needed
 
-## 📖 使用文档
+## 📖 Documentation
 
-### 基础配置
+### Basic Configuration
 
-主题提供了丰富的配置选项，包括：
+The theme provides rich configuration options, including:
 
-- **站点信息** - 网站标题、描述、关键词
-- **外观设置** - Logo、封面图、主题色
-- **功能开关** - 搜索、评论、深色模式等
-- **SEO 设置** - 自定义 SEO 标签
+- **Site Information** - Site title, description, keywords
+- **Appearance Settings** - Logo, cover image, theme color
+- **Feature Toggles** - Search, comments, dark mode, etc.
+- **SEO Settings** - Custom SEO tags
 
-### 文章发布
+### Publishing Articles
 
-支持以下 Markdown 语法：
+Supports the following Markdown syntax:
 
-- 标题、列表、引用、代码块
-- 表格、任务列表
-- 数学公式（KaTeX）
-- 图片、链接、视频
+- Headings, lists, quotes, code blocks
+- Tables, task lists
+- Math formulas (KaTeX)
+- Images, links, videos
 
-### 评论系统
+### Comment System
 
-- 支持二级评论
-- 支持回复功能
-- 支持评论排序（最新/最早）
-- 支持评论分页
+- Nested comments support
+- Reply functionality
+- Comment sorting (newest/oldest)
+- Comment pagination
 
-## 🎨 自定义
+## 🎨 Customization
 
-### 修改主题色
+### Change Theme Color
 
-在 `assets/css/style.css` 中修改 CSS 变量：
+Modify CSS variables in `assets/css/style.css`:
 
 ```css
 :root {
@@ -119,156 +119,156 @@
 }
 ```
 
-### 添加自定义 CSS
+### Add Custom CSS
 
-在主题设置中添加自定义 CSS，或直接修改 `assets/css/style.css`
+Add custom CSS in theme settings, or directly modify `assets/css/style.css`
 
-### 修改模板文件
+### Modify Template Files
 
-主题使用组件化结构，主要模板文件：
+The theme uses a component structure. Main template files:
 
-- `index.php` - 首页
-- `post.php` - 文章页
-- `archive.php` - 归档页
-- `404.php` - 404 页面
+- `index.php` - Homepage
+- `post.php` - Article page
+- `archive.php` - Archive page
+- `404.php` - 404 page
 
-组件文件位于 `core/Components/` 目录
+Component files are located in `core/Components/` directory
 
-## 📦 项目结构
+## 📦 Project Structure
 
 ```
 inaline/
-├── assets/              # 静态资源
-│   ├── css/            # 样式文件
-│   ├── js/             # JavaScript 文件
-│   ├── fonts/          # 字体文件
-│   └── images/         # 图片资源
-├── core/               # 核心功能
-│   ├── Components/     # 组件
-│   ├── Modules/        # 模块
-│   └── Widgets/        # 小部件
-├── library/            # 库文件
-├── functions.php       # 主题函数
-├── index.php          # 首页模板
-├── post.php           # 文章页模板
-├── archive.php        # 归档页模板
-├── 404.php            # 404 页面模板
-├── config.php         # 配置文件
-└── README.md          # 说明文档
+├── assets/              # Static resources
+│   ├── css/            # Style files
+│   ├── js/             # JavaScript files
+│   ├── fonts/          # Font files
+│   └── images/         # Image resources
+├── core/               # Core functionality
+│   ├── Components/     # Components
+│   ├── Modules/        # Modules
+│   └── Widgets/        # Widgets
+├── library/            # Library files
+├── functions.php       # Theme functions
+├── index.php          # Homepage template
+├── post.php           # Article page template
+├── archive.php        # Archive page template
+├── 404.php            # 404 page template
+├── config.php         # Configuration file
+└── README.md          # Documentation
 ```
 
-## 🔧 开发
+## 🔧 Development
 
-### 本地开发
+### Local Development
 
-1. 克隆项目
+1. Clone the project
 
 ```bash
-git clone https://gitee.com/inaline/typecho-theme.git
+git clone https://github.com/Inaline/typecho-theme.git
 cd typecho-theme
 ```
 
-2. 在本地 Typecho 安装目录中创建符号链接
+2. Create symbolic link in local Typecho installation directory
 
 ```bash
 ln -s /path/to/typecho-theme /path/to/typecho/usr/themes/inaline
 ```
 
-3. 修改代码后刷新页面查看效果
+3. Refresh page to see changes after modifying code
 
-### 贡献指南
+### Contributing
 
-欢迎提交 Issue 和 Pull Request！
+Issues and Pull Requests are welcome!
 
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+1. Fork this repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📝 更新日志
+## 📝 Changelog
 
 ### v1.0.1 (2026-02-09)
 
-#### 新增
-- ✨ 随机一言侧边栏卡片
-- 🎨 改进图片资源引用
+#### Added
+- ✨ Random quote sidebar card
+- 🎨 Improved image resource references
 
-#### 优化
-- ⚡ 修复 README 截图引用
+#### Fixed
+- ⚡ Fixed README screenshot references
 
 ### v1.0.0 (2026-01-17)
 
-#### 新增
-- 🎉 首个正式版本发布
-- ✨ 现代化响应式设计
-- 🌙 深色模式支持
-- 🔍 内置搜索功能
-- 💬 二级评论系统
-- 🧮 KaTeX 数学公式支持
-- 📊 文章数据统计
-- 🏷️ 多级分类和标签
-- 📱 移动端适配
-- 🎯 SEO 优化
-- 📝 说说功能
-- 🔗 友链功能
-- 📄 Sitemap 功能
-- 🎵 播放器功能
-- 📋 后台编辑器升级
-- 📑 文章目录功能
-- 💭 消息提示功能
+#### Added
+- 🎉 Initial stable release
+- ✨ Modern responsive design
+- 🌙 Dark mode support
+- 🔍 Built-in search functionality
+- 💬 Nested comment system
+- 🧮 KaTeX math formula support
+- 📊 Article statistics
+- 🏷️ Multi-level categories and tags
+- 📱 Mobile adaptation
+- 🎯 SEO optimization
+- 📝 Shuoshuo (Moments) feature
+- 🔗 Friend links feature
+- 📄 Sitemap functionality
+- 🎵 Player feature
+- 📋 Enhanced backend editor
+- 📑 Article table of contents
+- 💭 Message notifications
 
-#### 优化
-- ⚡ 性能优化，提升加载速度
-- 🎨 UI/UX 改进
-- 🔧 代码结构优化
+#### Improved
+- ⚡ Performance optimization for faster loading
+- 🎨 UI/UX improvements
+- 🔧 Code structure optimization
 
-#### 修复
-- 🐛 修复若干已知问题
+#### Fixed
+- 🐛 Fixed various known issues
 
-## 🤝 技术支持
+## 🤝 Support
 
-- 📧 邮箱: Inaline@qq.com
+- 📧 Email: Inaline@qq.com
 - 💬 QQ: 2291374016
-- 🌐 官网: https://inaline.net
-- 📦 Gitee: https://gitee.com/inaline/typecho-theme
+- 🌐 Website: https://inaline.net
+- 📦 GitHub: https://github.com/Inaline/typecho-theme
 
-## 📄 许可证
+## 📄 License
 
-本项目采用 MIT 许可证。
+This project is licensed under the MIT License.
 
-### 许可条款
+### License Terms
 
-1. **版权声明** - 保留版权和许可声明
-2. **署名要求** - 在网站页脚等显眼位置保留指向本项目的超链接
-3. **免责声明** - 软件按"原样"提供，不提供任何明示或暗示的保证
+1. **Copyright Notice** - Retain copyright and license notices
+2. **Attribution Requirement** - Keep hyperlinks to this project in prominent locations such as the website footer
+3. **Disclaimer** - The software is provided "as is", without any express or implied warranties
 
-### 多媒体资源声明
+### Multimedia Resources Declaration
 
-本许可证仅适用于项目的源代码文件和文档。所有多媒体资源（包括但不限于图片、字体、音频、视频、图标和其他媒体文件）**不**受此许可证保护。
+This license applies only to the project's source code files and documentation. All multimedia resources (including but not limited to images, fonts, audio, video, icons, and other media files) are **not** covered by this license.
 
-这些多媒体资源可能来自互联网上的各种来源，可能受各自许可证和版权限制。用户有责任确保其使用的任何多媒体资源符合适用的许可证。本项目作者和版权持有人不对包含在或随本项目分发的多媒体资源的使用承担任何责任或义务。
+These multimedia resources may come from various sources on the internet and may be subject to their respective licenses and copyright restrictions. Users are responsible for ensuring that any multimedia resources they use comply with applicable licenses. The project authors and copyright holders assume no responsibility or liability for the use of any multimedia resources included in or distributed with this project.
 
-有关多媒体资源的具体许可信息，请参阅各个资产文档或联系原始创作者。
+For specific licensing information regarding multimedia resources, please refer to the respective asset documentation or contact the original creators.
 
-完整许可证文本请参阅 [LICENSE](LICENSE) 文件。
+For the full license text, please see the [LICENSE](LICENSE) file.
 
-## 🙏 致谢
+## 🙏 Acknowledgments
 
-感谢以下开源项目：
+Thanks to the following open source projects:
 
-- [Typecho](https://typecho.org/) - 轻量级博客系统
-- [KaTeX](https://katex.org/) - 快速的数学公式渲染库
-- [Material Design Icons](https://materialdesignicons.com/) - Material Design 图标库
-- [Bootstrap](https://getbootstrap.com/) - CSS 框架
+- [Typecho](https://typecho.org/) - Lightweight blogging system
+- [KaTeX](https://katex.org/) - Fast math formula rendering library
+- [Material Design Icons](https://materialdesignicons.com/) - Material Design icon library
+- [Bootstrap](https://getbootstrap.com/) - CSS framework
 
-## 📮 反馈
+## 📮 Feedback
 
-如果您有任何问题或建议，请：
+If you have any questions or suggestions, please:
 
-- 提交 [Issue](https://gitee.com/inaline/typecho-theme/issues)
-- 发送邮件至 Inaline@qq.com
-- 加入 QQ 群讨论
+- Submit an [Issue](https://github.com/Inaline/typecho-theme/issues)
+- Send an email to Inaline@qq.com
+- Join the QQ group for discussion
 
 ---
 
@@ -276,6 +276,6 @@ ln -s /path/to/typecho-theme /path/to/typecho/usr/themes/inaline
 
 **Made with ❤️ by Inaline Studio**
 
-[⬆ 回到顶部](#inaline-typecho-theme)
+[⬆ Back to Top](#inaline-typecho-theme)
 
 </div>
