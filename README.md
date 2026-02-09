@@ -7,7 +7,7 @@
 [![Typecho Version](https://img.shields.io/badge/Typecho-1.2.1-blue.svg)](https://typecho.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Gitee](https://img.shields.io/badge/Gitee-inaline%2Ftypecho--theme-red.svg)](https://gitee.com/inaline/typecho-theme)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)](https://gitee.com/inaline/typecho-theme)
+[![Version](https://img.shields.io/badge/Version-1.0.1-orange.svg)](https://gitee.com/inaline/typecho-theme)
 
 [English](docs/README.en.md) | 简体中文
 
@@ -40,16 +40,13 @@
 ## 📸 截图
 
 ### 首页
-![Home](docs/images/homepage-mobile.png)
+![Home](docs/images/homepage.png)
 
 ### 文章页
 ![Article](docs/images/artical.png)
 
 ### 深色模式
 ![Dark Mode](docs/images/homepage-dark.png)
-
-### 移动端
-![Mobile](docs/images/homepage-mobile.png)
 
 ## 🚀 快速开始
 
@@ -191,7 +188,16 @@ ln -s /path/to/typecho-theme /path/to/typecho/usr/themes/inaline
 
 ## 📝 更新日志
 
-### v1.0.0 (2026-02-01)
+### v1.0.1 (2026-02-09)
+
+#### 新增
+- ✨ 随机一言侧边栏卡片
+- 🎨 改进图片资源引用
+
+#### 优化
+- ⚡ 修复 README 截图引用
+
+### v1.0.0 (2026-01-17)
 
 #### 新增
 - 🎉 首个正式版本发布
@@ -204,6 +210,13 @@ ln -s /path/to/typecho-theme /path/to/typecho/usr/themes/inaline
 - 🏷️ 多级分类和标签
 - 📱 移动端适配
 - 🎯 SEO 优化
+- 📝 说说功能
+- 🔗 友链功能
+- 📄 Sitemap 功能
+- 🎵 播放器功能
+- 📋 后台编辑器升级
+- 📑 文章目录功能
+- 💭 消息提示功能
 
 #### 优化
 - ⚡ 性能优化，提升加载速度
