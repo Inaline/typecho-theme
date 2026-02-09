@@ -253,9 +253,9 @@ class ComponentData
                     }
             
                     // 3. 随机一言（仅主页、说说等页面显示）
-                    if (in_array($pageType, ['home', 'shuoshuo', 'archive', 'links'])) {
+                    if (Get::themeOption('sidebar_widget_word', true) && in_array($pageType, ['home', 'shuoshuo', 'archive', 'links'])) {
                         require_once(__DIR__ . '/RandomWord.php');
-                        
+
                         $widgetList[] = [
                             'type' => 'random_word',
                             'data' => [

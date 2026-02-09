@@ -194,13 +194,19 @@ return [
                 'description' => '显示热门文章卡片'
             ],
                         [
-                            'name'    => 'sidebar_widget_hot_articles_count',
-                            'label'   => '热门文章数量',
-                            'type'    => 'text',
-                            'default' => '5',
-                            'description' => '热门文章显示数量'
-                        ],
-                        [
+                                        'name'    => 'sidebar_widget_word',
+                                        'label'   => '随机一言卡片',
+                                        'type'    => 'checkbox',
+                                        'default' => true,
+                                        'description' => '显示随机一言卡片'
+                                    ],
+                                    [
+                                        'name'    => 'sidebar_widget_hot_articles_count',
+                                        'label'   => '热门文章数量',
+                                        'type'    => 'text',
+                                        'default' => '5',
+                                        'description' => '热门文章显示数量'
+                                    ],                        [
                             'name'    => 'sidebar_widget_hot_articles_sort',
                             'label'   => '热门文章排序',
                             'type'    => 'radio',
@@ -246,6 +252,13 @@ return [
                 'type'        => 'text',
                 'default'     => '',
                 'description' => 'ICP备案号，支持{year}占位符，留空则不显示'
+            ],
+            [
+                'name'        => 'footer_icp_url',
+                'label'       => '备案跳转链接',
+                'type'        => 'text',
+                'default'     => 'https://beian.miit.gov.cn/',
+                'description' => '备案信息点击跳转的链接，留空使用默认链接'
             ],
             [
                 'name'        => 'footer_custom',

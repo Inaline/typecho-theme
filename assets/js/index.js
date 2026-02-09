@@ -579,35 +579,51 @@ const RunTime = {
         const startDateStr = $footer.data('start-date');
         if (!startDateStr) return;
 
-        const startDate = new Date(startDateStr);
+        // 使用PHP输出的运行时间，不再由JS计算
         const $runTimeElement = $('#runTime');
 
         if ($runTimeElement.length === 0) return;
 
-        // 更新运行时间
-        this.updateRunTime(startDate, $runTimeElement);
-
-        // 每秒更新一次
+        // 每秒更新一次运行时间
+        this.updateRunTime($runTimeElement);
         setInterval(() => {
-            this.updateRunTime(startDate, $runTimeElement);
+            this.updateRunTime($runTimeElement);
         }, 1000);
     },
 
-    updateRunTime(startDate, $element) {
-        const now = new Date();
-        const diff = now - startDate;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    updateRunTime($element) {
+        // 从PHP输出的运行时间字符串中提取天、时、分、秒
+        let timeText = $element.text();
+        let totalSeconds = 0;
 
-        let timeText = '';
-        if (days > 0) timeText += days + '天';
-        if (hours > 0) timeText += hours + '小时';
-        if (minutes > 0) timeText += minutes + '分';
-        timeText += seconds + '秒';
+        // 解析运行时间字符串
+        const daysMatch = timeText.match(/(\d+)天/);
+        const hoursMatch = timeText.match(/(\d+)小时/);
+        const minutesMatch = timeText.match(/(\d+)分/);
+        const secondsMatch = timeText.match(/(\d+)秒/);
 
-        $element.text(timeText);
+        if (daysMatch) totalSeconds += parseInt(daysMatch[1]) * 86400;
+        if (hoursMatch) totalSeconds += parseInt(hoursMatch[1]) * 3600;
+        if (minutesMatch) totalSeconds += parseInt(minutesMatch[1]) * 60;
+        if (secondsMatch) totalSeconds += parseInt(secondsMatch[1]);
+
+        // 增加一秒
+        totalSeconds++;
+
+        // 转换回天、时、分、秒
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        // 生成新的时间字符串
+        let newTimeText = '';
+        if (days > 0) newTimeText += days + '天';
+        if (hours > 0) newTimeText += hours + '小时';
+        if (minutes > 0) newTimeText += minutes + '分';
+        newTimeText += seconds + '秒';
+
+        $element.text(newTimeText);
     }
 };
 

@@ -4,7 +4,7 @@
  * @author Inaline Studio
  */
 ?>
-<footer class="footer" data-start-date="<?= e($this->data->start_date ?? '2024-01-01') ?>">
+<footer class="footer" data-start-date="<?= e($this->data->start_date ?? '2024-01-01') ?>" data-timezone="<?= e(date_default_timezone_get()) ?>">
     <div class="footer-content">
         <div class="footer-main">
             <div class="footer-info">
@@ -25,7 +25,7 @@
                 <?php if (!empty($this->data->icp)): ?>
                 <div class="footer-item">
                     <span class="mdi mdi-shield-check footer-icon"></span>
-                    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" class="footer-link"><?= e($this->data->icp) ?></a>
+                    <a href="<?= e($this->data->icp_url ?? 'https://beian.miit.gov.cn/') ?>" target="_blank" rel="noopener noreferrer" class="footer-link"><?= e($this->data->icp) ?></a>
                 </div>
                 <?php endif; ?>
 

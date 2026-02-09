@@ -468,6 +468,7 @@ class GetSite
             'start_date' => $start_date,
             'copyright' => $copyright,
             'icp' => $icp,
+            'icp_url' => Get::themeOption('footer_icp_url', 'https://beian.miit.gov.cn/'),
             'custom_content' => Get::themeOption('footer_custom', ''),
             'rss_url' => $rss_url,
             'sitemap_url' => $sitemap_url,
