@@ -634,86 +634,42 @@
 }
 
 /* ==========================
-
  * Markdown 内容边距修复
-
  * ==========================
-
  */
-
-
 
 /* markdown-content 第一个子元素移除上边距 */
-
 .markdown-content > *:first-child {
-
     margin-top: 0 !important;
-
     padding-top: 0 !important;
-
 }
-
-
 
 /* markdown-content 最后一个子元素移除下边距 */
-
 .markdown-content > *:last-child {
-
     margin-bottom: 0 !important;
-
     padding-bottom: 0 !important;
-
 }
-
-
 
 /* ==========================
-
  * 音乐播放器样式
-
  * ==========================
-
  */
 
-
-
 .music-player-container {
-
     margin: 16px 0;
-
-    border-radius: var(--border-radius);
-
-    overflow: hidden;
-
-    box-shadow: var(--shadow-sm);
-
 }
-
-
 
 .aplayer {
-
     margin: 0;
-
 }
-
-
 
 .aplayer .aplayer-list {
-
     max-height: 250px !important;
-
 }
-
-
 
 .meting-js {
-
     margin: 0;
-
 }
-
-
 
 /* ==========================
  * Aplayer 暗色模式样式

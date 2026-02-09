@@ -8,6 +8,9 @@
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
+// 引入配置类
+require_once(__DIR__ . '/../Modules/Inaline/AppConfig.php');
+
 // 全局 XSS 防护，带默认值（第 2 参数）
 if (!function_exists('e')) {
     function e(
@@ -177,23 +180,6 @@ class Get
         $path = ltrim($path, '@');
         return Helper::options()->themeUrl . '/' . $path;
     }
-}
-
-// 根据配置决定是否启用 HTML 压缩
-try {
-    // 检查 AppConfig 类是否已经定义，避免重复引入
-    if (!class_exists('AppConfig')) {
-        require_once(__DIR__ . '/../Modules/Inaline/AppConfig.php');
-    }
-    $config = new AppConfig();
-    $compressHtml = $config->get('app.compress_html', false);
-    if ($compressHtml) {
-        Inaline::startMinify();
-        register_shutdown_function(fn() => Inaline::endMinify());
-    }
-} catch (RuntimeException $e) {
-    // 配置加载失败时，默认不启用压缩
-    error_log("Inaline Theme: 配置加载失败 - " . $e->getMessage());
 }
 
 // 通用标签输出函数

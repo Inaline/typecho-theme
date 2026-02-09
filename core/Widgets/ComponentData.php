@@ -249,9 +249,22 @@ class ComponentData
                     'articles' => $formattedArticles
                 ]
             ];
-        }
-
-        // 5. 最新评论（文章页面不显示）
+            
+                    }
+            
+                    // 3. 随机一言（仅主页、说说等页面显示）
+                    if (in_array($pageType, ['home', 'shuoshuo', 'archive', 'links'])) {
+                        require_once(__DIR__ . '/RandomWord.php');
+                        
+                        $widgetList[] = [
+                            'type' => 'random_word',
+                            'data' => [
+                                'word' => RandomWord::get()
+                            ]
+                        ];
+                    }
+            
+                    // 5. 最新评论（文章页面不显示）
         if (Get::themeOption('sidebar_widget_recent_comments', true) && $pageType !== 'post') {
             $count = intval(Get::themeOption('sidebar_widget_recent_comments_count', 5));
 

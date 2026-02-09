@@ -517,6 +517,56 @@ main {
     font-size: 13px;
 }
 
+/* 随机一言卡片样式 */
+.random-word-container {
+    position: relative;
+    background-color: #f5f5f5;
+    border-radius: 12px;
+    padding: 24px;
+    min-height: 100px;
+    margin-top: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quote-icon {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    opacity: 0.6;
+    color: #999999;
+}
+
+.quote-open {
+    top: 8px;
+    left: 8px;
+}
+
+.quote-close {
+    bottom: 8px;
+    right: 8px;
+}
+
+.random-word-text {
+    position: relative;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-color);
+    text-align: center;
+    padding: 0 24px;
+    max-width: 100%;
+}
+
+/* 暗色模式适配 */
+body.dark-mode .random-word-container {
+    background-color: #2a2a2a;
+}
+
+body.dark-mode .quote-icon {
+    color: #ffffff;
+}
+
 /* 轮播图样式 */
 .carousel {
     position: relative;

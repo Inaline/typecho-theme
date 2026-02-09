@@ -9,11 +9,10 @@
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
 return [
-    // 主题设置
+// 主题设置
     'app' => [
-        'debug' => true,            // 调试模式
-        'compress_html' => false,    // HTML 压缩
-        'separation' => false       // 是否使用静态的 HTML 页面调用 RESTful API，而不是由 PHP 生成内容
+        'debug' => true,          // 调试模式
+        'separation' => false      // 是否使用静态的 HTML 页面调用 RESTful API，而不是由 PHP 生成内容
     ],
     
     // 模块设置
