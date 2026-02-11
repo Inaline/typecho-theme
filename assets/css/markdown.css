@@ -240,7 +240,6 @@
 /* 图片容器 */
 .markdown-content .img-container {
     max-width: 100%;
-    margin: 12px 0;
     border-radius: var(--border-radius);
     overflow: hidden;
     display: flex;

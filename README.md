@@ -7,7 +7,7 @@
 [![Typecho Version](https://img.shields.io/badge/Typecho-1.2.1-blue.svg)](https://typecho.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Inaline%2Ftypecho--theme-black.svg)](https://github.com/Inaline/typecho-theme)
-[![Version](https://img.shields.io/badge/Version-1.0.1-orange.svg)](https://github.com/Inaline/typecho-theme)
+[![Version](https://img.shields.io/badge/Version-1.1.0-orange.svg)](https://github.com/Inaline/typecho-theme)
 
 English | [简体中文](docs/README.en.md)
 
@@ -187,6 +187,23 @@ Issues and Pull Requests are welcome!
 5. Open a Pull Request
 
 ## 📝 Changelog
+
+### v1.1.0 (2026-02-11)
+
+#### Added
+- ✨ Theme settings export/import functionality
+- 🎨 Auto-detect system dark mode preference (Firefox support)
+- 🔗 Links template now uses page slug for navigation highlighting
+- ⚙️ Removed page_name custom field (replaced with slug-based approach)
+
+#### Improved
+- 🎨 Article header layout reorganization (categories moved below title)
+- 🧹 Removed author display from article header info
+- 🎯 Simplified category display (removed folder icon)
+
+#### Fixed
+- 🐛 Fixed 404 error when page_name custom field was set
+- 🔧 Fixed dark mode logo switching for system preference detection
 
 ### v1.0.1 (2026-02-09)
 

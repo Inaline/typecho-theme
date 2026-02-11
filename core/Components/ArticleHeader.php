@@ -32,27 +32,22 @@ if (empty($thumbnail)) {
     <div class="article-header-overlay"></div>
     <div class="article-header-content">
         <div class="article-header-inner">
+            <!-- 文章标题 -->
+            <h1 class="article-header-title"><?= $title ?></h1>
+
             <!-- 文章分类 -->
             <?php if (!empty($categories)): ?>
             <div class="article-header-categories">
                 <?php foreach ($categories as $category): ?>
                 <a href="<?= $category['url'] ?>" class="article-header-category">
-                    <span class="mdi mdi-folder"></span>
                     <?= $category['name'] ?>
                 </a>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
 
-            <!-- 文章标题 -->
-            <h1 class="article-header-title"><?= $title ?></h1>
-
             <!-- 文章信息 -->
             <div class="article-header-info">
-                <div class="article-header-info-item">
-                    <span class="mdi mdi-account"></span>
-                    <span><?= $author ?></span>
-                </div>
                 <div class="article-header-info-item">
                     <span class="mdi mdi-calendar"></span>
                     <span><?= $date ?></span>

@@ -7,10 +7,13 @@
 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 
-$params_head = ComponentData::GetHeader('links', $this);
-$params_top_bar = ComponentData::GetTopBar('links');
+// 使用页面缩略名（slug）作为页面标识，实现模板复用
+$pageName = isset($this->slug) ? $this->slug : 'links';
+
+$params_head = ComponentData::GetHeader($pageName, $this);
+$params_top_bar = ComponentData::GetTopBar($pageName);
 $params_foot = ComponentData::GetFooter('links', $this);
-$params_sidebar = ComponentData::GetSidebarData('links');
+$params_sidebar = ComponentData::GetSidebarData($pageName);
 
 Get::Component($this, 'Header', $params_head);
 Get::Component($this, 'TopBar', $params_top_bar);

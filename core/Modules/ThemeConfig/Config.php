@@ -28,6 +28,12 @@ function themeConfig($form)
     
     echo $builder->getHtml();
     
+    // 添加导出和导入按钮
+    echo '<div class="config-actions" style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px;">';
+    echo '<button type="button" id="btn-export-config" class="btn primary" style="margin-right: 10px;">📤 导出配置</button> ';
+    echo '<button type="button" id="btn-import-config" class="btn success">📥 导入配置</button>';
+    echo '</div>';
+    
     echo '<script src="';
     echo Helper::options()->themeUrl('assets/js/admin.js');
     echo '"></script>';

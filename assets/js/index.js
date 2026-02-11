@@ -230,8 +230,21 @@ $(document).ready(function() {
 
     // 深色模式初始化
     const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    if (savedTheme === 'dark') {
+    // 如果用户没有手动设置过主题，则使用系统偏好
+    if (!savedTheme && systemPrefersDark) {
+        $('body').addClass('dark-mode');
+
+        // 切换 Logo 到深色模式
+        const $logo = $('.topbar-logo img');
+        if ($logo.length > 0) {
+            const darkLogo = $logo.data('dark-logo');
+            if (darkLogo) {
+                $logo.attr('src', darkLogo);
+            }
+        }
+    } else if (savedTheme === 'dark') {
         $('body').addClass('dark-mode');
 
         // 切换 Logo 到深色模式

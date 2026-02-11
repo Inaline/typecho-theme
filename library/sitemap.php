@@ -19,7 +19,9 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
     foreach ($possible_paths as $path) {
         if (file_exists($path . '/config.inc.php')) {
-            define('__TYPECHO_ROOT_DIR__', $path);
+            if (!defined('__TYPECHO_ROOT_DIR__')) {
+                define('__TYPECHO_ROOT_DIR__', $path);
+            }
             require_once($path . '/config.inc.php');
 
             // 手动加载 Helper 类
