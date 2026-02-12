@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 初始化网盘卡片复制功能
     initNetdiskCopy();
+
+    // 初始化外部链接跳转提示
+    initExternalLinkProtection();
 });
 
 /**
@@ -219,14 +222,16 @@ function copyCode(codeBlock, copyBtn) {
     }).join('\n');
 
     // 复制到剪贴板
-    if (navigator.clipboard) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(codeText).then(function() {
             showCopySuccess(copyBtn);
+            showCopyrightNotice();
         }).catch(function(err) {
-            fallbackCopy(codeText, copyBtn);
+            console.error('复制失败：', err);
+            copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
         });
     } else {
-        fallbackCopy(codeText, copyBtn);
+        copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 不支持复制';
     }
 }
 
@@ -245,41 +250,44 @@ function showCopySuccess(copyBtn) {
 }
 
 /**
- * 降级复制方案
+ * 显示版权提示
  */
-function fallbackCopy(text, copyBtn) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    textarea.style.top = '0';
-    textarea.style.width = '2em';
-    textarea.style.height = '2em';
-    textarea.style.padding = '0';
-    textarea.style.border = 'none';
-    textarea.style.outline = 'none';
-    textarea.style.boxShadow = 'none';
-    textarea.style.background = 'transparent';
-    document.body.appendChild(textarea);
+function showCopyrightNotice() {
+    const messages = [
+        '记得注明出处哦~ (๑•̀ㅂ•́)و✧',
+        '转载请保留版权信息呀~ ٩(๑>◡<๑)۶',
+        '好东西要记得分享~ (ﾉ◕ヮ◕)ﾉ*:･ﾟ✧',
+        '感谢喜欢，记得标明来源哦~ o(*￣▽￣*)o',
+        '知识共享，记得署名~ (｡♥‿♥｡)',
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
 
-    // 选中文本
-    textarea.focus();
-    textarea.select();
-    textarea.setSelectionRange(0, textarea.value.length); // 对于移动设备
-
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            showCopySuccess(copyBtn);
-        } else {
-            throw new Error('execCommand copy failed');
+    Swal.fire({
+        text: '复制成功！' + randomMessage,
+        icon: 'info',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'copyright-notice-toast'
         }
-    } catch (err) {
-        copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
-    }
-
-    document.body.removeChild(textarea);
+    });
 }
+
+/**
+ * 监听全局复制事件
+ */
+document.addEventListener('copy', function(event) {
+    // 使用防抖，避免短时间内多次触发
+    if (window._copyTimeout) {
+        clearTimeout(window._copyTimeout);
+    }
+    window._copyTimeout = setTimeout(function() {
+        showCopyrightNotice();
+    }, 300);
+});
 
 /**
  * 初始化点赞按钮
@@ -360,7 +368,15 @@ function showShareDialog(title, url) {
     // 简单实现：复制链接到剪贴板
     if (navigator.clipboard) {
         navigator.clipboard.writeText(url).then(function() {
-            alert('链接已复制到剪贴板！');
+            Swal.fire({
+                title: '成功',
+                text: '链接已复制到剪贴板！',
+                icon: 'success',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000
+            });
         }).catch(function(err) {
             prompt('请复制以下链接：', url);
         });
@@ -427,7 +443,11 @@ document.addEventListener('click', function(e) {
         if (typeof TypechoComment !== 'undefined') {
             TypechoComment.reply('comment-' + commentId, parentId);
         } else {
-            alert('评论回复功能暂不可用，请刷新页面重试');
+            Swal.fire({
+                title: '提示',
+                text: '评论回复功能暂不可用，请刷新页面重试',
+                icon: 'warning'
+            });
         }
     }
 });
@@ -485,7 +505,11 @@ function loadComments(page, order) {
     })
     .catch(function(error) {
         console.error('加载评论失败:', error);
-        alert('加载评论失败，请重试');
+        Swal.fire({
+            title: '错误',
+            text: '加载评论失败，请重试',
+            icon: 'error'
+        });
     })
     .finally(function() {
         // 恢复评论列表透明度
@@ -1319,14 +1343,19 @@ function initNetdiskCopy() {
             if (!code) return;
 
             // 复制到剪贴板
-            if (navigator.clipboard) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(code).then(function() {
                     showCopySuccess(btn);
+                    showCopyrightNotice();
                 }).catch(function(err) {
-                    fallbackCopyCode(code, btn);
+                    console.error('复制失败：', err);
+                    btn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
+                    setTimeout(function() {
+                        btn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
+                    }, 2000);
                 });
             } else {
-                fallbackCopyCode(code, btn);
+                btn.innerHTML = '<span class="mdi mdi-alert"></span> 不支持复制';
             }
         });
     });
@@ -1348,42 +1377,128 @@ function showCopySuccess(btn) {
 }
 
 /**
- * 降级复制方案
- * @param {string} text 要复制的文本
- * @param {HTMLElement} btn 复制按钮元素
+ * 初始化外部链接跳转提示
  */
-function fallbackCopyCode(text, btn) {
-    const textarea = document.createElement('textarea');
-    textarea.value = text;
-    textarea.style.position = 'fixed';
-    textarea.style.left = '-9999px';
-    textarea.style.top = '0';
-    textarea.style.width = '2em';
-    textarea.style.height = '2em';
-    textarea.style.padding = '0';
-    textarea.style.border = 'none';
-    textarea.style.outline = 'none';
-    textarea.style.boxShadow = 'none';
-    textarea.style.background = 'transparent';
-    document.body.appendChild(textarea);
+function initExternalLinkProtection() {
+    // 获取当前域名
+    const currentDomain = window.location.hostname;
+    const currentHost = window.location.host;
 
-    textarea.focus();
-    textarea.select();
-    textarea.setSelectionRange(0, textarea.value.length);
+    // 检查是否为文章页面
+    const isArticlePage = document.body.id === 'post';
 
-    try {
-        const successful = document.execCommand('copy');
-        if (successful) {
-            showCopySuccess(btn);
-        } else {
-            throw new Error('execCommand copy failed');
-        }
-    } catch (err) {
-        btn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
-        setTimeout(function() {
-            btn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
-        }, 2000);
+    // 如果不是文章页面，直接返回
+    if (!isArticlePage) {
+        return;
     }
 
-    document.body.removeChild(textarea);
+    // 监听所有链接点击事件
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+
+        const href = link.getAttribute('href');
+        if (!href) return;
+
+        // 忽略 javascript:void(0) 和 javascript:;
+        if (href.startsWith('javascript:') || href === 'void(0)' || href === '#') {
+            return;
+        }
+
+        // 只处理以 // http:// 或 https:// 开头的链接
+        if (!href.match(/^\/\/|^https?:\/\//i)) {
+            return;
+        }
+
+        // 解析 URL
+        let targetUrl;
+        try {
+            targetUrl = new URL(href, window.location.origin);
+        } catch (err) {
+            return;
+        }
+
+        // 检查是否为本站或本站子域名
+        if (isSameDomain(targetUrl.hostname, currentDomain)) {
+            return;
+        }
+
+        // 阻止默认跳转
+        e.preventDefault();
+
+        // 显示确认对话框
+        showExternalLinkConfirm(targetUrl.href, link);
+    });
 }
+
+/**
+ * 检查是否为相同域名（包括子域名）
+ */
+function isSameDomain(hostname1, hostname2) {
+    // 如果完全相同
+    if (hostname1 === hostname2) {
+        return true;
+    }
+
+    // 提取主域名（去掉 www. 和子域名）
+    const getMainDomain = function(hostname) {
+        const parts = hostname.split('.');
+        if (parts.length < 2) return hostname;
+        return parts.slice(-2).join('.');
+    };
+
+    return getMainDomain(hostname1) === getMainDomain(hostname2);
+}
+
+/**
+ * 显示外部链接确认对话框
+ */
+function showExternalLinkConfirm(url, linkElement) {
+    Swal.fire({
+        title: '即将离开本站',
+        html: '您即将跳转到外部链接：<br><code style="word-break: break-all;">' + escapeHtml(url) + '</code><br><br>我们无法保证该链接的安全性，请谨慎访问！',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '继续访问',
+        cancelButtonText: '取消',
+        confirmButtonColor: '#ff7946',
+        cancelButtonColor: '#6c757d',
+        reverseButtons: true
+    }).then(function(result) {
+        if (result.isConfirmed) {
+            // 继续访问
+            window.open(url, '_blank');
+        }
+        // 如果点击取消，什么都不做
+    });
+}
+
+/**
+ * HTML 转义
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * 初始化折叠组件
+ */
+function initCollapse() {
+    const collapseHeaders = document.querySelectorAll('.md-collapse-header');
+
+    collapseHeaders.forEach(function(header) {
+        header.addEventListener('click', function() {
+            const collapse = this.closest('.md-collapse');
+            if (collapse) {
+                collapse.classList.toggle('expanded');
+            }
+        });
+    });
+}
+
+// 在 DOMContentLoaded 中调用
+document.addEventListener('DOMContentLoaded', function() {
+    initCollapse();
+});

@@ -8,7 +8,40 @@ return [
         'title'   => '欢迎使用',
         'content' => '<h1>Inaline - 功能强大、美观、简洁的 Typecho 主题</h1>
         <a href="https://gitee.com/inaline/typecho-theme">Gitee</a> <a href="https://github.com/inaline">Github</a> <a href="https://bilibili.com/space/3493111149890117">Bilibili</a>
-        <p>关于URI的约定: <br> 1. 以 http/https 开头为外部 URI 如 https://example.com/a.png <br> 2. 以 / 开头为本地绝对路径 如 /index.php <br> 3. 以 @ 开头为相对于主题的路径 如 @assets/images/Inaline.png <br> 4. 以 data: 开头为 dataUrl</p>'
+        <p>关于URI的约定: <br> 1. 以 http/https 开头为外部 URI 如 https://example.com/a.png <br> 2. 以 / 开头为本地绝对路径 如 /index.php <br> 3. 以 @ 开头为相对于主题的路径 如 @assets/images/Inaline.png <br> 4. 以 data: 开头为 dataUrl</p>
+        <h3>📋 推荐伪静态配置（Nginx）</h3>
+        <p>为了使 Sitemap 功能正常工作，请在 Nginx 伪静态配置中添加以下规则：</p>
+        <pre style="background:#f5f5f5;padding:10px;border-radius:4px;overflow-x:auto;"><code># sitemap.xml 重定向
+rewrite ^/sitemap\.xml$ /usr/themes/inaline/library/sitemap.php last;
+
+# sitemap.txt 重定向到 txt 格式
+rewrite ^/sitemap\.txt$ /usr/themes/inaline/library/sitemap.php?type=txt last;
+
+if (-f $request_filename/index.html) {
+   rewrite (.*) $1/index.html break;
+}
+if (-f $request_filename/index.php) {
+   rewrite (.*) $1/index.php;
+}
+if (!-e $request_filename) {
+   rewrite (.*) /index.php;
+}</code></pre>
+        <p><strong>访问方式：</strong></p>
+        <ul>
+        <li>XML 格式：<code>/sitemap.xml</code></li>
+        <li>TXT 格式：<code>/sitemap.txt</code></li>
+        </ul>
+        <h3>🤖 robots.txt 配置建议</h3>
+        <p>建议在网站根目录的 <code>robots.txt</code> 文件中添加以下内容：</p>
+        <pre style="background:#f5f5f5;padding:10px;border-radius:4px;overflow-x:auto;"><code>User-agent: *
+Allow: /
+Disallow: /usr/
+Disallow: /admin/
+Disallow: /install/
+Disallow: /var/
+Sitemap: https://你的域名/sitemap.xml
+Sitemap: https://你的域名/sitemap.txt</code></pre>
+        <p>请将 <code>https://你的域名</code> 替换为你的实际域名。</p>'
     ],
     [
         'title'  => '常用组件示例',
@@ -301,10 +334,13 @@ return [
         <h3>1. 卡片语法</h3>
         <p>使用以下格式创建卡片：</p>
         <pre><code>%%{"type":"card","data":{"title":"卡片标题","content":"卡片内容（支持Markdown）"}}%%</code></pre>
-        <h3>2. 友链语法</h3>
+        <h3>2. 折叠语法</h3>
+        <p>使用以下格式创建可折叠内容：</p>
+        <pre><code>%%{"type":"collapse","data":{"title":"折叠标题","content":"折叠内容（支持Markdown）"}}%%</code></pre>
+        <h3>3. 友链语法</h3>
         <p>使用以下格式创建友链列表（必须单行）：</p>
         <pre><code>%%{"type":"links","data":[{"name":"网站名称","url":"https://example.com","description":"网站描述","avatar":"https://example.com/avatar.png"}]}%%</code></pre>
-        <h3>3. 友链字段说明</h3>
+        <h3>4. 友链字段说明</h3>
         <ul>
         <li>name: 网站名称（必填）</li>
         <li>url: 网站链接（必填）</li>

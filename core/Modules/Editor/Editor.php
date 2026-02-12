@@ -16,6 +16,6 @@ class Editor
         // 引入编辑器样式
         echo '<link rel="stylesheet" href="' . GetSite::themeUrl("assets/css/editor.css") . '">';
         // 引入编辑器脚本
-        echo '<script src="' . GetSite::themeUrl("assets/js/editer.js") . '"></script>';
+        echo '<script src="' . GetSite::themeUrl("assets/js/editor.js") . '"></script>';
     }
 }

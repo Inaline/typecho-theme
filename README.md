@@ -7,7 +7,7 @@
 [![Typecho Version](https://img.shields.io/badge/Typecho-1.2.1-blue.svg)](https://typecho.org/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![GitHub](https://img.shields.io/badge/GitHub-Inaline%2Ftypecho--theme-black.svg)](https://github.com/Inaline/typecho-theme)
-[![Version](https://img.shields.io/badge/Version-1.1.0-orange.svg)](https://github.com/Inaline/typecho-theme)
+[![Version](https://img.shields.io/badge/Version-1.1.2-orange.svg)](https://github.com/Inaline/typecho-theme)
 
 English | [简体中文](docs/README.en.md)
 
@@ -187,6 +187,26 @@ Issues and Pull Requests are welcome!
 5. Open a Pull Request
 
 ## 📝 Changelog
+
+### v1.1.2 (2026-02-12)
+
+#### Added
+- ✨ Sitemap TXT format support (one URL per line)
+- 📋 Nginx rewrite rules for sitemap.xml and sitemap.txt
+- 🤖 robots.txt configuration recommendations
+- 📁 Collapse syntax support for Markdown content
+- 📝 Collapse component in editor toolbar
+- 🔗 External link protection prompt for article pages
+- 💬 SweetAlert2 replacement for all alert dialogs
+- 📋 Copy copyright notice with cute kaomoji messages
+
+#### Improved
+- 🎨 Dropdown menu arrow positioning (aligned to parent item)
+- 📱 Copy functionality compatibility for Android devices
+- 🔧 Code block copy button uses modern Clipboard API
+
+#### Fixed
+- 🐛 Fixed editer.js filename typo (now editor.js)
 
 ### v1.1.0 (2026-02-11)
 

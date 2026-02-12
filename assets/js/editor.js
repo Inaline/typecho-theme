@@ -279,6 +279,24 @@
             }
         },
         {
+            title: '折叠',
+            id: 'wmd-collapse-button',
+            mdi: 'mdi-chevron-down',
+            dialog: true,
+            dialogTitle: '插入折叠内容',
+            dialogFields: [
+                { type: 'input', label: '标题', placeholder: '请输入折叠标题' },
+                { type: 'textarea', label: '内容', placeholder: '请输入折叠内容（支持 Markdown）', rows: 5 }
+            ],
+            onConfirm: function(values) {
+                var title = values[0] || '点击展开';
+                var content = values[1] || '';
+
+                var collapseSyntax = '\n%%{"type":"collapse","data":{"title":"' + title + '","content":"' + content + '"}}%%\n';
+                $('#text').insertContent(collapseSyntax);
+            }
+        },
+        {
             title: '删除线',
             id: 'wmd-strikethrough-button',
             mdi: 'mdi-format-strikethrough',
@@ -366,7 +384,11 @@
                 var lrcUrl = values[5] || '';
 
                 if (!name || !url) {
-                    alert('请输入歌曲名称和音乐链接');
+                    Swal.fire({
+                        title: '提示',
+                        text: '请输入歌曲名称和音乐链接',
+                        icon: 'warning'
+                    });
                     return;
                 }
 
@@ -405,7 +427,11 @@
                 var playlistId = values[0] || '';
 
                 if (!playlistId) {
-                    alert('请输入网易云歌单 ID');
+                    Swal.fire({
+                        title: '提示',
+                        text: '请输入网易云歌单 ID',
+                        icon: 'warning'
+                    });
                     return;
                 }
 
@@ -463,7 +489,11 @@
                 var code = values[3] || '';
 
                 if (!filename || !url) {
-                    alert('请输入文件名和下载链接');
+                    Swal.fire({
+                        title: '提示',
+                        text: '请输入文件名和下载链接',
+                        icon: 'warning'
+                    });
                     return;
                 }
 

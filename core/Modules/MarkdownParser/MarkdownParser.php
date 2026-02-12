@@ -109,6 +109,8 @@ class MarkdownParser
         switch ($data['type']) {
             case 'card':
                 return self::renderCard($data['data'] ?? []);
+            case 'collapse':
+                return self::renderCollapse($data['data'] ?? []);
             case 'bilibili_video':
                 return self::renderBilibiliVideo($data['data'] ?? []);
             case 'music':
@@ -140,6 +142,31 @@ class MarkdownParser
             // 处理内容：先解析 !!!html!!! 标记，再解析 Markdown
             $content = self::processContent($content);
             $html .= '<div class="md-card-content markdown-content">' . $content . '</div>';
+        }
+        $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * 渲染折叠组件
+     * @param array $data 折叠数据（已经是 data 字段的内容）
+     * @return string HTML 字符串
+     */
+    private static function renderCollapse($data)
+    {
+        $title = $data['title'] ?? '点击展开';
+        $content = $data['content'] ?? '';
+
+        $html = '<div class="md-collapse">';
+        $html .= '<div class="md-collapse-header">';
+        $html .= '<div class="md-collapse-title">' . $title . '</div>';
+        $html .= '<div class="md-collapse-icon"><i class="mdi mdi-chevron-down"></i></div>';
+        $html .= '</div>';
+        if (!empty($content)) {
+            // 处理内容：先解析 !!!html!!! 标记，再解析 Markdown
+            $content = self::processContent($content);
+            $html .= '<div class="md-collapse-content markdown-content">' . $content . '</div>';
         }
         $html .= '</div>';
 

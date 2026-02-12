@@ -994,7 +994,7 @@ body.dark-mode .topbar-divider {
 
 /* 嵌套下拉菜单（支持无限嵌套） */
 .category-dropdown-menu .category-dropdown .category-dropdown-menu {
-    top: 0;
+    top: -8px;
     left: 100%;
     margin-left: 4px;
     transform: translateY(0) perspective(600px) rotateX(-45deg);
@@ -1011,7 +1011,7 @@ body.dark-mode .topbar-divider {
 }
 
 .category-dropdown-menu .category-dropdown-menu::before {
-    top: 50%;
+    top: 16px;
     left: -7px;
     transform: translateY(-50%);
     border-left: none;
@@ -1131,8 +1131,7 @@ body.dark-mode .topbar-divider {
     content: '';
     position: absolute;
     top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 45%;
     width: 0;
     height: 0;
     border-left: 7px solid transparent;

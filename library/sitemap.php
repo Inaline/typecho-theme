@@ -19,9 +19,6 @@ if (!defined('__TYPECHO_ROOT_DIR__')) {
 
     foreach ($possible_paths as $path) {
         if (file_exists($path . '/config.inc.php')) {
-            if (!defined('__TYPECHO_ROOT_DIR__')) {
-                define('__TYPECHO_ROOT_DIR__', $path);
-            }
             require_once($path . '/config.inc.php');
 
             // 手动加载 Helper 类
@@ -267,17 +264,120 @@ class Sitemap
     }
 
     /**
-     * 输出 Sitemap XML
+     * 获取所有 URL 列表
+     * @return array URL 列表
      */
-    public static function output()
+    private static function getAllUrls()
     {
-        // 设置响应头
-        header('Content-Type: application/xml; charset=UTF-8');
-        header('Cache-Control: no-cache, must-revalidate');
-        header('Pragma: no-cache');
+        try {
+            $urls = [];
+            $db = Typecho_Db::get();
+            $options = Helper::options();
 
-        // 输出 Sitemap
-        echo self::generate();
+            // 添加首页
+            $urls[] = $options->siteUrl;
+
+            // 添加文章页面
+            try {
+                $posts = $db->fetchAll(
+                    $db->select('cid', 'slug', 'created')
+                        ->from('table.contents')
+                        ->where('type = ?', 'post')
+                        ->where('status = ?', 'publish')
+                        ->where('created < ?', time())
+                        ->order('created', Typecho_Db::SORT_DESC)
+                );
+
+                foreach ($posts as $post) {
+                    $urls[] = $options->siteUrl . 'archives/' . $post['cid'] . '/';
+                }
+            } catch (Exception $e) {
+            }
+
+            // 添加独立页面
+            try {
+                $pages = $db->fetchAll(
+                    $db->select('cid', 'slug', 'created')
+                        ->from('table.contents')
+                        ->where('type = ?', 'page')
+                        ->where('status = ?', 'publish')
+                        ->where('created < ?', time())
+                        ->order('created', Typecho_Db::SORT_DESC)
+                );
+
+                foreach ($pages as $page) {
+                    $urls[] = $options->siteUrl . $page['slug'] . '.html';
+                }
+            } catch (Exception $e) {
+            }
+
+            // 添加分类页面
+            try {
+                $categories = $db->fetchAll(
+                    $db->select('mid', 'slug')
+                        ->from('table.metas')
+                        ->where('type = ?', 'category')
+                        ->order('order', Typecho_Db::SORT_ASC)
+                );
+
+                foreach ($categories as $category) {
+                    $urls[] = $options->siteUrl . 'category/' . $category['slug'] . '/';
+                }
+            } catch (Exception $e) {
+            }
+
+            // 添加标签页面
+            try {
+                $tags = $db->fetchAll(
+                    $db->select('mid', 'slug')
+                        ->from('table.metas')
+                        ->where('type = ?', 'tag')
+                        ->order('mid', Typecho_Db::SORT_ASC)
+                );
+
+                foreach ($tags as $tag) {
+                    $urls[] = $options->siteUrl . 'tag/' . $tag['slug'] . '/';
+                }
+            } catch (Exception $e) {
+            }
+
+            return $urls;
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+
+    /**
+     * 生成 Sitemap TXT（纯文本格式，一行一个 URL）
+     * @return string Sitemap TXT 内容
+     */
+    public static function generateTxt()
+    {
+        $urls = self::getAllUrls();
+        return implode("\n", $urls);
+    }
+
+    /**
+     * 输出 Sitemap
+     * @param string $type 输出类型：xml 或 txt
+     */
+    public static function output($type = 'xml')
+    {
+        $type = strtolower($type);
+
+        if ($type === 'txt') {
+            // 输出 TXT 格式
+            header('Content-Type: text/plain; charset=UTF-8');
+            header('Cache-Control: no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            echo self::generateTxt();
+        } else {
+            // 默认输出 XML 格式
+            header('Content-Type: application/xml; charset=UTF-8');
+            header('Cache-Control: no-cache, must-revalidate');
+            header('Pragma: no-cache');
+            echo self::generate();
+        }
     }
 }
 
@@ -285,11 +385,20 @@ class Sitemap
 if (basename($_SERVER['PHP_SELF']) === 'sitemap.php' ||
     (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'sitemap.php') !== false)) {
     try {
-        Sitemap::output();
+        // 获取 type 参数，默认为 xml
+        $type = isset($_GET['type']) ? $_GET['type'] : 'xml';
+        Sitemap::output($type);
     } catch (Exception $e) {
         header('HTTP/1.1 500 Internal Server Error');
-        header('Content-Type: application/xml; charset=UTF-8');
-        echo '<?xml version="1.0" encoding="UTF-8"?>';
-        echo '<error>Failed to generate sitemap</error>';
+        $type = isset($_GET['type']) ? $_GET['type'] : 'xml';
+
+        if ($type === 'txt') {
+            header('Content-Type: text/plain; charset=UTF-8');
+            echo 'Failed to generate sitemap';
+        } else {
+            header('Content-Type: application/xml; charset=UTF-8');
+            echo '<?xml version="1.0" encoding="UTF-8"?>';
+            echo '<error>Failed to generate sitemap</error>';
+        }
     }
 }

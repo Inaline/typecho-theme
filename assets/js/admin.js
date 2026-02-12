@@ -81,7 +81,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 var textarea = document.getElementById('export-config-textarea');
                 textarea.select();
                 document.execCommand('copy');
-                alert('配置已复制到剪贴板！');
+                Swal.fire({
+                    title: '成功',
+                    text: '配置已复制到剪贴板！',
+                    icon: 'success',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
             });
             
             // 关闭按钮
@@ -203,7 +211,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     
                     document.body.removeChild(overlay);
-                    alert('配置已导入，请检查后点击保存！');
+                    Swal.fire({
+                        title: '成功',
+                        text: '配置已导入，请检查后点击保存！',
+                        icon: 'success'
+                    });
                 } catch (e) {
                     errorMsg.textContent = 'JSON 格式错误: ' + e.message;
                     errorMsg.style.display = 'block';
