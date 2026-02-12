@@ -8,9 +8,14 @@ window.katexLoaded = false;
 window.katexLoading = false;
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('[初始化] DOMContentLoaded 事件触发，开始初始化');
+
     // 为代码块添加行号（函数内部会处理高亮逻辑）
     if (typeof hljs !== 'undefined') {
+        console.log('[初始化] hljs 已加载，调用 addLineNumbers');
         addLineNumbers();
+    } else {
+        console.warn('[初始化] hljs 未加载，跳过代码块处理');
     }
 
     // 初始化文章目录
@@ -174,13 +179,6 @@ function addLineNumbers() {
             lineNumbersDiv.appendChild(lineNumber);
         }
 
-        // 重新构建代码内容（不带行号）
-        block.textContent = lines.join('\n');
-
-        // 移除可能存在的高亮标记
-        block.removeAttribute('data-highlighted');
-        block.classList.remove('hljs');
-
         // 将行号列插入到 pre 的最前面
         pre.insertBefore(lineNumbersDiv, block);
 
@@ -200,7 +198,7 @@ function addCopyButton(codeBlock) {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-btn';
     copyBtn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制';
-    
+
     copyBtn.addEventListener('click', function() {
         copyCode(codeBlock, copyBtn);
     });
@@ -212,39 +210,82 @@ function addCopyButton(codeBlock) {
  * 复制代码到剪贴板
  */
 function copyCode(codeBlock, copyBtn) {
-    // 克隆代码块，避免修改原始 DOM
-    const clonedBlock = codeBlock.cloneNode(true);
-    const codeLines = clonedBlock.querySelectorAll('.code-line');
+    // 直接从代码块获取纯文本内容
+    const codeText = codeBlock.textContent;
 
-    // 获取纯文本代码（行号由 CSS 伪元素生成，不会出现在文本中）
-    const codeText = Array.from(codeLines).map(function(line) {
-        return line.textContent;
-    }).join('\n');
-
-    // 复制到剪贴板
+    // 优先使用现代 API，降级使用传统方法
     if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(codeText).then(function() {
-            showCopySuccess(copyBtn);
+            showCopySuccess(copyBtn, false);
             showCopyrightNotice();
         }).catch(function(err) {
-            console.error('复制失败：', err);
-            copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
+            console.error('现代 API 复制失败，尝试降级方案：', err);
+            fallbackCopy(codeText, copyBtn, false);
         });
     } else {
-        copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 不支持复制';
+        fallbackCopy(codeText, copyBtn, false);
     }
 }
 
 /**
- * 显示复制成功状态
+ * 降级复制方案（兼容非 HTTPS 环境）
+ * @param {string} text - 要复制的文本
+ * @param {HTMLElement} copyBtn - 复制按钮元素
+ * @param {boolean} isNetdisk - 是否为网盘复制按钮
  */
-function showCopySuccess(copyBtn) {
+function fallbackCopy(text, copyBtn, isNetdisk) {
+    // 创建临时文本域
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    textarea.style.top = '0';
+    document.body.appendChild(textarea);
+
+    try {
+        textarea.select();
+        const successful = document.execCommand('copy');
+
+        if (successful) {
+            showCopySuccess(copyBtn, isNetdisk);
+            showCopyrightNotice();
+        } else {
+            copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
+            if (isNetdisk) {
+                setTimeout(function() {
+                    copyBtn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
+                }, 2000);
+            }
+        }
+    } catch (err) {
+        console.error('降级复制失败：', err);
+        copyBtn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
+        if (isNetdisk) {
+            setTimeout(function() {
+                copyBtn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
+            }, 2000);
+        }
+    }
+
+    document.body.removeChild(textarea);
+}
+
+/**
+ * 显示复制成功状态
+ * @param {HTMLElement} copyBtn - 复制按钮元素
+ * @param {boolean} isNetdisk - 是否为网盘复制按钮
+ */
+function showCopySuccess(copyBtn, isNetdisk) {
     const originalText = copyBtn.innerHTML;
     copyBtn.innerHTML = '<span class="mdi mdi-check"></span> 已复制';
     copyBtn.classList.add('copied');
 
     setTimeout(function() {
-        copyBtn.innerHTML = originalText;
+        if (isNetdisk) {
+            copyBtn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
+        } else {
+            copyBtn.innerHTML = originalText;
+        }
         copyBtn.classList.remove('copied');
     }, 2000);
 }
@@ -1345,17 +1386,14 @@ function initNetdiskCopy() {
             // 复制到剪贴板
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(code).then(function() {
-                    showCopySuccess(btn);
+                    showCopySuccess(btn, true);
                     showCopyrightNotice();
                 }).catch(function(err) {
-                    console.error('复制失败：', err);
-                    btn.innerHTML = '<span class="mdi mdi-alert"></span> 复制失败';
-                    setTimeout(function() {
-                        btn.innerHTML = '<span class="mdi mdi-content-copy"></span> 复制提取码';
-                    }, 2000);
+                    console.error('现代 API 复制失败，尝试降级方案：', err);
+                    fallbackCopy(code, btn, true);
                 });
             } else {
-                btn.innerHTML = '<span class="mdi mdi-alert"></span> 不支持复制';
+                fallbackCopy(code, btn, true);
             }
         });
     });

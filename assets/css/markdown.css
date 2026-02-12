@@ -912,328 +912,147 @@ body.dark-mode .aplayer .aplayer-miniswitcher .aplayer-icon:hover {
     color: #e0e0e0 !important;
 }
 
-
-
 /* ==========================
-
  * 网盘卡片样式
-
  * ==========================
-
  */
-
-
-
 .netdisk-card {
-
     display: flex;
-
     align-items: center;
-
     gap: 16px;
-
     padding: 16px;
-
     background: var(--bg-color);
-
     border: 1px solid var(--border-color);
-
     border-radius: var(--border-radius);
-
     margin: 16px 0;
-
     transition: all var(--transition-speed);
-
     box-shadow: var(--shadow-sm);
-
 }
-
-
-
 .netdisk-card:hover {
-
     box-shadow: var(--shadow-md);
-
     border-color: var(--primary-color);
-
 }
-
-
-
 /* 网盘图标容器 */
-
 .netdisk-icon {
-
     width: 56px;
-
     height: 56px;
-
     flex-shrink: 0;
-
     border-radius: 12px;
-
     overflow: hidden;
-
     background: var(--page-bg-color);
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
 }
-
-
-
 .netdisk-icon img {
-
     width: 100%;
-
     height: 100%;
-
     object-fit: cover;
-
 }
-
-
-
 /* 网盘信息区域 */
-
 .netdisk-info {
-
     flex: 1;
-
     min-width: 0;
-
     display: flex;
-
     flex-direction: column;
-
     gap: 8px;
-
 }
-
-
-
 /* 文件名和提取码容器 */
-
 .netdisk-header {
-
     display: flex;
-
     align-items: center;
-
     gap: 12px;
-
     flex-wrap: wrap;
-
 }
-
-
-
 .netdisk-filename {
-
     font-size: 16px;
-
     font-weight: 600;
-
     color: var(--text-color);
-
     overflow: hidden;
-
     text-overflow: ellipsis;
-
     white-space: nowrap;
-
 }
-
-
-
 .netdisk-code {
-
     font-size: 13px;
-
     color: var(--text-color-light);
-
     display: flex;
-
     align-items: center;
-
     gap: 4px;
-
     flex-shrink: 0;
-
 }
-
-
-
 .netdisk-code .code-label {
-
     color: var(--primary-color);
-
     font-weight: 500;
-
 }
-
-
-
 .netdisk-code .code-value {
-
     font-family: 'JetBrains Mono', monospace;
-
     background: var(--page-bg-color);
-
     padding: 2px 6px;
-
     border-radius: 4px;
-
 }
-
-
-
 /* 网盘按钮区域 */
-
 .netdisk-actions {
-
     display: flex;
-
     gap: 8px;
-
     flex-shrink: 0;
-
 }
-
-
-
 .netdisk-btn {
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 6px;
-
     padding: 8px 16px;
-
     font-size: 14px;
-
     font-weight: 500;
-
     border-radius: 8px;
-
     cursor: pointer;
-
     transition: all var(--transition-speed);
-
     border: none;
-
     outline: none;
-
 }
-
-
-
 /* 下载按钮 a 标签样式 - 覆盖文章中 a 标签的默认样式 */
-
 .netdisk-btn-download {
-
     background: var(--primary-color);
-
     color: #fff;
-
     text-decoration: none;
-
     position: static;
-
     padding: 8px 16px;
-
     margin: 0;
-
     border: none;
-
     background: var(--primary-color);
-
     box-shadow: none;
-
     outline: none;
-
     display: inline-flex;
-
     align-items: center;
-
     gap: 6px;
-
 }
-
-
-
 .netdisk-btn-download::before,
-
 .netdisk-btn-download::after {
-
     display: none;
-
 }
-
-
-
 .netdisk-btn-download:hover {
-
     background: var(--primary-color-dark);
-
     color: #fff !important;
-
     transform: translateY(-2px);
-
     box-shadow: var(--shadow-md);
-
     padding: 8px 16px;
-
     margin: 0;
-
     border: none;
-
     border-radius: 8px;
-
 }
-
-
-
 .netdisk-btn-copy {
-
     background: var(--page-bg-color);
-
     color: var(--text-color);
-
     border: 1px solid var(--border-color);
-
 }
-
-
-
 .netdisk-btn-copy:hover {
-
     background: var(--border-color);
-
     color: var(--primary-color);
-
 }
-
-
-
 .netdisk-btn-copy.copied {
-
     background: rgba(76, 175, 80, 0.1);
-
     border-color: rgba(76, 175, 80, 0.3);
-
     color: #4caf50;
-
 }
-
-
-
 /* 移动端网盘卡片适配 */
 
 @media (max-width: 767px) {
