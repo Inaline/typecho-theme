@@ -1218,41 +1218,57 @@ class GetArticle
                     break;
             }
 
-            // 获取总数 - 重新构建查询而不是克隆
-            $totalSelect = $db->select('COUNT(DISTINCT c.cid) as count')
-                ->from('table.contents AS c')
-                ->where('c.type = ?', 'post')
-                ->where('c.status = ?', 'publish');
+            // 获取总数 - 使用原生SQL来避免查询构建器的问题
+            $prefix = $db->getPrefix();
+            $adapter = $db->getAdapter();
 
-            // 添加相同的筛选条件
+            // 构建基础SQL
+            $totalSql = "SELECT COUNT(DISTINCT c.cid) as count
+                         FROM {$prefix}contents AS c
+                         WHERE c.type = " . $adapter->quoteValue('post') . "
+                         AND c.status = " . $adapter->quoteValue('publish');
+
+            // 添加筛选条件
             switch ($params['filter_type']) {
                 case 'category':
                     if ($params['filter_id'] > 0) {
-                        $totalSelect->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
-                            ->where('r.mid = ?', $params['filter_id']);
+                        $totalSql .= " AND EXISTS (
+                            SELECT 1 FROM {$prefix}relationships AS r
+                            WHERE r.cid = c.cid AND r.mid = " . $adapter->quoteValue($params['filter_id']) . "
+                        )";
                     }
                     break;
                 case 'tag':
                     if ($params['filter_id'] > 0) {
-                        $totalSelect->join('table.relationships AS r', 'c.cid = r.cid', \Typecho_Db::LEFT_JOIN)
-                            ->where('r.mid = ?', $params['filter_id']);
+                        $totalSql .= " AND EXISTS (
+                            SELECT 1 FROM {$prefix}relationships AS r
+                            WHERE r.cid = c.cid AND r.mid = " . $adapter->quoteValue($params['filter_id']) . "
+                        )";
                     }
                     break;
                 case 'search':
                     if (!empty($params['keywords'])) {
                         $keyword = '%' . $params['keywords'] . '%';
-                        $totalSelect->where('c.title LIKE ?', $keyword)
-                            ->orWhere('c.text LIKE ?', $keyword);
+                        $totalSql .= " AND (c.title LIKE " . $adapter->quoteValue($keyword) . "
+                                     OR c.text LIKE " . $adapter->quoteValue($keyword) . ")";
                     }
                     break;
                 case 'author':
                     if ($params['filter_id'] > 0) {
-                        $totalSelect->where('c.authorId = ?', $params['filter_id']);
+                        $totalSql .= " AND c.authorId = " . $adapter->quoteValue($params['filter_id']);
                     }
                     break;
             }
 
-            $countResult = $db->fetchRow($totalSelect);
+            // 排除 article_type 为 shuoshuo 的文章
+            $totalSql .= " AND NOT EXISTS (
+                SELECT 1 FROM {$prefix}fields AS f
+                WHERE f.cid = c.cid
+                AND f.name = " . $adapter->quoteValue('article_type') . "
+                AND f.str_value = " . $adapter->quoteValue('shuoshuo') . "
+            )";
+
+            $countResult = $db->fetchRow($totalSql);
             $total = intval($countResult['count'] ?? 0);
             $totalPages = ceil($total / $params['per_page']);
 
@@ -1311,7 +1327,6 @@ class GetArticle
 
                 // 统一添加 limit 和 offset
                 $select->limit($params['per_page'])->offset($offset);
-
 
                 // 执行查询
                 $rows = $db->fetchAll($select);
